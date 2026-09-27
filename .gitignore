@@ -1,0 +1,27 @@
+# Unity gitignore
+/[Uu]nity_cosmic_engine/[Ll]ibrary/
+/[Uu]nity_cosmic_engine/[Tt]emp/
+/[Uu]nity_cosmic_engine/[Oo]bj/
+/[Uu]nity_cosmic_engine/[Bb]uild/
+/[Uu]nity_cosmic_engine/[Bb]uilds/
+/[Uu]nity_cosmic_engine/[Ll]ogs/
+/[Uu]nity_cosmic_engine/[Uu]ser[Ss]ettings/
+/[Uu]nity_cosmic_engine/[Mm]emoryCaptures/
+/[Uu]nity_cosmic_engine/*.log
+/[Uu]nity_cosmic_engine/*.pid
+
+# Visual Studio / Rider / VS Code cache
+.vs/
+.idea/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+
+# Blender autosave
+*.blend1
+*.blend2
