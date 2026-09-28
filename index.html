@@ -20,8 +20,8 @@
       --accent-purple: #c084fc;
       --accent-green: #34d399;
       --accent-red: #f87171;
-      --text-main: #f1f5f9;
-      --text-muted: #94a3b8;
+      --text-main: #f8fafc;
+      --text-muted: #cbd5e1;
       --font-display: 'Orbitron', -apple-system, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
       --font-body: 'Rajdhani', sans-serif;
@@ -42,7 +42,8 @@
       background-color: var(--bg-dark);
       color: var(--text-main);
       font-family: var(--font-body);
-      font-size: 15px;
+      font-size: 16px;
+      line-height: 1.4;
     }
 
     #webgl-canvas {
@@ -164,15 +165,17 @@
     }
 
     .stat-label {
-      font-size: 0.64rem;
+      font-size: 0.78rem;
       text-transform: uppercase;
       color: var(--text-muted);
       letter-spacing: 1px;
+      font-weight: 600;
     }
 
     .stat-value {
       color: var(--accent-cyan);
       font-weight: 700;
+      font-size: 0.95rem;
       letter-spacing: 0.5px;
     }
 
@@ -193,7 +196,8 @@
       border-radius: 6px;
       cursor: pointer;
       font-family: var(--font-mono);
-      font-size: 0.75rem;
+      font-size: 0.85rem;
+      font-weight: 600;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -228,10 +232,14 @@
 
     /* Left Side: Navigation & Stages */
     .left-dock {
-      width: 280px;
+      width: clamp(280px, 18vw, 400px);
       display: flex;
       flex-direction: column;
       gap: 14px;
+      max-height: calc(100vh - 190px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 4px;
     }
 
     .stage-selector {
@@ -252,7 +260,8 @@
 
     .section-title {
       font-family: var(--font-display);
-      font-size: 0.75rem;
+      font-size: 0.82rem;
+      font-weight: 700;
       letter-spacing: 1.5px;
       color: var(--text-muted);
       text-transform: uppercase;
@@ -261,11 +270,11 @@
     .stage-item {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 4px;
       padding: 10px 12px;
       border-radius: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(15, 23, 42, 0.65);
       cursor: pointer;
       transition: all 0.25s ease;
       position: relative;
@@ -278,19 +287,19 @@
       left: 0;
       top: 0;
       height: 100%;
-      width: 3px;
+      width: 4px;
       background: transparent;
       transition: all 0.25s ease;
     }
 
     .stage-item:hover {
-      background: rgba(56, 189, 248, 0.12);
-      border-color: rgba(56, 189, 248, 0.35);
+      background: rgba(56, 189, 248, 0.18);
+      border-color: rgba(56, 189, 248, 0.5);
       transform: translateX(4px);
     }
 
     .stage-item.active {
-      background: rgba(56, 189, 248, 0.18);
+      background: rgba(56, 189, 248, 0.22);
       border-color: var(--accent-cyan);
       box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
     }
@@ -308,7 +317,7 @@
 
     .stage-name {
       font-family: var(--font-display);
-      font-size: 0.82rem;
+      font-size: 0.95rem;
       font-weight: 700;
       letter-spacing: 1px;
       color: #fff;
@@ -316,22 +325,24 @@
 
     .stage-tag {
       font-family: var(--font-mono);
-      font-size: 0.65rem;
+      font-size: 0.78rem;
+      font-weight: 700;
       color: var(--accent-cyan);
       background: rgba(56, 189, 248, 0.15);
-      padding: 1px 6px;
+      padding: 2px 7px;
       border-radius: 4px;
     }
 
     .stage-desc {
-      font-size: 0.75rem;
+      font-size: 0.86rem;
       color: var(--text-muted);
-      line-height: 1.2;
+      line-height: 1.35;
     }
 
     .stage-metric {
       font-family: var(--font-mono);
-      font-size: 0.7rem;
+      font-size: 0.82rem;
+      font-weight: 700;
       color: var(--accent-amber);
       margin-top: 2px;
       display: flex;
@@ -341,12 +352,15 @@
 
     /* Right Side: Primary Travel Time HUD */
     .right-dock {
-      width: 360px;
+      width: clamp(340px, 22vw, 480px);
       display: flex;
       flex-direction: column;
       gap: 14px;
+      max-height: calc(100vh - 190px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 4px;
     }
-
     .travel-time-card {
       padding: 18px;
       border-color: rgba(56, 189, 248, 0.4);
@@ -375,7 +389,7 @@
 
     .card-title {
       font-family: var(--font-display);
-      font-size: 0.85rem;
+      font-size: 0.95rem;
       font-weight: 700;
       letter-spacing: 1.5px;
       text-transform: uppercase;
@@ -387,7 +401,7 @@
 
     .c-constant-tag {
       font-family: var(--font-mono);
-      font-size: 0.68rem;
+      font-size: 0.78rem;
       background: rgba(251, 191, 36, 0.15);
       border: 1px solid rgba(251, 191, 36, 0.35);
       color: var(--accent-amber);
@@ -414,10 +428,11 @@
     }
 
     .travel-time-sub {
-      font-size: 0.75rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
       margin-top: 4px;
       font-family: var(--font-mono);
+      font-weight: 600;
     }
 
     /* Comparison Table */
@@ -432,7 +447,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.76rem;
+      font-size: 0.85rem;
       font-family: var(--font-mono);
       padding: 4px 6px;
       border-radius: 4px;
@@ -444,16 +459,19 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      font-weight: 600;
     }
 
     .comp-speed {
-      font-size: 0.68rem;
-      opacity: 0.7;
+      font-size: 0.76rem;
+      opacity: 0.85;
+      font-weight: 600;
     }
 
     .comp-time {
       color: var(--text-main);
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 0.88rem;
     }
 
     /* Inspector Card */
@@ -466,7 +484,7 @@
 
     .inspector-target {
       font-family: var(--font-display);
-      font-size: 0.95rem;
+      font-size: 1.05rem;
       font-weight: 700;
       color: #fff;
       display: flex;
@@ -476,8 +494,9 @@
 
     .inspector-type {
       font-family: var(--font-mono);
-      font-size: 0.65rem;
-      padding: 1px 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 2px 7px;
       border-radius: 3px;
       background: rgba(192, 132, 252, 0.2);
       color: var(--accent-purple);
@@ -490,7 +509,7 @@
       gap: 6px;
       margin-top: 4px;
       font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-size: 0.85rem;
     }
 
     .inspector-item {
@@ -501,20 +520,22 @@
     }
 
     .insp-label {
-      font-size: 0.62rem;
+      font-size: 0.75rem;
       color: var(--text-muted);
       text-transform: uppercase;
+      font-weight: 600;
     }
 
     .insp-val {
       color: #fff;
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 0.88rem;
     }
 
     .inspector-fact {
-      font-size: 0.76rem;
+      font-size: 0.88rem;
       color: var(--text-muted);
-      line-height: 1.3;
+      line-height: 1.4;
       margin-top: 4px;
       padding: 6px;
       background: rgba(255, 255, 255, 0.02);
@@ -532,14 +553,15 @@
 
     .narration-subtitle-box {
       align-self: center;
-      max-width: 780px;
-      padding: 8px 18px;
-      background: rgba(7, 13, 26, 0.88);
-      border: 1px solid rgba(56, 189, 248, 0.3);
+      max-width: 860px;
+      padding: 10px 22px;
+      background: rgba(7, 13, 26, 0.92);
+      border: 1px solid rgba(56, 189, 248, 0.4);
       border-radius: 20px;
       text-align: center;
       font-family: var(--font-mono);
-      font-size: 0.8rem;
+      font-size: 0.95rem;
+      font-weight: 600;
       color: var(--accent-cyan);
       box-shadow: 0 0 20px rgba(0,0,0,0.6);
       transition: opacity 0.3s ease;
@@ -571,7 +593,8 @@
 
     .zoom-label-tag {
       font-family: var(--font-display);
-      font-size: 0.72rem;
+      font-size: 0.82rem;
+      font-weight: 700;
       color: var(--text-muted);
       letter-spacing: 1px;
       white-space: nowrap;
@@ -615,12 +638,13 @@
     .zoom-ticks {
       position: absolute;
       width: 100%;
-      top: -18px;
+      top: -20px;
       display: flex;
       justify-content: space-between;
       font-family: var(--font-mono);
-      font-size: 0.62rem;
-      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #cbd5e1;
       pointer-events: none;
     }
 
@@ -642,10 +666,10 @@
     }
 
     .btn-cockpit {
-      padding: 8px 16px;
+      padding: 9px 16px;
       border-radius: 6px;
       font-family: var(--font-display);
-      font-size: 0.75rem;
+      font-size: 0.85rem;
       letter-spacing: 1px;
       text-transform: uppercase;
       font-weight: 700;
@@ -692,7 +716,8 @@
       align-items: center;
       gap: 3px;
       font-family: var(--font-mono);
-      font-size: 0.7rem;
+      font-size: 0.82rem;
+      font-weight: 700;
       color: var(--text-muted);
     }
 
@@ -825,6 +850,204 @@
       color: #fff;
     }
 
+    /* =========================================================================
+       ACCESSIBILITY & VISION ENHANCEMENT SUITE
+       ========================================================================= */
+    /* Scrollbars for responsive overflow at large font scales */
+    .left-dock::-webkit-scrollbar,
+    .right-dock::-webkit-scrollbar,
+    .modal-box::-webkit-scrollbar {
+      width: 6px;
+    }
+    .left-dock::-webkit-scrollbar-track,
+    .right-dock::-webkit-scrollbar-track,
+    .modal-box::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 4px;
+    }
+    .left-dock::-webkit-scrollbar-thumb,
+    .right-dock::-webkit-scrollbar-thumb,
+    .modal-box::-webkit-scrollbar-thumb {
+      background: var(--accent-cyan);
+      border-radius: 4px;
+      box-shadow: 0 0 6px var(--accent-cyan);
+    }
+
+    /* High Contrast Accessibility Mode */
+    body.high-contrast {
+      --bg-dark: #000000;
+      --panel-bg: rgba(3, 7, 18, 0.98);
+      --panel-border: #38bdf8;
+      --panel-glow: rgba(56, 189, 248, 0.4);
+      --text-main: #ffffff;
+      --text-muted: #f8fafc;
+      --accent-cyan: #38bdf8;
+      --accent-amber: #fde047;
+      --accent-purple: #f0abfc;
+    }
+    body.high-contrast .glass-card {
+      background: #020617 !important;
+      border: 2px solid #38bdf8 !important;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.35) !important;
+    }
+    body.high-contrast .stat-pill {
+      background: #020617 !important;
+      border: 2px solid #38bdf8 !important;
+    }
+    body.high-contrast .stat-label,
+    body.high-contrast .insp-label,
+    body.high-contrast .comp-name,
+    body.high-contrast .stage-desc,
+    body.high-contrast .zoom-label-tag,
+    body.high-contrast .scale-ruler {
+      color: #ffffff !important;
+      font-weight: 700 !important;
+    }
+    body.high-contrast .stat-value,
+    body.high-contrast .insp-val,
+    body.high-contrast .travel-time-val,
+    body.high-contrast .comp-time {
+      color: #ffffff !important;
+      font-weight: 900 !important;
+      text-shadow: none !important;
+    }
+    body.high-contrast .stat-value.gold,
+    body.high-contrast .c-constant-tag {
+      color: #fde047 !important;
+      font-weight: 900 !important;
+    }
+    body.high-contrast .stat-value.cyan {
+      color: #38bdf8 !important;
+      font-weight: 900 !important;
+    }
+    body.high-contrast .btn-icon,
+    body.high-contrast .btn-cockpit {
+      border: 2px solid #38bdf8 !important;
+      font-weight: 800 !important;
+      background: #030712 !important;
+      color: #ffffff !important;
+    }
+    body.high-contrast .btn-icon.active,
+    body.high-contrast .btn-cockpit.primary {
+      background: #38bdf8 !important;
+      color: #000000 !important;
+      font-weight: 900 !important;
+    }
+
+    /* Clean Sans-Serif High-Legibility Font Mode */
+    body.high-legibility {
+      --font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+      --font-mono: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, monospace !important;
+      --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    }
+    body.high-legibility * {
+      letter-spacing: 0.4px !important;
+    }
+
+    /* Solid HUD Panels Mode (eliminates background star blur under text) */
+    body.solid-hud .glass-card,
+    body.solid-hud .stat-pill,
+    body.solid-hud .narration-subtitle-box {
+      background: #050b14 !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border: 1.5px solid var(--accent-cyan) !important;
+    }
+
+    /* Accessibility Settings Modal UI */
+    .a11y-setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      border-radius: 6px;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+    .a11y-setting-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .a11y-setting-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .a11y-setting-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .a11y-toggle-btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--accent-cyan);
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text-main);
+      transition: all 0.2s ease;
+      min-width: 90px;
+      text-align: center;
+    }
+    .a11y-toggle-btn.active {
+      background: var(--accent-cyan);
+      color: #030712;
+      box-shadow: 0 0 12px var(--accent-cyan);
+    }
+    .a11y-scale-slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 220px;
+    }
+    .a11y-scale-slider {
+      flex: 1;
+      height: 6px;
+      accent-color: var(--accent-cyan);
+      cursor: pointer;
+    }
+    .a11y-scale-readout {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--accent-amber);
+      min-width: 48px;
+      text-align: right;
+    }
+    .a11y-presets-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .a11y-preset-btn {
+      flex: 1;
+      padding: 6px 4px;
+      border-radius: 4px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+    .a11y-preset-btn:hover,
+    .a11y-preset-btn.active {
+      background: var(--accent-cyan);
+      color: #000;
+      border-color: #fff;
+      font-weight: 700;
+    }
+
     /* Responsive */
     @media (max-width: 1024px) {
       .left-dock { width: 230px; }
@@ -890,6 +1113,15 @@
 
       <!-- Top Action Buttons -->
       <div class="top-actions">
+        <!-- Quick Accessibility Font Steppers -->
+        <div style="display:flex; align-items:center; gap:3px; background:rgba(15,23,42,0.6); padding:2px 4px; border-radius:6px; border:1px solid rgba(56,189,248,0.3);">
+          <button class="btn-icon" id="btn-font-dec" title="Decrease Font Size (Ctrl + -)" style="padding:6px 9px; font-weight:800; font-size:0.85rem;">A−</button>
+          <button class="btn-icon" id="btn-font-inc" title="Increase Font Size (Ctrl + +)" style="padding:6px 9px; font-weight:800; font-size:0.85rem;">A+</button>
+          <button class="btn-icon" id="btn-a11y-modal-trigger" title="Vision & Accessibility Settings (Alt + A)" style="padding:6px 10px;">
+            <span>👁️</span> <span id="a11y-scale-badge" style="font-weight:700; color:var(--accent-amber);">100%</span>
+          </button>
+        </div>
+
         <button class="btn-icon active" id="btn-music-toggle" title="Toggle Soothing Acoustic Space Score">
           <span id="music-icon">🎵</span> <span id="music-status-text">Score: ON</span>
         </button>
@@ -1192,6 +1424,79 @@
       <p style="font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
         Audio features ElevenLabs scientific narration voiced by George with cinematic acoustic SFX. Use Left Click + Drag to Orbit, Right Click to Pan, and Scroll to continuously Zoom.
       </p>
+    </div>
+  </div>
+
+  <!-- Vision & Accessibility Settings Modal -->
+  <div class="modal-overlay interactive" id="a11y-modal">
+    <div class="modal-box glass-card" style="width:640px; max-height:85vh; overflow-y:auto;">
+      <button class="modal-close-btn" id="btn-close-a11y-modal">&times;</button>
+      <h2>👁️ Vision &amp; Accessibility Settings</h2>
+      <p style="margin-bottom:14px;">Customize font sizes, high-contrast themes, and legibility controls for comfortable reading across all cosmic scales.</p>
+      
+      <!-- Setting 1: UI Scale & Font Size -->
+      <div class="a11y-setting-row" style="flex-direction:column; align-items:stretch; gap:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="a11y-setting-info">
+            <span class="a11y-setting-title"><span>🔍</span> Text Size &amp; UI Scale</span>
+            <span class="a11y-setting-desc">Scales all labels, metrics, cards, and scientific text proportionately.</span>
+          </div>
+          <div class="a11y-scale-slider-wrap">
+            <input type="range" min="100" max="180" step="5" value="100" class="a11y-scale-slider" id="a11y-scale-slider">
+            <span class="a11y-scale-readout" id="a11y-slider-readout">100%</span>
+          </div>
+        </div>
+        <div class="a11y-presets-row">
+          <button class="a11y-preset-btn active" data-scale="100">Standard (100%)</button>
+          <button class="a11y-preset-btn" data-scale="125">Large (125%)</button>
+          <button class="a11y-preset-btn" data-scale="150">Extra Large (150%)</button>
+          <button class="a11y-preset-btn" data-scale="175">Jumbo (175%)</button>
+        </div>
+      </div>
+
+      <!-- Setting 2: High Contrast Mode -->
+      <div class="a11y-setting-row">
+        <div class="a11y-setting-info">
+          <span class="a11y-setting-title"><span>🌗</span> High Contrast Mode</span>
+          <span class="a11y-setting-desc">Pure black backgrounds with high-contrast bright white &amp; neon cyan/gold text.</span>
+        </div>
+        <button class="a11y-toggle-btn" id="btn-toggle-contrast">OFF</button>
+      </div>
+
+      <!-- Setting 3: Clean Sans-Serif Font -->
+      <div class="a11y-setting-row">
+        <div class="a11y-setting-info">
+          <span class="a11y-setting-title"><span>🔤</span> Clean Sans-Serif Font</span>
+          <span class="a11y-setting-desc">Replaces sci-fi monospace with ultra-readable system sans-serif (Segoe UI / Inter).</span>
+        </div>
+        <button class="a11y-toggle-btn" id="btn-toggle-font">OFF</button>
+      </div>
+
+      <!-- Setting 4: Solid Panel Backdrops -->
+      <div class="a11y-setting-row">
+        <div class="a11y-setting-info">
+          <span class="a11y-setting-title"><span>⬛</span> Solid Panel Backdrops</span>
+          <span class="a11y-setting-desc">Removes background star translucency behind text panels for zero visual distraction.</span>
+        </div>
+        <button class="a11y-toggle-btn" id="btn-toggle-solid-hud">OFF</button>
+      </div>
+
+      <!-- Keyboard Shortcuts Reference -->
+      <div style="margin-top:14px; padding:10px 14px; background:rgba(0,0,0,0.4); border-radius:6px; border:1px solid rgba(255,255,255,0.08); font-family:var(--font-mono); font-size:0.78rem;">
+        <span style="color:var(--accent-amber); font-weight:700;">Keyboard Shortcuts:</span><br>
+        <span style="color:var(--text-muted);">
+          • <strong>Ctrl + +</strong> / <strong>Ctrl + =</strong> : Increase Font Size &nbsp;|&nbsp;
+          • <strong>Ctrl + -</strong> : Decrease Font Size &nbsp;|&nbsp;
+          • <strong>Ctrl + 0</strong> : Reset Font Size<br>
+          • <strong>Alt + A</strong> : Toggle Accessibility Panel &nbsp;|&nbsp;
+          • <strong>Alt + H</strong> : Toggle High Contrast
+        </span>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px;">
+        <button class="btn-icon" id="btn-a11y-reset" style="padding:8px 16px;">↺ Reset to Defaults</button>
+        <button class="btn-cockpit primary" id="btn-close-a11y-done" style="padding:8px 24px;">Done</button>
+      </div>
     </div>
   </div>
 
@@ -2575,6 +2880,264 @@
         musicManager.duckForNarration(false);
       }
     });
+
+    /* =========================================================================
+       ACCESSIBILITY & VISION ENHANCEMENT CONTROLLER
+       ========================================================================= */
+    class CosmicA11yManager {
+      constructor() {
+        this.scale = 100; // percent (100% to 180%)
+        this.isHighContrast = false;
+        this.isHighLegibility = false;
+        this.isSolidHud = false;
+
+        // Elements
+        this.badge = document.getElementById('a11y-scale-badge');
+        this.modal = document.getElementById('a11y-modal');
+        this.slider = document.getElementById('a11y-scale-slider');
+        this.sliderReadout = document.getElementById('a11y-slider-readout');
+        this.btnDec = document.getElementById('btn-font-dec');
+        this.btnInc = document.getElementById('btn-font-inc');
+        this.btnTrigger = document.getElementById('btn-a11y-modal-trigger');
+        this.btnClose = document.getElementById('btn-close-a11y-modal');
+        this.btnDone = document.getElementById('btn-close-a11y-done');
+        this.btnContrast = document.getElementById('btn-toggle-contrast');
+        this.btnFont = document.getElementById('btn-toggle-font');
+        this.btnSolidHud = document.getElementById('btn-toggle-solid-hud');
+        this.btnReset = document.getElementById('btn-a11y-reset');
+        this.presetBtns = document.querySelectorAll('.a11y-preset-btn');
+
+        this.init();
+      }
+
+      init() {
+        this.loadSettings();
+        this.apply();
+
+        // Font Steppers in Header
+        if (this.btnDec) {
+          this.btnDec.addEventListener('click', () => {
+            playSoftChime();
+            this.setScale(this.scale - 10);
+          });
+        }
+        if (this.btnInc) {
+          this.btnInc.addEventListener('click', () => {
+            playSoftChime();
+            this.setScale(this.scale + 10);
+          });
+        }
+
+        // Modal Open / Close
+        if (this.btnTrigger) {
+          this.btnTrigger.addEventListener('click', () => {
+            playSoftChime();
+            this.modal.style.display = 'flex';
+          });
+        }
+        if (this.btnClose) {
+          this.btnClose.addEventListener('click', () => {
+            playSoftChime();
+            this.modal.style.display = 'none';
+          });
+        }
+        if (this.btnDone) {
+          this.btnDone.addEventListener('click', () => {
+            playSoftChime();
+            this.modal.style.display = 'none';
+          });
+        }
+        if (this.modal) {
+          this.modal.addEventListener('click', (e) => {
+            if (e.target === this.modal) this.modal.style.display = 'none';
+          });
+        }
+
+        // Slider
+        if (this.slider) {
+          this.slider.addEventListener('input', (e) => {
+            this.setScale(parseInt(e.target.value, 10));
+          });
+        }
+
+        // Presets
+        this.presetBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            playSoftChime();
+            const s = parseInt(btn.getAttribute('data-scale'), 10);
+            this.setScale(s);
+          });
+        });
+
+        // High Contrast Toggle
+        if (this.btnContrast) {
+          this.btnContrast.addEventListener('click', () => {
+            playSoftChime();
+            this.isHighContrast = !this.isHighContrast;
+            this.apply();
+            this.saveSettings();
+          });
+        }
+
+        // Clean Font Toggle
+        if (this.btnFont) {
+          this.btnFont.addEventListener('click', () => {
+            playSoftChime();
+            this.isHighLegibility = !this.isHighLegibility;
+            this.apply();
+            this.saveSettings();
+          });
+        }
+
+        // Solid HUD Toggle
+        if (this.btnSolidHud) {
+          this.btnSolidHud.addEventListener('click', () => {
+            playSoftChime();
+            this.isSolidHud = !this.isSolidHud;
+            this.apply();
+            this.saveSettings();
+          });
+        }
+
+        // Reset
+        if (this.btnReset) {
+          this.btnReset.addEventListener('click', () => {
+            playSoftChime();
+            this.scale = 100;
+            this.isHighContrast = false;
+            this.isHighLegibility = false;
+            this.isSolidHud = false;
+            this.apply();
+            this.saveSettings();
+          });
+        }
+
+        // Global Keyboard Shortcuts
+        window.addEventListener('keydown', (e) => {
+          if (e.ctrlKey && (e.key === '=' || e.key === '+')) {
+            e.preventDefault();
+            playSoftChime();
+            this.setScale(this.scale + 10);
+          } else if (e.ctrlKey && (e.key === '-' || e.key === '_')) {
+            e.preventDefault();
+            playSoftChime();
+            this.setScale(this.scale - 10);
+          } else if (e.ctrlKey && e.key === '0') {
+            e.preventDefault();
+            playSoftChime();
+            this.setScale(100);
+          } else if (e.altKey && (e.key === 'a' || e.key === 'A')) {
+            e.preventDefault();
+            playSoftChime();
+            this.modal.style.display = (this.modal.style.display === 'flex') ? 'none' : 'flex';
+          } else if (e.altKey && (e.key === 'h' || e.key === 'H')) {
+            e.preventDefault();
+            playSoftChime();
+            this.isHighContrast = !this.isHighContrast;
+            this.apply();
+            this.saveSettings();
+          }
+        });
+      }
+
+      setScale(val) {
+        this.scale = Math.max(90, Math.min(180, Math.round(val)));
+        this.apply();
+        this.saveSettings();
+      }
+
+      apply() {
+        // Base root font size scales everything proportionately
+        const basePx = 16 * (this.scale / 100);
+        document.documentElement.style.fontSize = `${basePx}px`;
+
+        if (this.badge) this.badge.textContent = `${this.scale}%`;
+        if (this.slider) this.slider.value = this.scale;
+        if (this.sliderReadout) this.sliderReadout.textContent = `${this.scale}%`;
+
+        // Update preset buttons active state
+        this.presetBtns.forEach(btn => {
+          const s = parseInt(btn.getAttribute('data-scale'), 10);
+          if (Math.abs(s - this.scale) < 5) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+
+        // High Contrast Mode
+        if (this.isHighContrast) {
+          document.body.classList.add('high-contrast');
+          if (this.btnContrast) {
+            this.btnContrast.textContent = "ON";
+            this.btnContrast.classList.add('active');
+          }
+        } else {
+          document.body.classList.remove('high-contrast');
+          if (this.btnContrast) {
+            this.btnContrast.textContent = "OFF";
+            this.btnContrast.classList.remove('active');
+          }
+        }
+
+        // Clean Font Mode
+        if (this.isHighLegibility) {
+          document.body.classList.add('high-legibility');
+          if (this.btnFont) {
+            this.btnFont.textContent = "ON";
+            this.btnFont.classList.add('active');
+          }
+        } else {
+          document.body.classList.remove('high-legibility');
+          if (this.btnFont) {
+            this.btnFont.textContent = "OFF";
+            this.btnFont.classList.remove('active');
+          }
+        }
+
+        // Solid HUD Mode
+        if (this.isSolidHud) {
+          document.body.classList.add('solid-hud');
+          if (this.btnSolidHud) {
+            this.btnSolidHud.textContent = "ON";
+            this.btnSolidHud.classList.add('active');
+          }
+        } else {
+          document.body.classList.remove('solid-hud');
+          if (this.btnSolidHud) {
+            this.btnSolidHud.textContent = "OFF";
+            this.btnSolidHud.classList.remove('active');
+          }
+        }
+      }
+
+      saveSettings() {
+        try {
+          const cfg = {
+            scale: this.scale,
+            isHighContrast: this.isHighContrast,
+            isHighLegibility: this.isHighLegibility,
+            isSolidHud: this.isSolidHud
+          };
+          localStorage.setItem('cosmic_zoom_a11y', JSON.stringify(cfg));
+        } catch (e) {}
+      }
+
+      loadSettings() {
+        try {
+          const raw = localStorage.getItem('cosmic_zoom_a11y');
+          if (raw) {
+            const cfg = JSON.parse(raw);
+            if (cfg.scale) this.scale = cfg.scale;
+            if (typeof cfg.isHighContrast === 'boolean') this.isHighContrast = cfg.isHighContrast;
+            if (typeof cfg.isHighLegibility === 'boolean') this.isHighLegibility = cfg.isHighLegibility;
+            if (typeof cfg.isSolidHud === 'boolean') this.isSolidHud = cfg.isSolidHud;
+          }
+        } catch (e) {}
+      }
+    }
+
+    const a11yManager = new CosmicA11yManager();
 
     /* =========================================================================
        6. INTERACTIVE ZOOM CONTROLS & STAGE JUMPS
