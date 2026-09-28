@@ -1,3 +1,2 @@
 @echo off
-echo Starting Cosmic Zoom Engine...
-start "" "%~dp0CosmicZoomEngine_App\CosmicZoomEngine.exe"
+start "" "%~dp0CosmicZoom_DesktopApp.exe"
