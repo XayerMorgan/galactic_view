@@ -1466,8 +1466,9 @@
       c.height = size;
       const ctx = c.getContext('2d');
       const grad = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
-      grad.addColorStop(0, colorHex);
-      grad.addColorStop(0.2, colorHex);
+      const colStr = typeof colorHex === 'number' ? '#' + colorHex.toString(16).padStart(6, '0') : colorHex;
+      grad.addColorStop(0, colStr);
+      grad.addColorStop(0.2, colStr);
       grad.addColorStop(0.5, 'rgba(0,0,0,0.3)');
       grad.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = grad;
@@ -1480,10 +1481,12 @@
       c.width = 512;
       c.height = 256;
       const ctx = c.getContext('2d');
-      ctx.fillStyle = baseColorHex;
+      const baseStr = typeof baseColorHex === 'number' ? '#' + baseColorHex.toString(16).padStart(6, '0') : baseColorHex;
+      ctx.fillStyle = baseStr;
       ctx.fillRect(0, 0, 512, 256);
       if (stripeColorHex) {
-        ctx.fillStyle = stripeColorHex;
+        const stripeStr = typeof stripeColorHex === 'number' ? '#' + stripeColorHex.toString(16).padStart(6, '0') : stripeColorHex;
+        ctx.fillStyle = stripeStr;
         for (let i = 0; i < 20; i++) {
           const y = (i / 20) * 256 + Math.sin(i) * 5;
           ctx.fillRect(0, y, 512, 6 + Math.cos(i)*4);
