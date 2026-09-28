@@ -1190,6 +1190,8 @@
 
   <!-- Audio Elements -->
   <audio id="snd-warp" src="assets/audio/warp_whoosh.mp3" preload="auto"></audio>
+  <audio id="snd-cinematic-warp" src="assets/audio/cinematic_warp.mp3" preload="auto"></audio>
+  <audio id="snd-pulse-voice" src="assets/audio/light_pulse_voice.mp3" preload="auto"></audio>
   <audio id="snd-ambient" src="assets/audio/ambient_space.mp3" preload="auto" loop></audio>
   <audio id="snd-ui" src="assets/audio/ui_ping.mp3" preload="auto"></audio>
   <audio id="snd-narr-1" src="assets/audio/narration_stage1.mp3" preload="auto"></audio>
@@ -1447,6 +1449,16 @@
     sunPointLight.position.set(0, 0, 0);
     scene.add(sunPointLight);
 
+    // High-Resolution Astrophysical Textures Loader
+    const texLoader = new THREE.TextureLoader();
+    const sunTex = texLoader.load('assets/textures/sun_photosphere.jpg');
+    const earthTex = texLoader.load('assets/textures/earth_photosphere.jpg');
+    const jupiterTex = texLoader.load('assets/textures/jupiter_photosphere.jpg');
+    const mwTex = texLoader.load('assets/textures/milky_way_disk.jpg');
+    const andromedaTex = texLoader.load('assets/textures/andromeda_galaxy_disk.jpg');
+    const cosmicWebTex = texLoader.load('assets/textures/cosmic_web_simulation.jpg');
+    const cmbTex = texLoader.load('assets/textures/cmb_horizon_sky.jpg');
+
     // Texture Generator Utilities (Procedural Canvas Textures for crisp performance)
     function createGlowTexture(colorHex, size = 128) {
       const c = document.createElement('canvas');
@@ -1502,9 +1514,9 @@
       { id: 'neptune', name: 'Neptune', r: 2.4, dist: 170, speed: 0.002, color: 0x3b82f6, orbitColor: 0x2563eb, isBoundary: true }
     ];
 
-    // Sun Mesh & Dynamic Corona
-    const sunGeom = new THREE.SphereGeometry(6.5, 32, 32);
-    const sunMat = new THREE.MeshBasicMaterial({ color: 0xfffaed });
+    // Sun Mesh & Dynamic Corona with Photosphere Texture
+    const sunGeom = new THREE.SphereGeometry(6.5, 48, 48);
+    const sunMat = new THREE.MeshBasicMaterial({ map: sunTex });
     const sunMesh = new THREE.Mesh(sunGeom, sunMat);
     groupStage1.add(sunMesh);
 
@@ -1517,7 +1529,7 @@
       opacity: 0.85
     });
     const sunCorona = new THREE.Sprite(coronaMat);
-    sunCorona.scale.set(38, 38, 1);
+    sunCorona.scale.set(42, 42, 1);
     groupStage1.add(sunCorona);
 
     const planetMeshes = {};
@@ -1542,10 +1554,22 @@
       groupStage1.add(orbitLine);
       orbitLines[p.id] = orbitLine;
 
-      // Planet Mesh
-      const pGeom = new THREE.SphereGeometry(p.r, 24, 24);
+      // Planet Mesh with PBR Photosphere Textures
+      const pGeom = new THREE.SphereGeometry(p.r, 32, 32);
       let pMat;
-      if (p.stripes) {
+      if (p.id === 'earth') {
+        pMat = new THREE.MeshStandardMaterial({
+          map: earthTex,
+          roughness: 0.35,
+          metalness: 0.1
+        });
+      } else if (p.id === 'jupiter') {
+        pMat = new THREE.MeshStandardMaterial({
+          map: jupiterTex,
+          roughness: 0.5,
+          metalness: 0.05
+        });
+      } else if (p.stripes) {
         pMat = new THREE.MeshStandardMaterial({
           map: createPlanetTexture('#fbbf24', '#d97706'),
           roughness: 0.6,
@@ -1672,6 +1696,20 @@
     const galaxyPoints = new THREE.Points(galaxyGeom, galaxyMat);
     groupStage2.add(galaxyPoints);
 
+    // High-Resolution Barred Spiral Galactic Disk Plane (Astrophysical Texture)
+    const mwPlaneGeom = new THREE.PlaneGeometry(820, 820);
+    const mwPlaneMat = new THREE.MeshBasicMaterial({
+      map: mwTex,
+      transparent: true,
+      opacity: 0.88,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    });
+    const mwPlaneMesh = new THREE.Mesh(mwPlaneGeom, mwPlaneMat);
+    mwPlaneMesh.rotation.x = -Math.PI / 2;
+    groupStage2.add(mwPlaneMesh);
+
     // Galactic Core / Sagittarius A* Glow
     const sgrAGeom = new THREE.SphereGeometry(3.5, 32, 32);
     const sgrAMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
@@ -1776,11 +1814,26 @@
     // Milky Way within Local Group (Centered)
     const lgMilkyWay = createMiniGalaxy(0xffeedd, 0x38bdf8, 55, 12000, 0.2);
     lgMilkyWay.position.set(-60, 0, 0);
+    const lgMwPlane = mwPlaneMesh.clone();
+    lgMwPlane.scale.set(0.14, 0.14, 0.14);
+    lgMilkyWay.add(lgMwPlane);
     groupStage3.add(lgMilkyWay);
 
     // Andromeda (M31, 2.5 MLY away, larger disk, tilted)
     const lgAndromeda = createMiniGalaxy(0xffe4b5, 0x818cf8, 85, 18000, 0.7);
     lgAndromeda.position.set(160, 45, -70);
+    const andromedaPlaneGeom = new THREE.PlaneGeometry(280, 280);
+    const andromedaPlaneMat = new THREE.MeshBasicMaterial({
+      map: andromedaTex,
+      transparent: true,
+      opacity: 0.88,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    });
+    const andromedaPlaneMesh = new THREE.Mesh(andromedaPlaneGeom, andromedaPlaneMat);
+    andromedaPlaneMesh.rotation.x = -Math.PI / 2;
+    lgAndromeda.add(andromedaPlaneMesh);
     groupStage3.add(lgAndromeda);
 
     // Triangulum (M33, 2.7 MLY away)
@@ -1895,25 +1948,39 @@
     const webPoints = new THREE.Points(webGeom, webMat);
     groupStage4.add(webPoints);
 
-    // Observable Universe Boundary Shell (CMB Particle Horizon Sphere)
+    // High-Resolution Cosmic Web Simulation Density Plane
+    const webPlaneGeom = new THREE.PlaneGeometry(webHorizonRadius * 1.85, webHorizonRadius * 1.85);
+    const webPlaneMat = new THREE.MeshBasicMaterial({
+      map: cosmicWebTex,
+      transparent: true,
+      opacity: 0.65,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    });
+    const webPlaneMesh = new THREE.Mesh(webPlaneGeom, webPlaneMat);
+    webPlaneMesh.rotation.x = -Math.PI / 2;
+    groupStage4.add(webPlaneMesh);
+
+    // Observable Universe Boundary Shell (CMB Particle Horizon Sphere) with Planck Map
     const horizonGeom = new THREE.SphereGeometry(webHorizonRadius, 64, 64);
     const horizonMat = new THREE.MeshBasicMaterial({
-      color: 0x38bdf8,
-      wireframe: true,
+      map: cmbTex,
+      side: THREE.BackSide,
       transparent: true,
-      opacity: 0.18
+      opacity: 0.55
     });
     const horizonSphere = new THREE.Mesh(horizonGeom, horizonMat);
     groupStage4.add(horizonSphere);
 
     // Outer Thermal CMB Glow Shield
     const cmbGlowMat = new THREE.MeshBasicMaterial({
-      color: 0x93c5fd,
-      side: THREE.BackSide,
+      color: 0x38bdf8,
+      wireframe: true,
       transparent: true,
-      opacity: 0.08
+      opacity: 0.12
     });
-    const cmbShield = new THREE.Mesh(new THREE.SphereGeometry(webHorizonRadius * 1.01, 32, 32), cmbGlowMat);
+    const cmbShield = new THREE.Mesh(new THREE.SphereGeometry(webHorizonRadius * 1.005, 32, 32), cmbGlowMat);
     groupStage4.add(cmbShield);
 
     // Horizon Equator & Polar Rings
@@ -2171,6 +2238,8 @@
     let isNarratorEnabled = true;
 
     const sndWarp = document.getElementById('snd-warp');
+    const sndCinematicWarp = document.getElementById('snd-cinematic-warp');
+    const sndPulseVoice = document.getElementById('snd-pulse-voice');
     const sndAmbient = document.getElementById('snd-ambient');
     const sndUi = document.getElementById('snd-ui');
 
@@ -2277,7 +2346,7 @@
         }
       }
 
-      playSfx(sndWarp);
+      playSfx(sndCinematicWarp || sndWarp);
       playNarrationForStage(newStage);
     }
 
@@ -2342,7 +2411,7 @@
     const pulseTimer = document.getElementById('pulse-timer');
 
     btnFirePulse.addEventListener('click', () => {
-      playSfx(sndUi);
+      playSfx(sndPulseVoice || sndUi);
       isLightPulseActive = true;
       lightPulseRadius = 1;
       lightPulseStartTime = performance.now();
