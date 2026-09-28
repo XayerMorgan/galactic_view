@@ -97,7 +97,16 @@ namespace CosmicZoom
             if (lightPulseEmitter != null)
             {
                 Vector3 origin = cameraFocusTarget != null ? cameraFocusTarget.position : Vector3.zero;
-                lightPulseEmitter.FireLightPulse(origin);
+                double spanKm = TravelTimeCalculator.GetSpanKmFromZoom(currentZoom);
+                float radius = activeStageIndex switch
+                {
+                    1 => 90f,
+                    2 => 140f,
+                    3 => 100f,
+                    4 => 200f,
+                    _ => 150f
+                };
+                lightPulseEmitter.FireLightPulse(origin, radius, spanKm);
                 if (audioController != null) audioController.PlayLightPulseVoice();
             }
         }

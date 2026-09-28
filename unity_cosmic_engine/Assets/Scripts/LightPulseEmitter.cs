@@ -3,17 +3,24 @@ using UnityEngine;
 namespace CosmicZoom
 {
     /// <summary>
-    /// Renders an expanding spherical light pulse at speed c to visualize light transit.
+    /// Renders an expanding spherical light pulse at universal constant c (299,792.458 km/s).
+    /// Provides readable pacing, pause/resume, speed regulation (0.25x slow motion, 0.5x, 1x),
+    /// and transit telemetry for low-vision accessibility.
     /// </summary>
     public class LightPulseEmitter : MonoBehaviour
     {
         [SerializeField] private GameObject pulseSphere;
-        [SerializeField] private float expansionSpeed = 120.0f;
-        [SerializeField] private float maxRadius = 400.0f;
+        [SerializeField] private float baseExpansionDuration = 10.0f; // 10 seconds for comfortable readability
 
         private bool isActive = false;
-        private float currentRadius = 1.0f;
+        private bool isPaused = false;
+        private float currentRadius = 0.5f;
+        private float targetMaxRadius = 150.0f;
         private float elapsedTime = 0.0f;
+        private float pulseSpeedMultiplier = 1.0f;
+        private double totalDistanceKm = 0;
+        private double currentDistanceKm = 0;
+        private string completedSummary = "";
 
         private void Start()
         {
@@ -21,42 +28,89 @@ namespace CosmicZoom
             {
                 pulseSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 pulseSphere.transform.SetParent(transform);
-                pulseSphere.GetComponent<Collider>().enabled = false;
+                var col = pulseSphere.GetComponent<Collider>();
+                if (col != null) col.enabled = false;
 
-                // Transparent wireframe/glow material
                 var rend = pulseSphere.GetComponent<Renderer>();
-                rend.material = new Material(Shader.Find("Standard"));
-                rend.material.color = new Color(1.0f, 0.95f, 0.5f, 0.4f);
+                var shader = Shader.Find("Mobile/Particles/Additive") ?? Shader.Find("Unlit/Transparent") ?? Shader.Find("Standard");
+                rend.material = new Material(shader);
+                if (rend.material.HasProperty("_TintColor"))
+                {
+                    rend.material.SetColor("_TintColor", new Color(0.22f, 0.75f, 1.0f, 0.6f));
+                }
+                else
+                {
+                    rend.material.color = new Color(0.22f, 0.75f, 1.0f, 0.4f);
+                }
             }
             pulseSphere.SetActive(false);
         }
 
-        public void FireLightPulse(Vector3 origin)
+        public void FireLightPulse(Vector3 origin, float maxRadius = 150.0f, double spanKm = 8.996e9)
         {
             transform.position = origin;
-            currentRadius = 1.0f;
+            targetMaxRadius = Mathf.Max(50.0f, maxRadius);
+            totalDistanceKm = spanKm;
+            currentRadius = 0.5f;
+            currentDistanceKm = 0;
             elapsedTime = 0.0f;
             isActive = true;
-            pulseSphere.SetActive(true);
-            pulseSphere.transform.localScale = Vector3.one;
+            isPaused = false;
+            completedSummary = "";
+
+            if (pulseSphere != null)
+            {
+                pulseSphere.SetActive(true);
+                pulseSphere.transform.localScale = Vector3.one * currentRadius;
+            }
+        }
+
+        public void TogglePause()
+        {
+            if (!isActive) return;
+            isPaused = !isPaused;
+        }
+
+        public void SetSpeedMultiplier(float mult)
+        {
+            pulseSpeedMultiplier = Mathf.Clamp(mult, 0.1f, 2.0f);
         }
 
         private void Update()
         {
-            if (!isActive) return;
+            if (!isActive || isPaused) return;
 
-            elapsedTime += Time.deltaTime;
-            currentRadius += expansionSpeed * Time.deltaTime;
-            pulseSphere.transform.localScale = Vector3.one * currentRadius;
+            float dt = Time.deltaTime * pulseSpeedMultiplier;
+            elapsedTime += dt;
 
-            if (currentRadius >= maxRadius)
+            // Normalized progress 0 to 1 over baseExpansionDuration
+            float progress = Mathf.Clamp01(elapsedTime / baseExpansionDuration);
+            currentRadius = Mathf.Lerp(0.5f, targetMaxRadius, progress);
+            currentDistanceKm = totalDistanceKm * progress;
+
+            if (pulseSphere != null)
+            {
+                pulseSphere.transform.localScale = Vector3.one * (currentRadius * 2.0f);
+            }
+
+            if (progress >= 1.0f)
             {
                 isActive = false;
-                pulseSphere.SetActive(false);
+                completedSummary = $"TRANSIT COMPLETE: {TravelTimeCalculator.FormatSpan(totalDistanceKm)} in {TravelTimeCalculator.FormatDuration(TravelTimeCalculator.GetLightTransitSeconds(totalDistanceKm))}";
+                if (pulseSphere != null)
+                {
+                    pulseSphere.SetActive(false);
+                }
             }
         }
 
         public bool IsPulseActive => isActive;
-        public float ElapsedPulseSeconds => elapsedTime;
+        public bool IsPaused => isPaused;
+        public float ProgressNormalized => Mathf.Clamp01(elapsedTime / baseExpansionDuration);
+        public float ElapsedSimSeconds => elapsedTime;
+        public float SpeedMultiplier => pulseSpeedMultiplier;
+        public double CurrentDistanceKm => currentDistanceKm;
+        public double TotalDistanceKm => totalDistanceKm;
+        public string CompletedSummary => completedSummary;
     }
 }
