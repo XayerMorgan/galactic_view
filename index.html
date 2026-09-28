@@ -882,11 +882,18 @@
           <span class="stat-label">Cosmic Constant (c)</span>
           <span class="stat-value purple">299,792.458 km/s</span>
         </div>
+        <div class="stat-pill" id="pill-music" style="cursor:pointer;" title="Click to skip to next acoustic movement">
+          <span class="stat-label">Acoustic Score</span>
+          <span class="stat-value cyan" id="music-track-title" style="font-size:0.75rem;">♫ Movement I: Orion Fingerstyle Serenade</span>
+        </div>
       </div>
 
       <!-- Top Action Buttons -->
       <div class="top-actions">
-        <button class="btn-icon" id="btn-audio-toggle" title="Toggle Audio / Ambient Sound">
+        <button class="btn-icon active" id="btn-music-toggle" title="Toggle Soothing Acoustic Space Score">
+          <span id="music-icon">🎵</span> <span id="music-status-text">Score: ON</span>
+        </button>
+        <button class="btn-icon active" id="btn-audio-toggle" title="Toggle Master Audio">
           <span id="audio-icon">🔊</span> <span id="audio-status-text">Audio: ON</span>
         </button>
         <button class="btn-icon" id="btn-narrator-toggle" title="Toggle ElevenLabs Voice Narration">
@@ -1188,12 +1195,8 @@
     </div>
   </div>
 
-  <!-- Audio Elements -->
-  <audio id="snd-warp" src="assets/audio/warp_whoosh.mp3" preload="auto"></audio>
-  <audio id="snd-cinematic-warp" src="assets/audio/cinematic_warp.mp3" preload="auto"></audio>
+  <!-- Audio Elements: ElevenLabs Scientific Voice & Light Pulse -->
   <audio id="snd-pulse-voice" src="assets/audio/light_pulse_voice.mp3" preload="auto"></audio>
-  <audio id="snd-ambient" src="assets/audio/ambient_space.mp3" preload="auto" loop></audio>
-  <audio id="snd-ui" src="assets/audio/ui_ping.mp3" preload="auto"></audio>
   <audio id="snd-narr-1" src="assets/audio/narration_stage1.mp3" preload="auto"></audio>
   <audio id="snd-narr-2" src="assets/audio/narration_stage2.mp3" preload="auto"></audio>
   <audio id="snd-narr-3" src="assets/audio/narration_stage3.mp3" preload="auto"></audio>
@@ -2235,17 +2238,239 @@
     }
 
     /* =========================================================================
-       5. AUDIO & ELEVENLABS NARRATION SYSTEM
+       5. SOOTHING ACOUSTIC SCORE, WEB AUDIO CHIMES & ELEVENLABS NARRATION
        ========================================================================= */
     let isAudioEnabled = true;
+    let isMusicEnabled = true;
     let isNarratorEnabled = true;
 
-    const sndWarp = document.getElementById('snd-warp');
-    const sndCinematicWarp = document.getElementById('snd-cinematic-warp');
-    const sndPulseVoice = document.getElementById('snd-pulse-voice');
-    const sndAmbient = document.getElementById('snd-ambient');
-    const sndUi = document.getElementById('snd-ui');
+    // Web Audio Context for zero-pop synthetic acoustic harmonic chimes
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) audioCtx = new AudioCtx();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
 
+    // Soft, soothing acoustic chime (E5 + B5 harmonic fifth with silky cosine envelope - zero pops!)
+    function playSoftChime() {
+      if (!isAudioEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(659.25, now); // E5 warm fundamental
+        
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(987.77, now); // B5 gentle overtone
+
+        // Gentle envelope: 8ms attack, 180ms smooth exponential decay
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.linearRampToValueAtTime(0.035, now + 0.008);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.20);
+
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 0.22);
+        osc2.stop(now + 0.22);
+      } catch (err) {}
+    }
+
+    // 4-Movement Acoustic Space Music Suite
+    const ACOUSTIC_PLAYLIST = [
+      {
+        title: "Movement I: Orion Fingerstyle Serenade",
+        artist: "Acoustic Space Ensemble",
+        file: "assets/audio/acoustic_space_movement1.mp3"
+      },
+      {
+        title: "Movement II: Celestial Harp & Warm Resonance",
+        artist: "Acoustic Space Ensemble",
+        file: "assets/audio/acoustic_space_movement2.mp3"
+      },
+      {
+        title: "Movement III: Deep Cosmic Acoustic Harmonics",
+        artist: "Acoustic Space Ensemble",
+        file: "assets/audio/acoustic_space_movement3.mp3"
+      },
+      {
+        title: "Movement IV: Tranquil Starlight Odyssey",
+        artist: "Acoustic Space Ensemble",
+        file: "assets/audio/soothing_acoustic_space.mp3"
+      }
+    ];
+
+    class AcousticMusicManager {
+      constructor() {
+        this.tracks = ACOUSTIC_PLAYLIST;
+        this.currentIndex = 0;
+        this.deckA = new Audio();
+        this.deckB = new Audio();
+        this.deckA.preload = "auto";
+        this.deckB.preload = "auto";
+        this.deckA.volume = 0;
+        this.deckB.volume = 0;
+
+        this.currentDeck = this.deckA;
+        this.nextDeck = this.deckB;
+        this.targetVolume = 0.28;
+        this.isPlaying = false;
+        this.isDucked = false;
+        this.crossfadeSec = 2.2;
+        this.isCrossfading = false;
+
+        this.pillText = document.getElementById('music-track-title');
+
+        this.initDeckEvents(this.deckA);
+        this.initDeckEvents(this.deckB);
+      }
+
+      initDeckEvents(deck) {
+        deck.addEventListener('timeupdate', () => {
+          if (this.currentDeck !== deck || !this.isPlaying || this.isCrossfading) return;
+          if (deck.duration && (deck.duration - deck.currentTime <= this.crossfadeSec)) {
+            this.crossfadeToNext();
+          }
+        });
+        deck.addEventListener('ended', () => {
+          deck.pause();
+          deck.currentTime = 0;
+        });
+      }
+
+      updateDisplay() {
+        if (this.pillText) {
+          const t = this.tracks[this.currentIndex];
+          this.pillText.textContent = `♫ ${t.title}`;
+        }
+      }
+
+      start() {
+        if (!isAudioEnabled || !isMusicEnabled || this.isPlaying) return;
+        this.isPlaying = true;
+        this.isCrossfading = false;
+        
+        const track = this.tracks[this.currentIndex];
+        this.currentDeck.src = track.file;
+        this.currentDeck.currentTime = 0;
+        this.currentDeck.volume = 0;
+        this.updateDisplay();
+
+        const p = this.currentDeck.play();
+        if (p !== undefined) {
+          p.then(() => {
+            this.fade(this.currentDeck, 0, this.isDucked ? 0.07 : this.targetVolume, 1.8);
+          }).catch(e => {
+            console.log("Acoustic score waiting for first user gesture");
+          });
+        }
+      }
+
+      crossfadeToNext() {
+        if (!this.isPlaying || this.isCrossfading) return;
+        this.isCrossfading = true;
+
+        this.currentIndex = (this.currentIndex + 1) % this.tracks.length;
+        const nextTrack = this.tracks[this.currentIndex];
+
+        const outgoing = this.currentDeck;
+        const incoming = this.nextDeck;
+
+        incoming.src = nextTrack.file;
+        incoming.currentTime = 0;
+        incoming.volume = 0;
+        this.updateDisplay();
+
+        const p = incoming.play();
+        if (p !== undefined) {
+          p.then(() => {
+            const target = this.isDucked ? 0.07 : this.targetVolume;
+            this.fade(incoming, 0, target, this.crossfadeSec);
+            this.fade(outgoing, outgoing.volume, 0, this.crossfadeSec, () => {
+              outgoing.pause();
+              outgoing.currentTime = 0;
+              this.currentDeck = incoming;
+              this.nextDeck = outgoing;
+              this.isCrossfading = false;
+            });
+          }).catch(e => {
+            this.isCrossfading = false;
+          });
+        }
+      }
+
+      nextTrack() {
+        playSoftChime();
+        if (!this.isPlaying) {
+          this.currentIndex = (this.currentIndex + 1) % this.tracks.length;
+          this.start();
+          return;
+        }
+        this.crossfadeToNext();
+      }
+
+      fade(deck, startVol, endVol, durationSec, onEnd) {
+        const startTime = performance.now();
+        const durationMs = durationSec * 1000;
+        const anim = (now) => {
+          const elapsed = now - startTime;
+          const t = Math.min(elapsed / durationMs, 1.0);
+          const ease = 0.5 - 0.5 * Math.cos(t * Math.PI);
+          deck.volume = Math.max(0, Math.min(1, startVol + (endVol - startVol) * ease));
+          if (t < 1.0) {
+            requestAnimationFrame(anim);
+          } else {
+            deck.volume = endVol;
+            if (onEnd) onEnd();
+          }
+        };
+        requestAnimationFrame(anim);
+      }
+
+      duckForNarration(duck) {
+        if (!this.isPlaying) return;
+        this.isDucked = duck;
+        const target = duck ? 0.07 : this.targetVolume;
+        this.fade(this.currentDeck, this.currentDeck.volume, target, duck ? 0.6 : 1.2);
+      }
+
+      stop() {
+        if (!this.isPlaying) return;
+        this.fade(this.currentDeck, this.currentDeck.volume, 0, 0.35, () => {
+          this.currentDeck.pause();
+          this.nextDeck.pause();
+          this.isPlaying = false;
+          this.isCrossfading = false;
+        });
+      }
+    }
+
+    const musicManager = new AcousticMusicManager();
+
+    // Click on track pill cycles to next acoustic movement
+    const pillMusic = document.getElementById('pill-music');
+    if (pillMusic) {
+      pillMusic.addEventListener('click', () => {
+        musicManager.nextTrack();
+      });
+    }
+
+    // Voice Narrations
     const narrations = {
       1: document.getElementById('snd-narr-1'),
       2: document.getElementById('snd-narr-2'),
@@ -2255,14 +2480,7 @@
 
     const narrationBox = document.getElementById('narration-box');
     const narrationText = document.getElementById('narration-text');
-
-    function playSfx(audioEl) {
-      if (!isAudioEnabled || !audioEl) return;
-      try {
-        audioEl.currentTime = 0;
-        audioEl.play().catch(e => console.log("Audio autoplay prevented"));
-      } catch (err) {}
-    }
+    const sndPulseVoice = document.getElementById('snd-pulse-voice');
 
     function playNarrationForStage(stageNum) {
       // Stop any other active narration
@@ -2284,45 +2502,68 @@
       const narrAudio = narrations[stageNum];
       if (narrAudio) {
         narrAudio.currentTime = 0;
-        narrAudio.volume = 1.0;
+        narrAudio.volume = 0.95;
+        
+        // Gently duck the acoustic score so George's narration is crystal clear
+        musicManager.duckForNarration(true);
+
+        narrAudio.onended = () => {
+          musicManager.duckForNarration(false);
+        };
+
         narrAudio.play().catch(err => {
           console.log("Narration playback blocked by browser user gesture policy.");
         });
       }
     }
 
-    function startAmbientMusic() {
-      if (!isAudioEnabled || !sndAmbient) return;
-      sndAmbient.volume = 0.35;
-      sndAmbient.play().catch(e => console.log("Ambient music waiting for user gesture"));
-    }
+    // Header Controls: Music Toggle
+    const btnMusicToggle = document.getElementById('btn-music-toggle');
+    const musicStatusText = document.getElementById('music-status-text');
 
-    // Audio Buttons
+    btnMusicToggle.addEventListener('click', () => {
+      isMusicEnabled = !isMusicEnabled;
+      playSoftChime();
+      if (isMusicEnabled) {
+        musicStatusText.textContent = "Score: ON";
+        btnMusicToggle.classList.add('active');
+        musicManager.start();
+      } else {
+        musicStatusText.textContent = "Score: OFF";
+        btnMusicToggle.classList.remove('active');
+        musicManager.stop();
+      }
+    });
+
+    // Header Controls: Master Audio Toggle
     const btnAudioToggle = document.getElementById('btn-audio-toggle');
     const audioIcon = document.getElementById('audio-icon');
     const audioStatusText = document.getElementById('audio-status-text');
 
     btnAudioToggle.addEventListener('click', () => {
       isAudioEnabled = !isAudioEnabled;
+      playSoftChime();
       if (isAudioEnabled) {
         audioIcon.textContent = "🔊";
         audioStatusText.textContent = "Audio: ON";
         btnAudioToggle.classList.add('active');
-        startAmbientMusic();
+        if (isMusicEnabled) musicManager.start();
       } else {
         audioIcon.textContent = "🔇";
         audioStatusText.textContent = "Audio: OFF";
         btnAudioToggle.classList.remove('active');
-        if (sndAmbient) sndAmbient.pause();
+        musicManager.stop();
         for (let s in narrations) if (narrations[s]) narrations[s].pause();
       }
     });
 
+    // Header Controls: Narrator Toggle
     const btnNarratorToggle = document.getElementById('btn-narrator-toggle');
     const narratorStatusText = document.getElementById('narrator-status-text');
 
     btnNarratorToggle.addEventListener('click', () => {
       isNarratorEnabled = !isNarratorEnabled;
+      playSoftChime();
       if (isNarratorEnabled) {
         narratorStatusText.textContent = "Narrator: ON";
         btnNarratorToggle.classList.add('active');
@@ -2331,6 +2572,7 @@
         narratorStatusText.textContent = "Narrator: OFF";
         btnNarratorToggle.classList.remove('active');
         for (let s in narrations) if (narrations[s]) narrations[s].pause();
+        musicManager.duckForNarration(false);
       }
     });
 
@@ -2349,12 +2591,12 @@
         }
       }
 
-      playSfx(sndCinematicWarp || sndWarp);
+      // Smooth, silent transition between scales - acoustic score continues uninterrupted
       playNarrationForStage(newStage);
     }
 
     function jumpToStage(stageNum) {
-      playSfx(sndUi);
+      playSoftChime();
       const targetZ = parseFloat(stageNum);
       const stageInfo = STAGE_SPANS[stageNum];
 
@@ -2404,7 +2646,7 @@
 
     // Reset View Button
     document.getElementById('btn-reset-view').addEventListener('click', () => {
-      playSfx(sndUi);
+      playSoftChime();
       jumpToStage(activeStageIndex);
     });
 
@@ -2414,7 +2656,12 @@
     const pulseTimer = document.getElementById('pulse-timer');
 
     btnFirePulse.addEventListener('click', () => {
-      playSfx(sndPulseVoice || sndUi);
+      playSoftChime();
+      if (isAudioEnabled && sndPulseVoice) {
+        sndPulseVoice.currentTime = 0;
+        sndPulseVoice.volume = 0.85;
+        sndPulseVoice.play().catch(e => {});
+      }
       isLightPulseActive = true;
       lightPulseRadius = 1;
       lightPulseStartTime = performance.now();
@@ -2453,7 +2700,7 @@
     // Target Selection Dropdown
     const selectTarget = document.getElementById('select-celestial-target');
     selectTarget.addEventListener('change', e => {
-      playSfx(sndUi);
+      playSoftChime();
       const val = e.target.value;
       updateInspector(val);
       focusOnObject(val);
@@ -2513,11 +2760,11 @@
     // Documentation Modal
     const helpModal = document.getElementById('help-modal');
     document.getElementById('btn-info').addEventListener('click', () => {
-      playSfx(sndUi);
+      playSoftChime();
       helpModal.style.display = 'flex';
     });
     document.getElementById('btn-close-modal').addEventListener('click', () => {
-      playSfx(sndUi);
+      playSoftChime();
       helpModal.style.display = 'none';
     });
     helpModal.addEventListener('click', e => {
@@ -2647,7 +2894,7 @@
       const intersects = raycaster.intersectObjects(clickable, true);
       if (intersects.length > 0) {
         const hit = intersects[0].object;
-        playSfx(sndUi);
+        playSoftChime();
         // Identify hit
         if (hit === sunMesh) updateInspector('sun');
         else if (hit === sgrAMesh) updateInspector('sgra');
@@ -2672,10 +2919,15 @@
     updateInspector('earth');
     animate();
 
-    // Start background audio on first user interaction
-    window.addEventListener('click', () => {
-      startAmbientMusic();
-    }, { once: true });
+    // Start soothing acoustic music score on first user interaction
+    const startAudioOnInteraction = () => {
+      getAudioContext();
+      if (isAudioEnabled && isMusicEnabled) {
+        musicManager.start();
+      }
+    };
+    window.addEventListener('pointerdown', startAudioOnInteraction, { once: true });
+    window.addEventListener('keydown', startAudioOnInteraction, { once: true });
 
   </script>
 </body>
