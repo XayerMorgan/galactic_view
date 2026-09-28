@@ -6,9 +6,14 @@ using System.IO;
 namespace CosmicZoom.Editor
 {
     /// <summary>
-    /// Editor automation tool to assemble the complete 3D Cosmic Zoom Engine scene with
-    /// circular disk geometry, transparent alpha-masked materials (ZERO black square artifacts),
-    /// acoustic audio suite, and build native Windows 64-bit standalone player.
+    /// Editor automation tool to assemble the complete 3D Cosmic Zoom Engine scene with:
+    /// - AudioListener (full sound output for acoustic score, narrations, and sound effects)
+    /// - CosmicStarfield (3,500 twinkling spectral background stars)
+    /// - Orbital kinematics & axial rotation on all planets and Sun
+    /// - Glowing orbital trajectory lines (Earth 1 AU, Jupiter 5.2 AU, Saturn 9 AU, Neptune 30 AU)
+    /// - Galactic rotation on Milky Way disk and Andromeda M31
+    /// - Atmospheric radiance and solar corona halos
+    /// - Circular disk geometry with transparent alpha-masked materials (ZERO black boxes)
     /// </summary>
     public static class CosmicSceneBuilder
     {
@@ -59,17 +64,23 @@ namespace CosmicZoom.Editor
             CosmicHUD hud = managerObj.AddComponent<CosmicHUD>();
             LightPulseEmitter pulseEmitter = managerObj.AddComponent<LightPulseEmitter>();
 
-            // 3. Camera Setup
+            // 3. Camera Setup WITH AudioListener & CosmicStarfield
             GameObject camObj = new GameObject("Main Camera");
             Camera cam = camObj.AddComponent<Camera>();
             camObj.tag = "MainCamera";
             cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = new Color(0.005f, 0.008f, 0.015f, 1.0f);
+            cam.backgroundColor = new Color(0.002f, 0.004f, 0.008f, 1.0f);
             cam.fieldOfView = 45f;
             cam.nearClipPlane = 0.5f;
             cam.farClipPlane = 150000f; // Wide cosmic clipping depth
             camObj.transform.position = new Vector3(0, 60f, 130f);
             camObj.transform.LookAt(Vector3.zero);
+
+            // AUDIO LISTENER: CRITICAL FOR SOUND TO BE AUDIBLE!
+            camObj.AddComponent<AudioListener>();
+
+            // 3D PROCEDURAL STARFIELD: 3,500 TWINKLING STARS
+            camObj.AddComponent<CosmicStarfield>();
 
             // 4. Ambient & Directional Lighting
             RenderSettings.ambientLight = new Color(0.20f, 0.28f, 0.42f, 1.0f);
@@ -90,14 +101,22 @@ namespace CosmicZoom.Editor
             GameObject stage3 = new GameObject("Stage3_Local_Group");
             GameObject stage4 = new GameObject("Stage4_Cosmic_Web");
 
+            // Add Glowing Orbital Trajectory Lines to Stage 1
+            stage1.AddComponent<SolarSystemOrbits>();
+
+            // Add Smooth Galactic Rotation to Stages 2, 3, and 4
+            stage2.AddComponent<GalacticRotator>();
+            stage3.AddComponent<GalacticRotator>();
+            stage4.AddComponent<GalacticRotator>();
+
             // Instantiate Blender FBX Models
             GameObject s1Obj = LoadAndInstantiateModel("Assets/Models/solar_system_bodies.fbx", stage1.transform);
             GameObject s2Obj = LoadAndInstantiateModel("Assets/Models/milky_way_spiral.fbx", stage2.transform);
             GameObject s3Obj = LoadAndInstantiateModel("Assets/Models/local_group_galaxies.fbx", stage3.transform);
             GameObject s4Obj = LoadAndInstantiateModel("Assets/Models/observable_universe_boundary.fbx", stage4.transform);
 
-            // Assign Textures & Materials to Renderers
-            AssignMaterialsToStage1(s1Obj, matSun, matSunCorona, matEarth, matJupiter, matSaturn, matSaturnRings, matNeptune, matOrbit);
+            // Assign Textures, Materials, Kinematics & Rotation to Renderers
+            AssignStage1Bodies(s1Obj, matSun, matSunCorona, matEarth, matJupiter, matSaturn, matSaturnRings, matNeptune, matOrbit);
             AssignMaterialsToStage2(s2Obj, matMilkyWay, matBeacon, matSgrA);
             AssignMaterialsToStage3(s3Obj, matMilkyWay, matAndromeda);
             AssignMaterialsToStage4(s4Obj, matCMB, matCosmicWeb);
@@ -154,7 +173,7 @@ namespace CosmicZoom.Editor
             EditorBuildSettings.scenes = buildScenes;
 
             AssetDatabase.SaveAssets();
-            Debug.Log("<color=#38bdf8><b>[Cosmic Scene Builder]</b> Scene assembled with seamless circular geometry and transparent materials: " + scenePath + "</color>");
+            Debug.Log("<color=#38bdf8><b>[Cosmic Scene Builder]</b> Scene assembled with AudioListener, Starfield, and living kinematics: " + scenePath + "</color>");
         }
 
         public static void BuildStandalonePlayer()
@@ -261,20 +280,86 @@ namespace CosmicZoom.Editor
             return null;
         }
 
-        private static void AssignMaterialsToStage1(GameObject root, Material sun, Material sunCorona, Material earth, Material jupiter, Material saturn, Material saturnRings, Material neptune, Material orbit)
+        private static void AssignStage1Bodies(GameObject root, Material sun, Material sunCorona, Material earth, Material jupiter, Material saturn, Material saturnRings, Material neptune, Material orbit)
         {
             if (root == null) return;
+
+            Transform sunTrans = null;
+
+            // First pass: Find Sun transform for orbit center
+            foreach (Transform t in root.GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name.ToLower().Contains("sun") && !t.name.ToLower().Contains("corona"))
+                {
+                    sunTrans = t;
+                    break;
+                }
+            }
+
+            // Second pass: Assign materials and attach living rotation/revolution kinematics
             foreach (Renderer r in root.GetComponentsInChildren<Renderer>(true))
             {
-                string n = r.gameObject.name.ToLower();
-                if (n.Contains("corona")) r.sharedMaterial = sunCorona;
-                else if (n.Contains("sun")) r.sharedMaterial = sun;
-                else if (n.Contains("earth")) r.sharedMaterial = earth;
-                else if (n.Contains("jupiter")) r.sharedMaterial = jupiter;
-                else if (n.Contains("saturn_rings") || n.Contains("rings")) r.sharedMaterial = saturnRings;
-                else if (n.Contains("saturn")) r.sharedMaterial = saturn;
-                else if (n.Contains("neptune_orbit") || n.Contains("boundary")) r.sharedMaterial = orbit;
-                else if (n.Contains("neptune")) r.sharedMaterial = neptune;
+                GameObject go = r.gameObject;
+                string n = go.name.ToLower();
+
+                if (n.Contains("corona"))
+                {
+                    r.sharedMaterial = sunCorona;
+                }
+                else if (n.Contains("sun"))
+                {
+                    r.sharedMaterial = sun;
+                    var body = go.AddComponent<CelestialBody>();
+                    body.rotationSpeed = 2.0f;
+                    body.orbitalSpeed = 0f;
+                }
+                else if (n.Contains("earth"))
+                {
+                    r.sharedMaterial = earth;
+                    var body = go.AddComponent<CelestialBody>();
+                    body.orbitCenter = sunTrans;
+                    body.orbitalSpeed = 12.0f;
+                    body.rotationSpeed = 35.0f;
+                    body.axialTiltDegrees = 23.4f;
+
+                    // Atmosphere glow shell around Earth
+                    go.AddComponent<AtmosphereGlow>();
+                }
+                else if (n.Contains("jupiter"))
+                {
+                    r.sharedMaterial = jupiter;
+                    var body = go.AddComponent<CelestialBody>();
+                    body.orbitCenter = sunTrans;
+                    body.orbitalSpeed = 6.0f;
+                    body.rotationSpeed = 45.0f;
+                    body.axialTiltDegrees = 3.1f;
+                }
+                else if (n.Contains("saturn_rings") || n.Contains("rings"))
+                {
+                    r.sharedMaterial = saturnRings;
+                }
+                else if (n.Contains("saturn"))
+                {
+                    r.sharedMaterial = saturn;
+                    var body = go.AddComponent<CelestialBody>();
+                    body.orbitCenter = sunTrans;
+                    body.orbitalSpeed = 4.0f;
+                    body.rotationSpeed = 30.0f;
+                    body.axialTiltDegrees = 26.7f;
+                }
+                else if (n.Contains("neptune_orbit") || n.Contains("boundary"))
+                {
+                    r.sharedMaterial = orbit;
+                }
+                else if (n.Contains("neptune"))
+                {
+                    r.sharedMaterial = neptune;
+                    var body = go.AddComponent<CelestialBody>();
+                    body.orbitCenter = sunTrans;
+                    body.orbitalSpeed = 2.0f;
+                    body.rotationSpeed = 25.0f;
+                    body.axialTiltDegrees = 28.3f;
+                }
             }
         }
 
@@ -284,9 +369,18 @@ namespace CosmicZoom.Editor
             foreach (Renderer r in root.GetComponentsInChildren<Renderer>(true))
             {
                 string n = r.gameObject.name.ToLower();
-                if (n.Contains("beacon") || n.Contains("sun_ring")) r.sharedMaterial = beacon;
-                else if (n.Contains("sagittarius") || n.Contains("sgra")) r.sharedMaterial = sgrA;
-                else r.sharedMaterial = milkyWay;
+                if (n.Contains("beacon") || n.Contains("sun_ring"))
+                {
+                    r.sharedMaterial = beacon;
+                }
+                else if (n.Contains("sagittarius") || n.Contains("sgra"))
+                {
+                    r.sharedMaterial = sgrA;
+                }
+                else
+                {
+                    r.sharedMaterial = milkyWay;
+                }
             }
         }
 

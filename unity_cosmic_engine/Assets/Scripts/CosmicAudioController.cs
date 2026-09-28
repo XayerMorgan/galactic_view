@@ -45,7 +45,7 @@ namespace CosmicZoom
         private Coroutine narrationRoutine;
         private Coroutine musicCrossfadeRoutine;
 
-        public float musicTargetVolume = 0.32f;
+        public float musicTargetVolume = 0.75f;
         private bool isDucked = false;
 
         private void Awake()
@@ -68,13 +68,13 @@ namespace CosmicZoom
             {
                 narrationSource = gameObject.AddComponent<AudioSource>();
                 narrationSource.playOnAwake = false;
-                narrationSource.volume = 0.95f;
+                narrationSource.volume = 1.0f;
             }
             if (sfxSource == null)
             {
                 sfxSource = gameObject.AddComponent<AudioSource>();
                 sfxSource.playOnAwake = false;
-                sfxSource.volume = 0.6f;
+                sfxSource.volume = 0.8f;
             }
 
             activeMusicSource = musicSourceA;
@@ -93,6 +93,15 @@ namespace CosmicZoom
             {
                 StartAcousticMusic();
             }
+
+            // Welcome narration on launch
+            StartCoroutine(DelayedLaunchNarration());
+        }
+
+        private IEnumerator DelayedLaunchNarration()
+        {
+            yield return new WaitForSeconds(1.0f);
+            PlayStageNarration(1);
         }
 
         private void Update()

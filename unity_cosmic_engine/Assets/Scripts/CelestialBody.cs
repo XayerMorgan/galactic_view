@@ -3,32 +3,32 @@ using UnityEngine;
 namespace CosmicZoom
 {
     /// <summary>
-    /// Represents a celestial body with orbital kinematics and scientific dossier metadata.
+    /// Animates celestial bodies with axial rotation, heliocentric orbital revolution,
+    /// and orbital inclination tilts for vivid, living astronomical motion.
     /// </summary>
     public class CelestialBody : MonoBehaviour
     {
-        [Header("Dossier Metadata")]
-        public string bodyName = "Celestial Body";
-        public string bodyClassification = "Terrestrial Planet";
-        public string distanceFromOrigin = "1.000 AU";
-        public string scaleDomain = "Solar System (LH)";
-        public string orbitalVelocity = "29.78 km/s";
-        public string physicalDiameter = "12,742 km";
-        [TextArea(3, 6)]
-        public string scientificFact = "Detailed astronomical facts and observations.";
-
         [Header("Kinematics")]
         public Transform orbitCenter;
-        public float orbitalSpeed = 5.0f;
-        public float rotationSpeed = 20.0f;
+        public float orbitalSpeed = 8.0f;     // Degrees per second around Sun
+        public float rotationSpeed = 25.0f;    // Degrees per second around self
         public Vector3 rotationAxis = Vector3.up;
+        public float axialTiltDegrees = 0.0f;
+
+        private void Start()
+        {
+            if (axialTiltDegrees != 0.0f)
+            {
+                transform.rotation = Quaternion.Euler(axialTiltDegrees, 0f, 0f);
+            }
+        }
 
         private void Update()
         {
-            // Axial rotation
+            // 1. Axial Spin (day/night cycle)
             transform.Rotate(rotationAxis, rotationSpeed * Time.deltaTime, Space.Self);
 
-            // Heliocentric / barycentric revolution
+            // 2. Orbital Revolution (year cycle around Sun)
             if (orbitCenter != null && orbitalSpeed != 0.0f)
             {
                 transform.RotateAround(orbitCenter.position, Vector3.up, orbitalSpeed * Time.deltaTime);
