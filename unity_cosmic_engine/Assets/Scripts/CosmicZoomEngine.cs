@@ -110,11 +110,11 @@ namespace CosmicZoom
 
         private void ApplyZoom(float z)
         {
-            // Visibility blending
-            if (stage1SolarSystem != null) stage1SolarSystem.SetActive(z < 2.0f);
-            if (stage2MilkyWay != null) stage2MilkyWay.SetActive(z >= 1.4f && z < 3.0f);
-            if (stage3LocalGroup != null) stage3LocalGroup.SetActive(z >= 2.4f && z < 3.8f);
-            if (stage4CosmicWeb != null) stage4CosmicWeb.SetActive(z >= 3.2f);
+            // Clean, non-overlapping visibility thresholds (prevents visual clutter/clipping)
+            if (stage1SolarSystem != null) stage1SolarSystem.SetActive(z < 1.75f);
+            if (stage2MilkyWay != null) stage2MilkyWay.SetActive(z >= 1.75f && z < 2.75f);
+            if (stage3LocalGroup != null) stage3LocalGroup.SetActive(z >= 2.75f && z < 3.75f);
+            if (stage4CosmicWeb != null) stage4CosmicWeb.SetActive(z >= 3.75f);
 
             // Nominal stage index
             int newStage = 1;

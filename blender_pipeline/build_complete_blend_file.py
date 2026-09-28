@@ -1,7 +1,11 @@
 """
-Blender 5.2 Python Pipeline: Complete Unified Cosmic Zoom Engine Project
-Generates 'cosmic_zoom_universe.blend' containing all 4 cosmic scales, PBR textures,
-cameras, and collections for immediate interactive exploration inside native Blender 5.2.
+Complete Blender 5.2 Python Pipeline
+Generates cosmic_zoom_universe.blend with all 4 universal scales:
+- Seamless circular disk geometry (ZERO black square corners or borders)
+- PBR textures with smooth radial alpha transparency
+- Sun corona, planets, orbital trajectories, Milky Way disk, Local Group, Cosmic Web, and CMB Horizon
+- Individual Stage Collections with non-overlapping initial viewport state
+- 4 cinematic cameras for each scale
 """
 
 import bpy
@@ -11,23 +15,24 @@ import os
 
 BASE_DIR = os.path.abspath(r"d:\Vibe Code Repo\galactic_view")
 TEXTURE_DIR = os.path.join(BASE_DIR, "assets", "textures")
-BLEND_OUTPUT = os.path.join(BASE_DIR, "cosmic_zoom_universe.blend")
+BLEND_OUT = os.path.join(BASE_DIR, "cosmic_zoom_universe.blend")
 
-# 1. Reset and initialize scene
+# 1. Reset Scene
 bpy.ops.wm.read_factory_settings(use_empty=True)
 scene = bpy.context.scene
-scene.name = "Cosmic_Zoom_Engine"
+scene.name = "Cosmic_Zoom_Master_Scene"
 
-# Set world background to deep cosmic black
-world = bpy.data.worlds.new("Cosmic_Deep_Space")
-scene.world = world
+# World Settings (Deep Cosmic Void)
+world = bpy.data.worlds.new("DeepSpace_World")
 world.use_nodes = True
 bg_node = world.node_tree.nodes.get("Background")
 if bg_node:
-    bg_node.inputs["Color"].default_value = (0.005, 0.008, 0.015, 1.0)
-    bg_node.inputs["Strength"].default_value = 0.5
+    bg_node.inputs['Color'].default_value = (0.003, 0.005, 0.012, 1.0)
+    bg_node.inputs['Strength'].default_value = 1.0
+scene.world = world
 
-def create_pbr_material(name, texture_filename=None, color=(0.8, 0.8, 0.8, 1.0), emission=0.0, roughness=0.5):
+# Helper: Create PBR Material with optional Alpha transparency
+def create_pbr_material(name, texture_filename=None, color=(0.8, 0.8, 0.8, 1.0), emission=0.0, roughness=0.5, is_transparent=False):
     mat = bpy.data.materials.new(name=name)
     mat.use_nodes = True
     nodes = mat.node_tree.nodes
@@ -53,6 +58,17 @@ def create_pbr_material(name, texture_filename=None, color=(0.8, 0.8, 0.8, 1.0),
                     bsdf.inputs['Emission Strength'].default_value = emission
                 elif 'Emission' in bsdf.inputs:
                     links.new(tex_node.outputs['Color'], bsdf.inputs['Emission'])
+            
+            if is_transparent and 'Alpha' in tex_node.outputs:
+                links.new(tex_node.outputs['Alpha'], bsdf.inputs['Alpha'])
+                try:
+                    mat.blend_method = 'BLEND'
+                except Exception:
+                    pass
+                try:
+                    mat.shadow_method = 'NONE'
+                except Exception:
+                    pass
     elif emission > 0:
         if 'Emission Color' in bsdf.inputs:
             bsdf.inputs['Emission Color'].default_value = color
@@ -60,6 +76,40 @@ def create_pbr_material(name, texture_filename=None, color=(0.8, 0.8, 0.8, 1.0),
             
     links.new(bsdf.outputs['BSDF'], out.inputs['Surface'])
     return mat
+
+def create_circle_disk_mesh(name, radius, collection, segments=64):
+    """Creates a seamless circular disk mesh with radial UV mapping (zero square corners)."""
+    mesh = bpy.data.meshes.new(name)
+    obj = bpy.data.objects.new(name, mesh)
+    collection.objects.link(obj)
+    
+    bm = bmesh.new()
+    center_vert = bm.verts.new((0.0, 0.0, 0.0))
+    rim_verts = []
+    
+    for i in range(segments):
+        theta = (i / segments) * 2.0 * math.pi
+        x = math.cos(theta) * radius
+        y = math.sin(theta) * radius
+        v = bm.verts.new((x, y, 0.0))
+        rim_verts.append(v)
+        
+    bm.verts.ensure_lookup_table()
+    uv_layer = bm.loops.layers.uv.new("UVMap")
+    
+    for i in range(segments):
+        next_i = (i + 1) % segments
+        face = bm.faces.new([center_vert, rim_verts[i], rim_verts[next_i]])
+        theta1 = (i / segments) * 2.0 * math.pi
+        theta2 = (next_i / segments) * 2.0 * math.pi
+        
+        face.loops[0][uv_layer].uv = (0.5, 0.5)
+        face.loops[1][uv_layer].uv = (0.5 + 0.5 * math.cos(theta1), 0.5 + 0.5 * math.sin(theta1))
+        face.loops[2][uv_layer].uv = (0.5 + 0.5 * math.cos(theta2), 0.5 + 0.5 * math.sin(theta2))
+        
+    bm.to_mesh(mesh)
+    bm.free()
+    return obj
 
 def create_orbit_ring(name, radius, collection, color=(0.22, 0.75, 1.0, 1.0)):
     curve_data = bpy.data.curves.new(name=name + "_Curve", type='CURVE')
@@ -114,21 +164,32 @@ scene.collection.children.link(col_stage2)
 scene.collection.children.link(col_stage3)
 scene.collection.children.link(col_stage4)
 
+# Keep Stage 1 visible by default, hide others to prevent initial overlapping
+col_stage2.hide_viewport = True
+col_stage3.hide_viewport = True
+col_stage4.hide_viewport = True
+
 # =========================================================================
 # STAGE 1: SOLAR SYSTEM
 # =========================================================================
-mat_sun = create_pbr_material("Mat_Sun", "sun_photosphere.jpg", color=(1.0, 0.85, 0.4, 1.0), emission=2.5)
+mat_sun = create_pbr_material("Mat_Sun", "sun_photosphere.jpg", color=(1.0, 0.85, 0.4, 1.0), emission=3.0)
+mat_sun_corona = create_pbr_material("Mat_SunCorona", "sun_corona_glow.png", color=(1.0, 0.9, 0.4, 1.0), emission=3.5, is_transparent=True)
 mat_earth = create_pbr_material("Mat_Earth", "earth_photosphere.jpg", color=(0.2, 0.5, 0.9, 1.0), roughness=0.3)
 mat_jupiter = create_pbr_material("Mat_Jupiter", "jupiter_photosphere.jpg", color=(0.85, 0.7, 0.55, 1.0), roughness=0.7)
 mat_neptune = create_pbr_material("Mat_Neptune", color=(0.2, 0.4, 0.95, 1.0), roughness=0.5)
 
-# Sun
+# Sun Photosphere
 bpy.ops.mesh.primitive_uv_sphere_add(radius=3.5, segments=64, ring_count=32, location=(0, 0, 0))
 sun_obj = bpy.context.active_object
 sun_obj.name = "Sun_Photosphere"
 col_stage1.objects.link(sun_obj)
 bpy.context.collection.objects.unlink(sun_obj)
 sun_obj.data.materials.append(mat_sun)
+
+# Sun Soft Circular Corona Disk
+sun_corona_disk = create_circle_disk_mesh("Sun_Corona_Glow", 7.0, col_stage1, segments=64)
+sun_corona_disk.data.materials.append(mat_sun_corona)
+sun_corona_disk.parent = sun_obj
 
 # Sun Dynamic Point Light
 light_data = bpy.data.lights.new(name="Sun_Light", type='POINT')
@@ -166,18 +227,14 @@ bpy.context.collection.objects.unlink(nep_obj)
 nep_obj.data.materials.append(mat_neptune)
 
 # =========================================================================
-# STAGE 2: MILKY WAY GALAXY
+# STAGE 2: MILKY WAY GALAXY (SEAMLESS CIRCULAR DISK)
 # =========================================================================
-mat_mw = create_pbr_material("Mat_MilkyWay", "milky_way_disk.jpg", color=(0.9, 0.95, 1.0, 1.0), emission=1.8)
+mat_mw = create_pbr_material("Mat_MilkyWay", "milky_way_disk.png", color=(0.95, 0.95, 1.0, 1.0), emission=2.5, is_transparent=True)
 mat_sgra = create_pbr_material("Mat_SgrA", color=(1.0, 0.9, 0.5, 1.0), emission=4.0)
 mat_beacon = create_pbr_material("Mat_SunBeacon", color=(1.0, 0.8, 0.1, 1.0), emission=5.0)
 
-# Milky Way Disk
-bpy.ops.mesh.primitive_plane_add(size=70.0, location=(0, 0, 0))
-mw_obj = bpy.context.active_object
-mw_obj.name = "Milky_Way_Disk"
-col_stage2.objects.link(mw_obj)
-bpy.context.collection.objects.unlink(mw_obj)
+# Milky Way Circular Disk (No square corners!)
+mw_obj = create_circle_disk_mesh("Milky_Way_Disk", 45.0, col_stage2, segments=96)
 mw_obj.data.materials.append(mat_mw)
 
 # Sagittarius A*
@@ -197,41 +254,32 @@ bpy.context.collection.objects.unlink(beacon_obj)
 beacon_obj.data.materials.append(mat_beacon)
 
 # =========================================================================
-# STAGE 3: LOCAL GROUP CLUSTER
+# STAGE 3: LOCAL GROUP CLUSTER (CIRCULAR DISKS)
 # =========================================================================
-mat_m31 = create_pbr_material("Mat_Andromeda", "andromeda_galaxy_disk.jpg", color=(0.85, 0.92, 1.0, 1.0), emission=1.8)
+mat_m31 = create_pbr_material("Mat_Andromeda", "andromeda_galaxy_disk.png", color=(0.95, 0.92, 1.0, 1.0), emission=2.5, is_transparent=True)
 mat_m33 = create_pbr_material("Mat_Triangulum", color=(0.7, 0.85, 1.0, 1.0), emission=1.5)
 
-# Milky Way in Local Group
-bpy.ops.mesh.primitive_plane_add(size=22.0, location=(-18.0, 0, 0))
-mw_lg = bpy.context.active_object
-mw_lg.name = "LocalGroup_Milky_Way"
-col_stage3.objects.link(mw_lg)
-bpy.context.collection.objects.unlink(mw_lg)
+# Milky Way in Local Group (Circular Disk)
+mw_lg = create_circle_disk_mesh("LocalGroup_Milky_Way", 12.0, col_stage3, segments=64)
+mw_lg.location = (-18.0, 0, 0)
 mw_lg.data.materials.append(mat_mw)
 
-# Andromeda M31 (2.5 MLY away)
-bpy.ops.mesh.primitive_plane_add(size=30.0, location=(22.0, 8.0, 4.0))
-m31_lg = bpy.context.active_object
-m31_lg.name = "LocalGroup_Andromeda_M31"
+# Andromeda M31 (2.5 MLY away, tilted at 77 degrees, circular disk)
+m31_lg = create_circle_disk_mesh("LocalGroup_Andromeda_M31", 18.0, col_stage3, segments=64)
+m31_lg.location = (22.0, 8.0, 4.0)
 m31_lg.rotation_euler = (math.radians(77.0), math.radians(35.0), 0)
-col_stage3.objects.link(m31_lg)
-bpy.context.collection.objects.unlink(m31_lg)
 m31_lg.data.materials.append(mat_m31)
 
-# Triangulum M33
-bpy.ops.mesh.primitive_plane_add(size=12.0, location=(8.0, -20.0, -2.0))
-m33_lg = bpy.context.active_object
-m33_lg.name = "LocalGroup_Triangulum_M33"
-col_stage3.objects.link(m33_lg)
-bpy.context.collection.objects.unlink(m33_lg)
+# Triangulum M33 (Circular Disk)
+m33_lg = create_circle_disk_mesh("LocalGroup_Triangulum_M33", 7.0, col_stage3, segments=48)
+m33_lg.location = (8.0, -20.0, -2.0)
 m33_lg.data.materials.append(mat_m33)
 
 # =========================================================================
 # STAGE 4: COSMIC WEB & CMB HORIZON (93 GLY)
 # =========================================================================
 mat_cmb = create_pbr_material("Mat_CMB_Horizon", "cmb_horizon_sky.jpg", color=(0.2, 0.6, 1.0, 1.0), emission=1.8)
-mat_web = create_pbr_material("Mat_Cosmic_Web", "cosmic_web_simulation.jpg", color=(0.95, 0.8, 0.3, 1.0), emission=2.2)
+mat_web = create_pbr_material("Mat_Cosmic_Web", "cosmic_web_simulation.png", color=(0.95, 0.85, 0.4, 1.0), emission=2.5, is_transparent=True)
 
 # CMB Horizon Inverted Sphere
 bpy.ops.mesh.primitive_uv_sphere_add(radius=100.0, segments=64, ring_count=48, location=(0, 0, 0))
@@ -241,12 +289,8 @@ col_stage4.objects.link(cmb_obj)
 bpy.context.collection.objects.unlink(cmb_obj)
 cmb_obj.data.materials.append(mat_cmb)
 
-# Inner Cosmic Web Plane
-bpy.ops.mesh.primitive_plane_add(size=120.0, location=(0, 0, 0))
-web_obj = bpy.context.active_object
-web_obj.name = "Cosmic_Web_Filaments"
-col_stage4.objects.link(web_obj)
-bpy.context.collection.objects.unlink(web_obj)
+# Inner Cosmic Web Circular Disk
+web_obj = create_circle_disk_mesh("Cosmic_Web_Filaments", 65.0, col_stage4, segments=96)
 web_obj.data.materials.append(mat_web)
 
 # =========================================================================
@@ -259,26 +303,22 @@ def create_camera(name, location, rotation, fov=45.0):
     cam_data = bpy.data.cameras.new(name)
     cam_data.lens_unit = 'FOV'
     cam_data.angle = math.radians(fov)
-    cam_data.clip_start = 0.5
+    cam_data.clip_start = 0.1
     cam_data.clip_end = 10000.0
     cam_obj = bpy.data.objects.new(name, cam_data)
     cam_obj.location = location
-    cam_obj.rotation_euler = rotation
+    cam_obj.rotation_euler = (math.radians(rotation[0]), math.radians(rotation[1]), math.radians(rotation[2]))
     col_cams.objects.link(cam_obj)
     return cam_obj
 
-# Stage 1 Oblique View
-cam_s1 = create_camera("Camera_Stage1_SolarSystem", (0, -85.0, 50.0), (math.radians(60.0), 0, 0))
-# Stage 2 Top-Down Galaxy View
-cam_s2 = create_camera("Camera_Stage2_MilkyWay", (0, -60.0, 95.0), (math.radians(58.0), 0, 0))
-# Stage 3 Local Group View
-cam_s3 = create_camera("Camera_Stage3_LocalGroup", (0, -90.0, 80.0), (math.radians(50.0), 0, 0))
-# Stage 4 Cosmic Horizon View
-cam_s4 = create_camera("Camera_Stage4_CosmicWeb", (0, -180.0, 110.0), (math.radians(58.0), 0, 0))
+cam1 = create_camera("Cam_Stage1_SolarSystem", (0, -85.0, 45.0), (62.0, 0, 0), fov=42.0)
+cam2 = create_camera("Cam_Stage2_MilkyWay", (0, -110.0, 60.0), (60.0, 0, 0), fov=48.0)
+cam3 = create_camera("Cam_Stage3_LocalGroup", (0, -160.0, 85.0), (62.0, 0, 0), fov=50.0)
+cam4 = create_camera("Cam_Stage4_CosmicWeb", (0, -220.0, 110.0), (63.0, 0, 0), fov=52.0)
 
-# Set active camera
-scene.camera = cam_s1
+# Set Default Active Camera
+scene.camera = cam1
 
-# Save unified .blend file
-bpy.ops.wm.save_as_mainfile(filepath=BLEND_OUTPUT)
-print(f"\n[Blender 5.2 Pipeline] SUCCESS! Unified project saved to:\n  {BLEND_OUTPUT}")
+# Save Master Blender Project
+bpy.ops.wm.save_as_mainfile(filepath=BLEND_OUT)
+print("SUCCESS: Generated complete cosmic project at:", BLEND_OUT)

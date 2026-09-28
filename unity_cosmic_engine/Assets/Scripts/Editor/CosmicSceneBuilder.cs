@@ -7,7 +7,8 @@ namespace CosmicZoom.Editor
 {
     /// <summary>
     /// Editor automation tool to assemble the complete 3D Cosmic Zoom Engine scene with
-    /// PBR textured materials, acoustic audio suite, and build native Windows 64-bit standalone player.
+    /// circular disk geometry, transparent alpha-masked materials (ZERO black square artifacts),
+    /// acoustic audio suite, and build native Windows 64-bit standalone player.
     /// </summary>
     public static class CosmicSceneBuilder
     {
@@ -23,13 +24,32 @@ namespace CosmicZoom.Editor
                 AssetDatabase.CreateFolder("Assets", "Materials");
             }
 
-            // Create PBR Materials with Textures
-            Material matSun = CreateMaterial("Mat_Sun", "Assets/Textures/sun_photosphere.jpg", new Color(1f, 0.9f, 0.5f), 2.5f);
+            // Configure Texture Importers for alpha transparency
+            ConfigureTextureImporter("Assets/Textures/milky_way_disk.png", true);
+            ConfigureTextureImporter("Assets/Textures/andromeda_galaxy_disk.png", true);
+            ConfigureTextureImporter("Assets/Textures/cosmic_web_simulation.png", true);
+            ConfigureTextureImporter("Assets/Textures/sun_corona_glow.png", true);
+
+            // Create PBR & Transparent Additive Materials
+            Material matSun = CreateMaterial("Mat_Sun", "Assets/Textures/sun_photosphere.jpg", new Color(1f, 0.95f, 0.8f), 3.0f);
+            Material matSunCorona = CreateMaterial("Mat_SunCorona", "Assets/Textures/sun_corona_glow.png", new Color(1f, 0.9f, 0.5f), 3.5f, 0.5f, isAdditive: true);
             Material matEarth = CreateMaterial("Mat_Earth", "Assets/Textures/earth_photosphere.jpg", Color.white, 0f, 0.2f);
             Material matJupiter = CreateMaterial("Mat_Jupiter", "Assets/Textures/jupiter_photosphere.jpg", Color.white, 0f, 0.5f);
-            Material matMilkyWay = CreateMaterial("Mat_MilkyWay", "Assets/Textures/milky_way_disk.jpg", Color.white, 2.0f);
-            Material matAndromeda = CreateMaterial("Mat_Andromeda", "Assets/Textures/andromeda_galaxy_disk.jpg", Color.white, 2.0f);
-            Material matCosmicWeb = CreateMaterial("Mat_CosmicWeb", "Assets/Textures/cosmic_web_simulation.jpg", new Color(1f, 0.85f, 0.4f), 2.5f);
+            Material matSaturn = CreateMaterial("Mat_Saturn", "Assets/Textures/jupiter_photosphere.jpg", new Color(0.95f, 0.9f, 0.75f), 0.2f, 0.5f);
+            Material matSaturnRings = CreateMaterial("Mat_SaturnRings", "Assets/Textures/jupiter_photosphere.jpg", new Color(0.9f, 0.85f, 0.7f, 0.8f), 0.5f, 0.5f, isAdditive: false, isTransparent: true);
+            Material matNeptune = CreateMaterial("Mat_Neptune", "Assets/Textures/earth_photosphere.jpg", new Color(0.2f, 0.5f, 1.0f), 0.3f, 0.4f);
+            Material matOrbit = CreateMaterial("Mat_OrbitBoundary", "", new Color(0.25f, 0.75f, 1.0f, 0.8f), 2.0f, 0.5f, isAdditive: true);
+
+            // Stage 2 Milky Way (Additive: Black space adds 0 light, zero square boundaries)
+            Material matMilkyWay = CreateMaterial("Mat_MilkyWay", "Assets/Textures/milky_way_disk.png", Color.white, 2.5f, 0.5f, isAdditive: true);
+            Material matBeacon = CreateMaterial("Mat_Beacon", "Assets/Textures/sun_corona_glow.png", new Color(1.0f, 0.85f, 0.2f), 5.0f, 0.5f, isAdditive: true);
+            Material matSgrA = CreateMaterial("Mat_SgrA", "Assets/Textures/sun_photosphere.jpg", new Color(1.0f, 0.95f, 0.7f), 5.0f, 0.5f);
+
+            // Stage 3 Local Group
+            Material matAndromeda = CreateMaterial("Mat_Andromeda", "Assets/Textures/andromeda_galaxy_disk.png", new Color(0.95f, 0.95f, 1.0f), 2.5f, 0.5f, isAdditive: true);
+
+            // Stage 4 Cosmic Web & CMB
+            Material matCosmicWeb = CreateMaterial("Mat_CosmicWeb", "Assets/Textures/cosmic_web_simulation.png", new Color(1f, 0.85f, 0.4f), 2.2f, 0.5f, isAdditive: true);
             Material matCMB = CreateMaterial("Mat_CMBHorizon", "Assets/Textures/cmb_horizon_sky.jpg", new Color(0.3f, 0.7f, 1f), 1.8f);
 
             // 2. Root Manager GameObject
@@ -61,6 +81,7 @@ namespace CosmicZoom.Editor
             sunLight.color = new Color(1.0f, 0.98f, 0.92f);
             sunLight.intensity = 5.0f;
             sunLight.range = 5000f;
+            sunLight.shadows = LightShadows.None; // Prevent shadow acne artifacts
             dirLightObj.transform.position = Vector3.zero;
 
             // 5. Stage Hierarchies
@@ -76,10 +97,16 @@ namespace CosmicZoom.Editor
             GameObject s4Obj = LoadAndInstantiateModel("Assets/Models/observable_universe_boundary.fbx", stage4.transform);
 
             // Assign Textures & Materials to Renderers
-            AssignMaterialsToStage1(s1Obj, matSun, matEarth, matJupiter);
-            AssignMaterialsToStage2(s2Obj, matMilkyWay);
+            AssignMaterialsToStage1(s1Obj, matSun, matSunCorona, matEarth, matJupiter, matSaturn, matSaturnRings, matNeptune, matOrbit);
+            AssignMaterialsToStage2(s2Obj, matMilkyWay, matBeacon, matSgrA);
             AssignMaterialsToStage3(s3Obj, matMilkyWay, matAndromeda);
             AssignMaterialsToStage4(s4Obj, matCMB, matCosmicWeb);
+
+            // Stage initial visibility: Stage 1 active, others inactive until zoom threshold
+            stage1.SetActive(true);
+            stage2.SetActive(false);
+            stage3.SetActive(false);
+            stage4.SetActive(false);
 
             // Wire up Engine References
             SerializedObject soEngine = new SerializedObject(engine);
@@ -127,7 +154,7 @@ namespace CosmicZoom.Editor
             EditorBuildSettings.scenes = buildScenes;
 
             AssetDatabase.SaveAssets();
-            Debug.Log("<color=#38bdf8><b>[Cosmic Scene Builder]</b> Scene assembled with PBR textures and acoustic score: " + scenePath + "</color>");
+            Debug.Log("<color=#38bdf8><b>[Cosmic Scene Builder]</b> Scene assembled with seamless circular geometry and transparent materials: " + scenePath + "</color>");
         }
 
         public static void BuildStandalonePlayer()
@@ -158,18 +185,45 @@ namespace CosmicZoom.Editor
             }
         }
 
-        private static Material CreateMaterial(string name, string texturePath, Color color, float emission, float roughness = 0.5f)
+        private static void ConfigureTextureImporter(string texturePath, bool isTransparent)
+        {
+            TextureImporter ti = AssetImporter.GetAtPath(texturePath) as TextureImporter;
+            if (ti != null)
+            {
+                ti.alphaIsTransparency = isTransparent;
+                ti.mipmapEnabled = true;
+                ti.wrapMode = TextureWrapMode.Clamp;
+                ti.SaveAndReimport();
+            }
+        }
+
+        private static Material CreateMaterial(string name, string texturePath, Color color, float emission, float roughness = 0.5f, bool isAdditive = false, bool isTransparent = false)
         {
             string matPath = "Assets/Materials/" + name + ".mat";
             Material mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
-            if (mat == null)
+
+            Shader shader;
+            if (isAdditive)
             {
-                Shader shader = Shader.Find("Standard") ?? Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Unlit/Texture");
+                shader = Shader.Find("Mobile/Particles/Additive") ?? Shader.Find("Particles/Standard Unlit") ?? Shader.Find("Unlit/Transparent");
+            }
+            else if (isTransparent)
+            {
+                shader = Shader.Find("Unlit/Transparent") ?? Shader.Find("Mobile/Particles/Alpha Blended") ?? Shader.Find("Standard");
+            }
+            else
+            {
+                shader = Shader.Find("Standard") ?? Shader.Find("Unlit/Texture");
+            }
+
+            if (mat == null || mat.shader != shader)
+            {
                 mat = new Material(shader);
                 AssetDatabase.CreateAsset(mat, matPath);
             }
 
             mat.color = color;
+            if (mat.HasProperty("_TintColor")) mat.SetColor("_TintColor", color);
             if (mat.HasProperty("_Glossiness")) mat.SetFloat("_Glossiness", 1.0f - roughness);
             if (mat.HasProperty("_Smoothness")) mat.SetFloat("_Smoothness", 1.0f - roughness);
 
@@ -207,24 +261,32 @@ namespace CosmicZoom.Editor
             return null;
         }
 
-        private static void AssignMaterialsToStage1(GameObject root, Material sun, Material earth, Material jupiter)
+        private static void AssignMaterialsToStage1(GameObject root, Material sun, Material sunCorona, Material earth, Material jupiter, Material saturn, Material saturnRings, Material neptune, Material orbit)
         {
             if (root == null) return;
             foreach (Renderer r in root.GetComponentsInChildren<Renderer>(true))
             {
                 string n = r.gameObject.name.ToLower();
-                if (n.Contains("sun")) r.sharedMaterial = sun;
+                if (n.Contains("corona")) r.sharedMaterial = sunCorona;
+                else if (n.Contains("sun")) r.sharedMaterial = sun;
                 else if (n.Contains("earth")) r.sharedMaterial = earth;
                 else if (n.Contains("jupiter")) r.sharedMaterial = jupiter;
+                else if (n.Contains("saturn_rings") || n.Contains("rings")) r.sharedMaterial = saturnRings;
+                else if (n.Contains("saturn")) r.sharedMaterial = saturn;
+                else if (n.Contains("neptune_orbit") || n.Contains("boundary")) r.sharedMaterial = orbit;
+                else if (n.Contains("neptune")) r.sharedMaterial = neptune;
             }
         }
 
-        private static void AssignMaterialsToStage2(GameObject root, Material milkyWay)
+        private static void AssignMaterialsToStage2(GameObject root, Material milkyWay, Material beacon, Material sgrA)
         {
             if (root == null) return;
             foreach (Renderer r in root.GetComponentsInChildren<Renderer>(true))
             {
-                r.sharedMaterial = milkyWay;
+                string n = r.gameObject.name.ToLower();
+                if (n.Contains("beacon") || n.Contains("sun_ring")) r.sharedMaterial = beacon;
+                else if (n.Contains("sagittarius") || n.Contains("sgra")) r.sharedMaterial = sgrA;
+                else r.sharedMaterial = milkyWay;
             }
         }
 
