@@ -30,26 +30,17 @@ namespace CosmicZoom
         public const double SPEED_VOYAGER_1 = 17.0; // Interstellar departure speed (km/s)
         public const double SPEED_JETLINER = 900.0 / 3600.0; // 0.25 km/s (900 km/h)
 
-        /// <summary>
-        /// Calculates transit time in seconds at the speed of light c across a given distance in km.
-        /// </summary>
         public static double GetLightTransitSeconds(double distanceKm)
         {
             return distanceKm / C_KM_S;
         }
 
-        /// <summary>
-        /// Calculates transit time in seconds for a specific velocity in km/s.
-        /// </summary>
         public static double GetTransitSeconds(double distanceKm, double velocityKmS)
         {
             if (velocityKmS <= 0) return double.PositiveInfinity;
             return distanceKm / velocityKmS;
         }
 
-        /// <summary>
-        /// Interpolates the physical span across continuous zoom parameter z in [1.0, 4.0].
-        /// </summary>
         public static double GetSpanKmFromZoom(float z)
         {
             z = Mathf.Clamp(z, 1.0f, 4.0f);
@@ -76,9 +67,9 @@ namespace CosmicZoom
             }
         }
 
-        /// <summary>
-        /// Formats seconds into human-readable scientific / astronomical units.
-        /// </summary>
+        public static string FormatTime(double seconds) => FormatDuration(seconds);
+        public static string FormatSpan(double distanceKm) => FormatDistanceSpan(distanceKm);
+
         public static string FormatDuration(double seconds)
         {
             if (double.IsInfinity(seconds) || seconds < 0) return "N/A";
@@ -121,9 +112,6 @@ namespace CosmicZoom
             return $"{byr:F1} Billion Years";
         }
 
-        /// <summary>
-        /// Formats physical kilometer distance into appropriate scale units.
-        /// </summary>
         public static string FormatDistanceSpan(double distanceKm)
         {
             if (distanceKm < LY_KM * 0.1)
