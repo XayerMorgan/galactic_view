@@ -3142,6 +3142,8 @@
     /* =========================================================================
        6. INTERACTIVE ZOOM CONTROLS & STAGE JUMPS
        ========================================================================= */
+    let isJumpingToStage = false;
+
     function onStageChanged(newStage) {
       activeStageIndex = newStage;
       
@@ -3154,14 +3156,20 @@
         }
       }
 
-      // Smooth, silent transition between scales - acoustic score continues uninterrupted
-      playNarrationForStage(newStage);
+      // Only trigger narration during manual continuous slider scrubbing, not during programmed stage jumps
+      if (!isJumpingToStage && !isAutoTouring) {
+        playNarrationForStage(newStage);
+      }
     }
 
     function jumpToStage(stageNum) {
       playSoftChime();
+      isJumpingToStage = true;
       const targetZ = parseFloat(stageNum);
       const stageInfo = STAGE_SPANS[stageNum];
+
+      // Play narration for the destination stage cleanly
+      playNarrationForStage(stageNum);
 
       // Smooth Tween for Slider and Camera
       new TWEEN.Tween({ z: currentZoom })
@@ -3171,6 +3179,9 @@
           currentZoom = obj.z;
           zoomSlider.value = currentZoom;
           updateStageOpacities(currentZoom);
+        })
+        .onComplete(() => {
+          isJumpingToStage = false;
         })
         .start();
 
@@ -3236,7 +3247,7 @@
       lightPulseMesh.position.copy(controls.target);
     });
 
-    // Automated Universe Tour Mode
+    // Automated Universe Tour Mode (Gives narrator full chance to finish speaking at each stage)
     const btnTourToggle = document.getElementById('btn-tour-toggle');
     const tourStatusText = document.getElementById('tour-status-text');
 
@@ -3245,19 +3256,38 @@
       if (isAutoTouring) {
         tourStatusText.textContent = "Stop Tour";
         btnTourToggle.classList.add('active');
+        tourStageIndex = 1;
         runTourStep();
       } else {
         tourStatusText.textContent = "Tour";
         btnTourToggle.classList.remove('active');
         clearTimeout(tourTimer);
+        for (let s in narrations) {
+          if (narrations[s]) narrations[s].onended = null;
+        }
       }
     });
 
     function runTourStep() {
       if (!isAutoTouring) return;
-      jumpToStage(tourStageIndex);
+      const currentStage = tourStageIndex;
+      jumpToStage(currentStage);
       tourStageIndex = (tourStageIndex % 4) + 1;
-      tourTimer = setTimeout(runTourStep, 9500);
+
+      const narrAudio = narrations[currentStage];
+      if (narrAudio && isAudioEnabled && isNarratorEnabled) {
+        // Wait for the narrator to completely finish speaking before advancing
+        narrAudio.onended = () => {
+          musicManager.duckForNarration(false);
+          if (isAutoTouring) {
+            // Give 3.5 seconds of peaceful acoustic space contemplation before gliding to next stage
+            tourTimer = setTimeout(runTourStep, 3500);
+          }
+        };
+      } else {
+        // Fallback timing if narrator is disabled (14 seconds per stage)
+        tourTimer = setTimeout(runTourStep, 14000);
+      }
     }
 
     // Target Selection Dropdown

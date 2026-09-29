@@ -463,30 +463,38 @@ namespace CosmicZoom
             float bottomY = virtualH - bottomH - 15;
 
             // Narration Subtitle Banner
+            bool isTour = engine != null && engine.isTourActive;
+            string tourTag = isTour ? $"[🚀 GUIDED TOUR — STAGE {engine.tourCurrentStage}/4] " : "";
             string subText = zoom < 1.75f ? "Stage 1: The Solar System. Spanning ~8.33 light-hours across Neptune's orbit." :
                 (zoom < 2.75f ? "Stage 2: The Milky Way Galaxy. ~100,000 light-years across with Orion Spur and Sagittarius A*." :
                 (zoom < 3.75f ? "Stage 3: The Local Group Cluster. ~10 million light-years encompassing Andromeda and Milky Way." :
                 "Stage 4: Cosmic Web & Particle Horizon. ~93 billion light-years to the Cosmic Microwave Background."));
 
-            GUI.Box(new Rect(virtualW * 0.15f, bottomY - 45, virtualW * 0.7f, 36), "", panelStyle);
-            GUI.Label(new Rect(virtualW * 0.15f + 10, bottomY - 43, virtualW * 0.7f - 20, 32), "🎙️ GEORGE: " + subText, subtitleStyle);
+            GUI.Box(new Rect(virtualW * 0.10f, bottomY - 45, virtualW * 0.80f, 36), "", panelStyle);
+            GUI.Label(new Rect(virtualW * 0.10f + 10, bottomY - 43, virtualW * 0.80f - 20, 32), $"🎙️ GEORGE: {tourTag}{subText}", subtitleStyle);
 
             // Cockpit Bar
             GUI.Box(new Rect(15, bottomY, virtualW - 30, bottomH), "", panelStyle);
 
             // Continuous Zoom Slider
             GUI.Label(new Rect(30, bottomY + 14, 180, 22), "SCALE ZOOM SLIDER", statLabelStyle);
-            GUI.Label(new Rect(210, bottomY + 14, virtualW * 0.45f, 20), "1.0 [Solar System] ---- 2.0 [Milky Way] ---- 3.0 [Local Group] ---- 4.0 [Cosmic Web]", statLabelStyle);
-            float newZoom = GUI.HorizontalSlider(new Rect(30, bottomY + 44, virtualW * 0.52f, 30), zoom, 1.0f, 4.0f);
+            GUI.Label(new Rect(210, bottomY + 14, virtualW * 0.38f, 20), "1.0 [Solar System] ---- 2.0 [Milky Way] ---- 3.0 [Local Group] ---- 4.0 [Cosmic Web]", statLabelStyle);
+            float newZoom = GUI.HorizontalSlider(new Rect(30, bottomY + 44, virtualW * 0.42f, 30), zoom, 1.0f, 4.0f);
             if (Mathf.Abs(newZoom - zoom) > 0.005f && engine != null)
             {
                 engine.SetZoomDirect(newZoom);
             }
 
-            // Cockpit Action Buttons
-            float btnX = virtualW - 460;
+            // Cockpit Action Buttons: Guided Tour, Light Pulse, Reset Camera
+            float btnX = virtualW - 680;
+            string tourBtnText = isTour ? $"🚀 Tour: ACTIVE [S{engine.tourCurrentStage}]" : "🚀 Guided Tour [T]";
+            if (GUI.Button(new Rect(btnX, bottomY + 22, 210, 65), tourBtnText, isTour ? activeButtonStyle : buttonStyle))
+            {
+                if (engine != null) engine.ToggleTour();
+            }
+
             string pulseBtnText = isPulseActive ? (isPulsePaused ? "▶ Resume Pulse" : "⏸ Pause Pulse") : "⚡ Fire Light Pulse (c)";
-            if (GUI.Button(new Rect(btnX, bottomY + 22, 230, 65), pulseBtnText, activeButtonStyle))
+            if (GUI.Button(new Rect(btnX + 225, bottomY + 22, 220, 65), pulseBtnText, activeButtonStyle))
             {
                 if (engine != null)
                 {
@@ -500,7 +508,8 @@ namespace CosmicZoom
                     }
                 }
             }
-            if (GUI.Button(new Rect(btnX + 240, bottomY + 22, 180, 65), "↺ Reset Camera", buttonStyle))
+
+            if (GUI.Button(new Rect(btnX + 460, bottomY + 22, 160, 65), "↺ Reset Camera", buttonStyle))
             {
                 if (engine != null) engine.ResetCamera();
             }

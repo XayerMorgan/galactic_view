@@ -34,6 +34,12 @@ namespace CosmicZoom
         private float targetZoom = 1.0f;
         public int activeStageIndex { get; private set; } = 1;
 
+        [Header("Automated Guided Tour")]
+        public bool isTourActive { get; private set; } = false;
+        public int tourCurrentStage { get; private set; } = 1;
+        private Coroutine tourCoroutine = null;
+        private bool isProgrammaticStageJump = false;
+
         // Stage camera distance limits
         private readonly float[] stageDistances = { 0f, 120f, 450f, 1100f, 2500f };
 
@@ -61,6 +67,12 @@ namespace CosmicZoom
             else if (Input.GetKeyDown(KeyCode.Alpha3)) JumpToStage(3);
             else if (Input.GetKeyDown(KeyCode.Alpha4)) JumpToStage(4);
 
+            // Guided Tour toggle: Key T
+            if (Input.GetKeyDown(KeyCode.T))
+            {
+                ToggleTour();
+            }
+
             // Light pulse trigger: Spacebar
             if (Input.GetKeyDown(KeyCode.Space))
             {
@@ -75,9 +87,81 @@ namespace CosmicZoom
             }
         }
 
-        public void JumpToStage(int stageNumber)
+        public void ToggleTour()
         {
+            if (isTourActive)
+            {
+                StopTour();
+            }
+            else
+            {
+                StartTour();
+            }
+        }
+
+        public void StartTour()
+        {
+            if (isTourActive) return;
+            isTourActive = true;
+            tourCurrentStage = activeStageIndex;
+            if (tourCoroutine != null) StopCoroutine(tourCoroutine);
+            tourCoroutine = StartCoroutine(TourSequenceRoutine());
+        }
+
+        public void StopTour()
+        {
+            isTourActive = false;
+            if (tourCoroutine != null)
+            {
+                StopCoroutine(tourCoroutine);
+                tourCoroutine = null;
+            }
+        }
+
+        private IEnumerator TourSequenceRoutine()
+        {
+            while (isTourActive)
+            {
+                int stage = tourCurrentStage;
+                JumpToStage(stage, true);
+
+                // Wait 1 second for camera interpolation and speech initiation
+                yield return new WaitForSeconds(1.0f);
+
+                // Wait for the narrator to completely finish speaking
+                if (audioController != null)
+                {
+                    while (audioController.IsNarrationPlaying)
+                    {
+                        if (!isTourActive) yield break;
+                        yield return null;
+                    }
+                }
+                else
+                {
+                    yield return new WaitForSeconds(12.0f);
+                }
+
+                if (!isTourActive) yield break;
+
+                // Contemplation window: give 3.5 seconds of peaceful acoustic space contemplation before gliding to next stage
+                yield return new WaitForSeconds(3.5f);
+
+                if (!isTourActive) yield break;
+
+                tourCurrentStage = (tourCurrentStage % 4) + 1;
+            }
+        }
+
+        public void JumpToStage(int stageNumber, bool fromTour = false)
+        {
+            if (!fromTour && isTourActive)
+            {
+                StopTour();
+            }
+
             stageNumber = Mathf.Clamp(stageNumber, 1, 4);
+            isProgrammaticStageJump = true;
             targetZoom = stageNumber;
 
             if (audioController != null)
@@ -85,10 +169,19 @@ namespace CosmicZoom
                 audioController.PlaySoftChime();
                 audioController.PlayStageNarration(stageNumber);
             }
+
+            StartCoroutine(ClearProgrammaticFlag());
+        }
+
+        private IEnumerator ClearProgrammaticFlag()
+        {
+            yield return new WaitForSeconds(1.8f);
+            isProgrammaticStageJump = false;
         }
 
         public void SetZoomDirect(float zoomVal)
         {
+            if (isTourActive) StopTour();
             targetZoom = Mathf.Clamp(zoomVal, 1.0f, 4.0f);
         }
 
@@ -135,6 +228,11 @@ namespace CosmicZoom
             if (newStage != activeStageIndex)
             {
                 activeStageIndex = newStage;
+                // Only trigger narration during manual continuous scrubbing, NOT during programmed stage jumps or guided tour
+                if (!isTourActive && !isProgrammaticStageJump && audioController != null)
+                {
+                    audioController.PlayStageNarration(newStage);
+                }
             }
 
             // Camera distance positioning

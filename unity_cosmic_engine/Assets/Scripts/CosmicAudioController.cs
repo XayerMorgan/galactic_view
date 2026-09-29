@@ -183,9 +183,15 @@ namespace CosmicZoom
             musicCrossfadeRoutine = null;
         }
 
+        public bool IsNarrationPlaying => narrationSource != null && narrationSource.isPlaying;
+        public int CurrentPlayingStage { get; private set; } = 0;
+
         public void PlayStageNarration(int stageIndex)
         {
             if (IsAudioMuted || !IsNarratorAutoPlay) return;
+
+            // Guard: If narration for this exact stage is already playing, do NOT restart or cut it off
+            if (IsNarrationPlaying && CurrentPlayingStage == stageIndex) return;
 
             AudioClip clip = stageIndex switch
             {
@@ -198,8 +204,28 @@ namespace CosmicZoom
 
             if (clip == null) return;
 
+            CurrentPlayingStage = stageIndex;
             if (narrationRoutine != null) StopCoroutine(narrationRoutine);
             narrationRoutine = StartCoroutine(NarrationSequence(clip));
+        }
+
+        public void StopNarration()
+        {
+            if (narrationRoutine != null)
+            {
+                StopCoroutine(narrationRoutine);
+                narrationRoutine = null;
+            }
+            if (narrationSource != null)
+            {
+                narrationSource.Stop();
+            }
+            CurrentPlayingStage = 0;
+            isDucked = false;
+            if (activeMusicSource != null && activeMusicSource.isPlaying)
+            {
+                StartCoroutine(FadeSource(activeMusicSource, activeMusicSource.volume, musicTargetVolume, 1.0f));
+            }
         }
 
         private IEnumerator NarrationSequence(AudioClip clip)
@@ -215,7 +241,7 @@ namespace CosmicZoom
             narrationSource.clip = clip;
             narrationSource.Play();
 
-            while (narrationSource.isPlaying)
+            while (narrationSource != null && narrationSource.isPlaying)
             {
                 yield return null;
             }
