@@ -116,11 +116,11 @@ namespace CosmicZoom.Editor
             GameObject s3Obj = LoadAndInstantiateModel("Assets/Models/local_group_galaxies.fbx", stage3.transform);
             GameObject s4Obj = LoadAndInstantiateModel("Assets/Models/observable_universe_boundary.fbx", stage4.transform);
 
-            // Project GALAXY: Instantiate 3D Starships (USS Astronautica & Sol Scout)
+            // Project GALAXY: Instantiate 3D Starships (Astronautica Survey Flagship & Sol Scout)
             GameObject flagship = LoadAndInstantiateModel("Assets/GALAXY/Models_3D/USS_Astronautica_Flagship.fbx", stage1.transform);
             if (flagship != null)
             {
-                flagship.name = "USS_Astronautica_Flagship";
+                flagship.name = "Astronautica_Survey_Flagship";
                 flagship.transform.position = new Vector3(22.0f, 3.5f, 14.0f);
                 flagship.transform.localScale = Vector3.one * 0.28f;
                 flagship.transform.rotation = Quaternion.Euler(12f, 40f, -5f);

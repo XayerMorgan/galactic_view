@@ -125,7 +125,7 @@ namespace CosmicZoom
 
         [Header("Vault Configuration")]
         public float celestialSphereRadius = 18000f;
-        public bool isStarryNightActive = true;
+        public bool isStarryNightActive = false;
         public bool showConstellationLines = true;
         public bool showMessierMarkers = true;
         public bool showStarLabels = true;
@@ -474,6 +474,7 @@ namespace CosmicZoom
         {
             if (target == null) return;
             currentTarget = target;
+            isStarryNightActive = true;
 
             if (aimCoroutine != null) StopCoroutine(aimCoroutine);
             aimCoroutine = StartCoroutine(SmoothAimAtTarget(target));
@@ -481,21 +482,16 @@ namespace CosmicZoom
 
         private System.Collections.IEnumerator SmoothAimAtTarget(CelestialObjectData target)
         {
+            if (mainCamera == null) mainCamera = Camera.main;
             if (mainCamera == null) yield break;
 
             Vector3 worldTargetDir = target.GetUnitSpherePosition();
-            Vector3 focus = cameraFocus != null ? cameraFocus.position : Vector3.zero;
 
-            float currentDist = Vector3.Distance(mainCamera.transform.position, focus);
-            if (currentDist < 10f) currentDist = 120f;
-
-            // Target camera position is looking FROM opposite direction toward focus, or looking AT the target from origin
-            // In a celestial observatory, we aim the camera so the target is centered on screen:
-            // camera looks in direction `worldTargetDir`
+            // Look directly toward the celestial target on the celestial vault sphere
             Quaternion startRot = mainCamera.transform.rotation;
             Quaternion targetRot = Quaternion.LookRotation(worldTargetDir, Vector3.up);
 
-            float duration = 1.4f;
+            float duration = 1.2f;
             float elapsed = 0f;
 
             while (elapsed < duration)
@@ -620,6 +616,7 @@ namespace CosmicZoom
             {
                 lineMat.SetPass(0);
                 GL.PushMatrix();
+                GL.MultMatrix(Matrix4x4.identity);
                 GL.Begin(GL.LINES);
                 GL.Color(new Color(0.2f, 0.75f, 1.0f, 0.55f));
 
@@ -679,6 +676,34 @@ namespace CosmicZoom
                 }
 
                 GL.End();
+
+                // 3D Glowing Billboard Quads for Messier Objects & Bright Stars on the Celestial Sphere
+                if (showMessierMarkers && mainCamera != null)
+                {
+                    GL.Begin(GL.QUADS);
+                    Vector3 camR = mainCamera.transform.right;
+                    Vector3 camU = mainCamera.transform.up;
+
+                    foreach (var obj in catalog)
+                    {
+                        Vector3 center = GetWorldPositionOfObject(obj);
+                        float sz = (obj.objectType == CelestialObjectType.MajorStar ? 140f : 280f);
+                        if (currentTarget == obj) sz *= 1.5f;
+
+                        Color col = obj.markerColor;
+                        GL.Color(col);
+
+                        Vector3 vr = camR * sz;
+                        Vector3 vu = camU * sz;
+
+                        GL.Vertex(center - vr - vu);
+                        GL.Vertex(center + vr - vu);
+                        GL.Vertex(center + vr + vu);
+                        GL.Vertex(center - vr + vu);
+                    }
+                    GL.End();
+                }
+
                 GL.PopMatrix();
             }
         }

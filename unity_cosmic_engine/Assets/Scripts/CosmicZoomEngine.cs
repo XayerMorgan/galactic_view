@@ -85,6 +85,20 @@ namespace CosmicZoom
                 ResetCamera();
             }
 
+            // Starry Night & Messier observation mode toggle: Key S
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                var hud = FindAnyObjectByType<CosmicHUD>();
+                if (hud != null) hud.ToggleStarryNight();
+            }
+
+            // Unit system toggle: Key U
+            if (Input.GetKeyDown(KeyCode.U))
+            {
+                var hud = FindAnyObjectByType<CosmicHUD>();
+                if (hud != null) hud.CycleUnitSystem();
+            }
+
             // Continuous scroll wheel zoom
             float scroll = Input.GetAxis("Mouse ScrollWheel");
             if (Mathf.Abs(scroll) > 0.01f)
