@@ -63,6 +63,7 @@ namespace CosmicZoom.Editor
             CosmicAudioController audioController = managerObj.AddComponent<CosmicAudioController>();
             CosmicHUD hud = managerObj.AddComponent<CosmicHUD>();
             LightPulseEmitter pulseEmitter = managerObj.AddComponent<LightPulseEmitter>();
+            CelestialMessierCatalog messierCatalog = managerObj.AddComponent<CelestialMessierCatalog>();
 
             // 3. Camera Setup WITH AudioListener & CosmicStarfield
             GameObject camObj = new GameObject("Main Camera");
@@ -114,6 +115,28 @@ namespace CosmicZoom.Editor
             GameObject s2Obj = LoadAndInstantiateModel("Assets/Models/milky_way_spiral.fbx", stage2.transform);
             GameObject s3Obj = LoadAndInstantiateModel("Assets/Models/local_group_galaxies.fbx", stage3.transform);
             GameObject s4Obj = LoadAndInstantiateModel("Assets/Models/observable_universe_boundary.fbx", stage4.transform);
+
+            // Project GALAXY: Instantiate 3D Starships (USS Astronautica & Sol Scout)
+            GameObject flagship = LoadAndInstantiateModel("Assets/GALAXY/Models_3D/USS_Astronautica_Flagship.fbx", stage1.transform);
+            if (flagship != null)
+            {
+                flagship.name = "USS_Astronautica_Flagship";
+                flagship.transform.position = new Vector3(22.0f, 3.5f, 14.0f);
+                flagship.transform.localScale = Vector3.one * 0.28f;
+                flagship.transform.rotation = Quaternion.Euler(12f, 40f, -5f);
+                var rot = flagship.AddComponent<GalacticRotator>();
+                rot.rotationAxis = Vector3.up;
+                rot.rotationSpeed = 0.8f;
+            }
+
+            GameObject scout = LoadAndInstantiateModel("Assets/GALAXY/Models_3D/Sol_Scout_Ship.fbx", stage1.transform);
+            if (scout != null)
+            {
+                scout.name = "Sol_Scout_Fighter";
+                scout.transform.position = new Vector3(26.0f, 5.0f, 10.5f);
+                scout.transform.localScale = Vector3.one * 0.22f;
+                scout.transform.rotation = Quaternion.Euler(8f, 55f, -12f);
+            }
 
             // Assign Textures, Materials, Kinematics & Rotation to Renderers
             AssignStage1Bodies(s1Obj, matSun, matSunCorona, matEarth, matJupiter, matSaturn, matSaturnRings, matNeptune, matOrbit);

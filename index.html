@@ -1166,6 +1166,107 @@
       font-weight: 700;
     }
 
+    /* Starry Night & Messier Deep-Sky Mode */
+    .starry-night-toolbar {
+      position: absolute;
+      top: 74px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(3, 7, 18, 0.90);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(234, 179, 8, 0.55);
+      border-radius: 24px;
+      padding: 6px 16px;
+      z-index: 120;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.75), 0 0 16px rgba(234, 179, 8, 0.25);
+      pointer-events: auto;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .starry-night-toolbar.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, -10px);
+    }
+    .sn-filter-pill {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(234, 179, 8, 0.35);
+      color: #fde047;
+      border-radius: 14px;
+      padding: 4px 10px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+    .sn-filter-pill:hover,
+    .sn-filter-pill.active {
+      background: #eab308;
+      color: #030712;
+      font-weight: 700;
+      box-shadow: 0 0 10px #eab308;
+    }
+    .sn-quick-select {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(234, 179, 8, 0.5);
+      color: #fde047;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Telescope Eyepiece Card */
+    .telescope-card {
+      border-color: rgba(234, 179, 8, 0.45) !important;
+      background: linear-gradient(135deg, rgba(8, 14, 28, 0.94), rgba(24, 16, 2, 0.94)) !important;
+    }
+    .eyepiece-reticle {
+      position: relative;
+      width: 100%;
+      height: 64px;
+      border: 1px dashed rgba(234, 179, 8, 0.45);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle, rgba(234, 179, 8, 0.15) 0%, transparent 75%);
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .eyepiece-cross-h {
+      position: absolute;
+      width: 100%;
+      height: 1px;
+      background: rgba(234, 179, 8, 0.4);
+    }
+    .eyepiece-cross-v {
+      position: absolute;
+      width: 1px;
+      height: 100%;
+      background: rgba(234, 179, 8, 0.4);
+    }
+    .eyepiece-ring {
+      width: 40px;
+      height: 40px;
+      border: 1.5px solid rgba(234, 179, 8, 0.8);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 2;
+      box-shadow: 0 0 10px rgba(234, 179, 8, 0.35);
+    }
+
     /* Responsive */
     @media (max-width: 1024px) {
       .left-dock { width: 230px; }
@@ -1256,6 +1357,11 @@
           <span>📏</span> <span id="unit-status-text">Units: KM (U)</span>
         </button>
 
+        <!-- Starry Night & Messier Catalog Mode (S) -->
+        <button class="btn-icon" id="btn-starry-night-toggle" title="Toggle Starry Night: Constellations & Messier Deep-Sky Catalog (S)" style="border-color: rgba(234, 179, 8, 0.6); color: #fde047;">
+          <span>🔭</span> <span id="starry-night-status-text">Starry Night (S)</span>
+        </button>
+
         <!-- Quick Accessibility Font Steppers -->
         <div style="display:flex; align-items:center; gap:3px; background:rgba(15,23,42,0.6); padding:2px 4px; border-radius:6px; border:1px solid rgba(56,189,248,0.3);">
           <button class="btn-icon" id="btn-font-dec" title="Decrease Font Size (Ctrl + -)" style="padding:6px 9px; font-weight:800; font-size:0.85rem;">A−</button>
@@ -1282,6 +1388,46 @@
         </button>
       </div>
     </header>
+
+    <!-- Starry Night & Messier Deep-Sky Floating Toolbar -->
+    <div class="starry-night-toolbar hidden" id="starry-night-toolbar">
+      <span style="font-family:var(--font-mono); font-size:0.75rem; font-weight:700; color:#fde047; display:flex; align-items:center; gap:4px;">
+        <span>🔭</span> CELESTIAL VAULT
+      </span>
+      <button class="sn-filter-pill active" id="sn-toggle-constellations" title="Toggle Constellation Outlines">
+        <span>✨</span> Constellations
+      </button>
+      <button class="sn-filter-pill active" id="sn-toggle-messier" title="Toggle Charles Messier Deep-Sky Objects">
+        <span>🌀</span> Messier Objects
+      </button>
+      <button class="sn-filter-pill active" id="sn-toggle-starnames" title="Toggle Major Star Labels">
+        <span>⭐</span> Star Labels
+      </button>
+      <button class="sn-filter-pill" id="sn-toggle-grid" title="Toggle RA/Dec Celestial Grid">
+        <span>🌐</span> RA/Dec Grid
+      </button>
+      
+      <div style="display:flex; align-items:center; gap:6px; margin-left:6px; border-left:1px solid rgba(234, 179, 8, 0.3); padding-left:10px;">
+        <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted);">Quick Jump:</span>
+        <select class="sn-quick-select" id="sn-select-target">
+          <option value="">-- Select Messier Target --</option>
+          <option value="M1">M1: Crab Nebula (Taurus)</option>
+          <option value="M13">M13: Great Hercules Cluster</option>
+          <option value="M16">M16: Eagle Nebula / Pillars</option>
+          <option value="M20">M20: Trifid Nebula (Sagittarius)</option>
+          <option value="M27">M27: Dumbbell Nebula (Vulpecula)</option>
+          <option value="M31">M31: Andromeda Galaxy</option>
+          <option value="M33">M33: Triangulum Galaxy</option>
+          <option value="M42">M42: Great Orion Nebula</option>
+          <option value="M45">M45: Pleiades (Seven Sisters)</option>
+          <option value="M51">M51: Whirlpool Galaxy</option>
+          <option value="M57">M57: Ring Nebula (Lyra)</option>
+          <option value="M81">M81: Bode's Galaxy</option>
+          <option value="M87">M87: Virgo A SMBH Galaxy</option>
+          <option value="M104">M104: Sombrero Galaxy</option>
+        </select>
+      </div>
+    </div>
 
     <!-- Center Workspace Docks -->
     <div class="hud-center">
@@ -1477,6 +1623,57 @@
           </div>
         </div>
 
+        <!-- Starry Night Telescope Eyepiece Inspector Card -->
+        <div class="glass-card telescope-card" id="telescope-card" style="display: none; margin-top: 10px;">
+          <div class="card-title-row">
+            <div class="card-title">
+              <span style="color:#fde047;">🔭 Deep-Sky Observation Eyepiece</span>
+            </div>
+            <span class="c-constant-tag" style="background:rgba(234,179,8,0.2); border-color:#eab308; color:#fde047;" id="tele-constellation-tag">TAURUS</span>
+          </div>
+
+          <div class="eyepiece-reticle">
+            <div class="eyepiece-cross-h"></div>
+            <div class="eyepiece-cross-v"></div>
+            <div class="eyepiece-ring" id="tele-icon">🌀</div>
+          </div>
+
+          <div class="inspector-target" style="border-left-color: #eab308;">
+            <div style="font-weight:800; font-size:1.05rem; color:#fff;" id="tele-name">M31: Andromeda Galaxy</div>
+            <div class="inspector-type" style="color:#fde047;" id="tele-type">Barred Spiral Galaxy (NGC 224)</div>
+          </div>
+
+          <div class="inspector-grid" style="margin-top:8px;">
+            <div class="inspector-item">
+              <div class="insp-label">Equatorial Coords</div>
+              <div class="insp-val" id="tele-coords">RA 00h 42m / Dec +41°</div>
+            </div>
+            <div class="inspector-item">
+              <div class="insp-label">Apparent Magnitude</div>
+              <div class="insp-val" id="tele-mag">+3.44 (Naked Eye)</div>
+            </div>
+            <div class="inspector-item">
+              <div class="insp-label">Distance from Earth</div>
+              <div class="insp-val" id="tele-dist">2.537 MLY</div>
+            </div>
+            <div class="inspector-item">
+              <div class="insp-label">Physical Distance</div>
+              <div class="insp-val" id="tele-raw-dist">2.40 × 10¹⁹ km</div>
+            </div>
+          </div>
+
+          <div class="inspector-fact" id="tele-desc" style="border-top: 1px solid rgba(234,179,8,0.25); margin-top:8px; padding-top:6px;">
+            Nearest major spiral galaxy to the Milky Way, containing over 1 trillion stars.
+          </div>
+
+          <div style="display:flex; gap:6px; margin-top:8px;">
+            <button class="btn-cockpit primary" id="btn-tele-aim" style="flex:1; border-color:#eab308; background:rgba(234,179,8,0.25); color:#fde047;" title="Smoothly steer ship telescope to lock onto this target">
+              <span>🎯 Aim Telescope</span>
+            </button>
+            <button class="btn-cockpit" id="btn-tele-close" style="padding:6px 12px;" title="Close observation card">✕</button>
+          </div>
+        </div>
+
       </aside>
 
     </div>
@@ -1492,7 +1689,7 @@
       
       <!-- Narration Subtitle Box -->
       <div class="narration-subtitle-box interactive" id="narration-box">
-        <span class="narration-speaker">🎙️ NARRATOR (GEORGE):</span>
+        <span class="narration-speaker">🎙️ NARRATOR (AZAZEL):</span>
         <span id="narration-text">Stage One: The Solar System. Spanning approximately 8.3 light-hours across Neptune's orbit.</span>
       </div>
 
@@ -1568,7 +1765,7 @@
       </div>
 
       <p style="font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
-        Audio features ElevenLabs scientific narration voiced by George with cinematic acoustic SFX. Use Left Click + Drag to Orbit, Right Click to Pan, and Scroll to continuously Zoom.
+        Audio features ElevenLabs scientific narration voiced by Azazel with cinematic acoustic SFX. Use Left Click + Drag to Orbit, Right Click to Pan, and Scroll to continuously Zoom.
       </p>
     </div>
   </div>
@@ -3053,7 +3250,7 @@
         narrAudio.currentTime = 0;
         narrAudio.volume = 0.95;
         
-        // Gently duck the acoustic score so George's narration is crystal clear
+        // Gently duck the acoustic score so Azazel's narration is crystal clear
         musicManager.duckForNarration(true);
 
         narrAudio.onended = () => {

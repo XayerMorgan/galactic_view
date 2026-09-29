@@ -8,9 +8,10 @@ namespace CosmicZoom
     /// </summary>
     public class GalacticRotator : MonoBehaviour
     {
-        [SerializeField] private float rotationSpeedDegrees = 3.5f;
-        [SerializeField] private Vector3 rotationAxis = Vector3.up;
-        [SerializeField] private bool includeChildren = false;
+        public float rotationSpeedDegrees = 3.5f;
+        public float rotationSpeed { get => rotationSpeedDegrees; set => rotationSpeedDegrees = value; }
+        public Vector3 rotationAxis = Vector3.up;
+        public bool includeChildren = false;
 
         private void Update()
         {

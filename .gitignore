@@ -32,3 +32,4 @@ dist/
 *.spec
 __pycache__/
 CosmicZoom_DesktopApp.exe
+*.log
