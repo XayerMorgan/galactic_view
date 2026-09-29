@@ -677,29 +677,38 @@ namespace CosmicZoom
 
                 GL.End();
 
-                // 3D Glowing Billboard Quads for Messier Objects & Bright Stars on the Celestial Sphere
+                // Delicate Optical Target Reticles for Messier Objects & Bright Stars on the Celestial Vault
                 if (showMessierMarkers && mainCamera != null)
                 {
-                    GL.Begin(GL.QUADS);
+                    GL.Begin(GL.LINES);
                     Vector3 camR = mainCamera.transform.right;
                     Vector3 camU = mainCamera.transform.up;
 
                     foreach (var obj in catalog)
                     {
                         Vector3 center = GetWorldPositionOfObject(obj);
-                        float sz = (obj.objectType == CelestialObjectType.MajorStar ? 140f : 280f);
-                        if (currentTarget == obj) sz *= 1.5f;
+                        bool isCurrent = (currentTarget == obj);
+                        float sz = isCurrent ? 70f : (obj.objectType == CelestialObjectType.MajorStar ? 24f : 36f);
 
                         Color col = obj.markerColor;
+                        col.a = isCurrent ? 0.95f : 0.40f;
                         GL.Color(col);
 
                         Vector3 vr = camR * sz;
                         Vector3 vu = camU * sz;
 
-                        GL.Vertex(center - vr - vu);
-                        GL.Vertex(center + vr - vu);
-                        GL.Vertex(center + vr + vu);
-                        GL.Vertex(center - vr + vu);
+                        // Precise Diamond Reticle (◆)
+                        GL.Vertex(center + vr); GL.Vertex(center + vu);
+                        GL.Vertex(center + vu); GL.Vertex(center - vr);
+                        GL.Vertex(center - vr); GL.Vertex(center - vu);
+                        GL.Vertex(center - vu); GL.Vertex(center + vr);
+
+                        // Precision Crosshair Ticks for Targeted Object
+                        if (isCurrent)
+                        {
+                            GL.Vertex(center - vr * 1.6f); GL.Vertex(center + vr * 1.6f);
+                            GL.Vertex(center - vu * 1.6f); GL.Vertex(center + vu * 1.6f);
+                        }
                     }
                     GL.End();
                 }
