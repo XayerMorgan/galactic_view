@@ -483,6 +483,14 @@ namespace CosmicZoom
             float btnW = 125f;
             float rx = virtualW - 24;
 
+            // Universal Quit Button (Esc / ⏻ QUIT)
+            rx -= 78f;
+            if (DrawSleekButton(new Rect(rx, 18, 72, 36), "⏻ QUIT", false, new Color(1f, 0.4f, 0.4f), 11))
+            {
+                if (engine != null) engine.QuitApplication();
+                else Application.Quit();
+            }
+
             // Mission Audio Narrator Toggle
             rx -= 78f;
             bool isNarrOn = audioController != null && audioController.IsNarratorAutoPlay;
@@ -627,6 +635,12 @@ namespace CosmicZoom
             float rightX = virtualW - rightW - 14f;
             Rect rightRect = new Rect(rightX, leftY, rightW, 460f);
             DrawSciFiPanel(rightRect, "// TELEMETRY.SYS //");
+
+            // Center Quick-Focus Targets Bar (Close-up inspection of planets, stars & starships)
+            if (!isStarryMode)
+            {
+                DrawQuickFocusBar(virtualW, leftW, rightX);
+            }
 
             // Sleek Tab Switchers (3 wide tabs)
             float tabW = (rightW - 32f) / 3.0f;
@@ -1005,6 +1019,125 @@ namespace CosmicZoom
             }
 
             GUI.matrix = oldMatrix;
+        }
+
+        private void DrawQuickFocusBar(float virtualW, float leftW, float rightX)
+        {
+            if (engine == null) return;
+
+            float barX = leftW + 28f;
+            float barW = rightX - leftW - 28f;
+            if (barW < 360f) return; // Screen too narrow
+
+            float barY = 74f;
+            float barH = 50f;
+            Rect barRect = new Rect(barX, barY, barW, barH);
+            DrawSciFiPanel(barRect, "// TARGET.LOCK //");
+
+            // Subtitle status: Active target name + zoom hint
+            string statusStr = $"LOCK: {engine.currentTargetName.ToUpper()}  •  RANGE: {engine.targetDistance:0.0}m  (MOUSE SCROLL: ZOOM IN/OUT  •  R-DRAG: ORBIT 360°)";
+            GUI.Label(new Rect(barX + 12, barY + 4, barW - 24, 16), statusStr, reticleHeadingStyle);
+
+            int stage = engine.activeStageIndex;
+            float btnY = barY + 22f;
+            float btnH = 24f;
+
+            if (stage == 1)
+            {
+                string[] btnLabels = new string[] { "☀️ SUN", "🌍 EARTH", "🪐 JUPITER", "🪐 SATURN", "🚀 FLAGSHIP", "🛸 SCOUT", "🌌 OVERVIEW" };
+                float btnWidth = (barW - 20f) / btnLabels.Length;
+
+                for (int i = 0; i < btnLabels.Length; i++)
+                {
+                    Rect bRect = new Rect(barX + 10f + i * btnWidth, btnY, btnWidth - 4f, btnH);
+                    bool isTarget = (i == 0 && engine.currentTargetName.Contains("Sun")) ||
+                                   (i == 1 && engine.currentTargetName.Contains("Earth")) ||
+                                   (i == 2 && engine.currentTargetName.Contains("Jupiter")) ||
+                                   (i == 3 && engine.currentTargetName.Contains("Saturn")) ||
+                                   (i == 4 && engine.currentTargetName.Contains("Flagship")) ||
+                                   (i == 5 && engine.currentTargetName.Contains("Scout")) ||
+                                   (i == 6 && engine.currentTargetName.Contains("Overview"));
+
+                    if (DrawSleekButton(bRect, btnLabels[i], isTarget, Color.cyan, 10))
+                    {
+                        switch (i)
+                        {
+                            case 0: engine.FocusOnSun(); break;
+                            case 1: engine.FocusOnEarth(); break;
+                            case 2: engine.FocusOnJupiter(); break;
+                            case 3: engine.FocusOnSaturn(); break;
+                            case 4: engine.FocusOnFlagship(); break;
+                            case 5: engine.FocusOnScout(); break;
+                            case 6: engine.FocusOnOverview(); break;
+                        }
+                    }
+                }
+            }
+            else if (stage == 2)
+            {
+                string[] btnLabels = new string[] { "🌀 SAGITTARIUS A*", "☀️ ORION SPUR (BEACON)", "🌌 MILKY WAY DISK" };
+                float btnWidth = (barW - 20f) / btnLabels.Length;
+
+                for (int i = 0; i < btnLabels.Length; i++)
+                {
+                    Rect bRect = new Rect(barX + 10f + i * btnWidth, btnY, btnWidth - 4f, btnH);
+                    bool isTarget = (i == 0 && engine.currentTargetName.Contains("Sagittarius")) ||
+                                   (i == 1 && engine.currentTargetName.Contains("Orion")) ||
+                                   (i == 2 && engine.currentTargetName.Contains("Milky Way"));
+
+                    if (DrawSleekButton(bRect, btnLabels[i], isTarget, Color.cyan, 10))
+                    {
+                        switch (i)
+                        {
+                            case 0: engine.FocusOnSgrA(); break;
+                            case 1: engine.FocusOnOrionSpur(); break;
+                            case 2: engine.FocusOnMilkyWay(); break;
+                        }
+                    }
+                }
+            }
+            else if (stage == 3)
+            {
+                string[] btnLabels = new string[] { "🌀 ANDROMEDA GALAXY (M31)", "🌌 LOCAL GROUP OVERVIEW" };
+                float btnWidth = (barW - 20f) / btnLabels.Length;
+
+                for (int i = 0; i < btnLabels.Length; i++)
+                {
+                    Rect bRect = new Rect(barX + 10f + i * btnWidth, btnY, btnWidth - 4f, btnH);
+                    bool isTarget = (i == 0 && engine.currentTargetName.Contains("Andromeda")) ||
+                                   (i == 1 && engine.currentTargetName.Contains("Local Group"));
+
+                    if (DrawSleekButton(bRect, btnLabels[i], isTarget, Color.cyan, 10))
+                    {
+                        switch (i)
+                        {
+                            case 0: engine.FocusOnAndromeda(); break;
+                            case 1: engine.FocusOnLocalGroup(); break;
+                        }
+                    }
+                }
+            }
+            else if (stage == 4)
+            {
+                string[] btnLabels = new string[] { "🕸️ COSMIC WEB FILAMENTS", "🌐 CMB HORIZON SPHERE" };
+                float btnWidth = (barW - 20f) / btnLabels.Length;
+
+                for (int i = 0; i < btnLabels.Length; i++)
+                {
+                    Rect bRect = new Rect(barX + 10f + i * btnWidth, btnY, btnWidth - 4f, btnH);
+                    bool isTarget = (i == 0 && engine.currentTargetName.Contains("Filaments")) ||
+                                   (i == 1 && engine.currentTargetName.Contains("CMB"));
+
+                    if (DrawSleekButton(bRect, btnLabels[i], isTarget, Color.cyan, 10))
+                    {
+                        switch (i)
+                        {
+                            case 0: engine.FocusOnCosmicFilaments(); break;
+                            case 1: engine.FocusOnCMB(); break;
+                        }
+                    }
+                }
+            }
         }
 
         private void DrawCompRow(float x, float y, float w, float h, string name, string time, Color col)

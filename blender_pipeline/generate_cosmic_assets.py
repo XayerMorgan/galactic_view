@@ -154,30 +154,11 @@ mat_neptune = create_textured_material("Mat_Neptune", "earth_photosphere.jpg", (
 mat_boundary = create_textured_material("Mat_Boundary", "earth_photosphere.jpg", (0.2, 0.75, 1.0, 1.0), emission_strength=2.0)
 mat_corona = create_textured_material("Mat_SunCorona", "sun_corona_glow.png", (1.0, 0.9, 0.4, 1.0), emission_strength=4.0, is_transparent=True)
 
-# Sun Photosphere (Luminous central star)
-bpy.ops.mesh.primitive_uv_sphere_add(radius=4.5, segments=48, ring_count=32, location=(0, 0, 0))
+# Sun Photosphere (Luminous central star with seamless UV mapping)
+bpy.ops.mesh.primitive_uv_sphere_add(radius=4.5, segments=64, ring_count=48, location=(0, 0, 0))
 sun = bpy.context.active_object
 sun.name = "Sun_Photosphere"
 sun.data.materials.append(mat_sun)
-
-# Sun Multi-Layered Radiance Corona Disks (Planar and Cross-Billboards)
-sun_corona1 = create_circle_disk_mesh("Sun_Corona_XY", 16.0, segments=64)
-sun_corona1.data.materials.append(mat_corona)
-sun_corona1.parent = sun
-
-sun_corona2 = create_circle_disk_mesh("Sun_Corona_XZ", 16.0, segments=64)
-sun_corona2.rotation_euler = (math.radians(90), 0, 0)
-sun_corona2.data.materials.append(mat_corona)
-sun_corona2.parent = sun
-
-sun_corona3 = create_circle_disk_mesh("Sun_Corona_YZ", 16.0, segments=64)
-sun_corona3.rotation_euler = (0, math.radians(90), 0)
-sun_corona3.data.materials.append(mat_corona)
-sun_corona3.parent = sun
-
-sun_corona_outer = create_circle_disk_mesh("Sun_Corona_Outer", 26.0, segments=64)
-sun_corona_outer.data.materials.append(mat_corona)
-sun_corona_outer.parent = sun
 
 # Planetary Orbits: Distributed across angles around the Sun for natural celestial depth
 # Earth: 18.0 AU-scaled units, angle = 45 degrees
@@ -191,9 +172,6 @@ earth = bpy.context.active_object
 earth.name = "Earth"
 earth.data.materials.append(mat_earth)
 
-earth_orbit = create_ring_mesh("Earth_Orbit_Ring", earth_r - 0.08, earth_r + 0.08, segments=96)
-earth_orbit.data.materials.append(mat_boundary)
-
 # Jupiter: 38.0 units, angle = 145 degrees
 jup_r = 38.0
 jup_theta = math.radians(145.0)
@@ -204,9 +182,6 @@ bpy.ops.mesh.primitive_uv_sphere_add(radius=3.0, segments=40, ring_count=28, loc
 jup = bpy.context.active_object
 jup.name = "Jupiter"
 jup.data.materials.append(mat_jupiter)
-
-jup_orbit = create_ring_mesh("Jupiter_Orbit_Ring", jup_r - 0.10, jup_r + 0.10, segments=128)
-jup_orbit.data.materials.append(mat_boundary)
 
 # Saturn: 54.0 units, angle = 250 degrees
 sat_r = 54.0
@@ -225,9 +200,6 @@ sat_rings.rotation_euler = (math.radians(26.7), math.radians(15.0), 0)
 sat_rings.data.materials.append(mat_saturn)
 sat_rings.parent = sat
 
-sat_orbit = create_ring_mesh("Saturn_Orbit_Ring", sat_r - 0.10, sat_r + 0.10, segments=128)
-sat_orbit.data.materials.append(mat_boundary)
-
 # Neptune: 88.0 units (Outer solar boundary), angle = 325 degrees
 nep_r = 88.0
 nep_theta = math.radians(325.0)
@@ -238,9 +210,6 @@ bpy.ops.mesh.primitive_uv_sphere_add(radius=1.6, segments=32, ring_count=24, loc
 nep = bpy.context.active_object
 nep.name = "Neptune"
 nep.data.materials.append(mat_neptune)
-
-nep_orbit = create_ring_mesh("Neptune_Orbit_Boundary", nep_r - 0.12, nep_r + 0.12, segments=144)
-nep_orbit.data.materials.append(mat_boundary)
 
 fbx_sol = os.path.join(OUTPUT_DIR, "solar_system_bodies.fbx")
 bpy.ops.export_scene.fbx(filepath=fbx_sol, use_selection=False)

@@ -62,6 +62,21 @@ namespace CosmicZoom.Editor
             cam.transform.LookAt(Vector3.zero);
             RenderAndSave(cam, rt, tex, canopyOverlay, Path.Combine(outDir, "stage1_solar_system.png"));
 
+            // 1b. Close-up on Sun (Photosphere & Soft Radial Corona Halo)
+            cam.transform.position = new Vector3(0, 3f, 18f);
+            cam.transform.LookAt(Vector3.zero);
+            RenderAndSave(cam, rt, tex, null, Path.Combine(outDir, "sun_closeup.png"));
+
+            // 1c. Close-up on Deep-Space Survey Flagship (PBR Metallic Hull, Gold Wings, Cyan Thrusters)
+            GameObject flagshipObj = GameObject.Find("Survey_Flagship");
+            if (flagshipObj != null)
+            {
+                Vector3 shipPos = flagshipObj.transform.position;
+                cam.transform.position = shipPos + new Vector3(5f, 3.5f, 7.5f);
+                cam.transform.LookAt(shipPos);
+                RenderAndSave(cam, rt, tex, null, Path.Combine(outDir, "flagship_closeup.png"));
+            }
+
             // 2. Capture Stage 2 (Milky Way Galaxy)
             if (engine != null)
             {

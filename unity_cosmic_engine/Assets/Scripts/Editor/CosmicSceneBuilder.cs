@@ -59,6 +59,15 @@ namespace CosmicZoom.Editor
             Material matCosmicWeb = CreateMaterial("Mat_CosmicWeb", "Assets/Textures/cosmic_web_simulation.png", new Color(1f, 0.85f, 0.4f), 2.5f, 0.5f, isAdditive: true);
             Material matCMB = CreateMaterial("Mat_CMBHorizon", "Assets/Textures/cmb_horizon_sky.jpg", new Color(0.35f, 0.75f, 1f), 1.0f, isUnlit: true);
 
+            // Starship PBR Materials (Project GALAXY Modern Starships)
+            Material matFlagshipHull = CreateMaterial("Mat_FlagshipHull", "Assets/GALAXY/Ships/uss_astronautica_flagship.jpg", new Color(0.85f, 0.90f, 0.95f), 0.0f, 0.35f, metallic: 0.85f);
+            Material matDarkArmor = CreateMaterial("Mat_DarkArmor", "", new Color(0.12f, 0.15f, 0.20f), 0.0f, 0.4f, metallic: 0.9f);
+            Material matRadiatorGold = CreateMaterial("Mat_RadiatorGold", "", new Color(0.95f, 0.78f, 0.25f), 0.2f, 0.25f, metallic: 0.95f);
+            Material matIonCyan = CreateMaterial("Mat_IonCyan", "Assets/Textures/sun_corona_glow.png", new Color(0.0f, 0.9f, 1.0f), 6.0f, 0.5f, isAdditive: true);
+            Material matSensorAmber = CreateMaterial("Mat_SensorAmber", "", new Color(1.0f, 0.65f, 0.1f), 4.0f, 0.5f, isUnlit: true);
+            Material matCanopyGlass = CreateMaterial("Mat_CanopyGlass", "", new Color(0.95f, 0.8f, 0.3f), 0.5f, 0.1f, metallic: 0.9f);
+            Material matScoutHull = CreateMaterial("Mat_ScoutHull", "Assets/GALAXY/Ships/sol_scout_starship.jpg", new Color(0.85f, 0.90f, 0.95f), 0.0f, 0.3f, metallic: 0.85f);
+
             // 2. Root Manager GameObject
             GameObject managerObj = new GameObject("[Cosmic_Zoom_Engine]");
             CosmicZoomEngine engine = managerObj.AddComponent<CosmicZoomEngine>();
@@ -147,6 +156,9 @@ namespace CosmicZoom.Editor
                 scout.transform.localScale = Vector3.one * 0.55f;
                 scout.transform.rotation = Quaternion.Euler(10f, -20f, -10f);
             }
+
+            // Assign Textures, Materials, Kinematics & Rotation to Starships
+            AssignStarshipMaterials(flagship, scout, matFlagshipHull, matDarkArmor, matRadiatorGold, matIonCyan, matSensorAmber, matCanopyGlass, matScoutHull);
 
             // Assign Textures, Materials, Kinematics & Rotation to Renderers
             AssignStage1Bodies(s1Obj, matSun, matSunCorona, matEarth, matJupiter, matSaturn, matSaturnRings, matNeptune, matOrbit);
@@ -271,7 +283,7 @@ namespace CosmicZoom.Editor
             }
         }
 
-        private static Material CreateMaterial(string name, string texturePath, Color color, float emission, float roughness = 0.5f, bool isAdditive = false, bool isTransparent = false, bool isUnlit = false)
+        private static Material CreateMaterial(string name, string texturePath, Color color, float emission, float roughness = 0.5f, bool isAdditive = false, bool isTransparent = false, bool isUnlit = false, float metallic = 0.0f)
         {
             string matPath = "Assets/Materials/" + name + ".mat";
             Material mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
@@ -305,6 +317,7 @@ namespace CosmicZoom.Editor
             if (mat.HasProperty("_TintColor")) mat.SetColor("_TintColor", color);
             if (mat.HasProperty("_Glossiness")) mat.SetFloat("_Glossiness", 1.0f - roughness);
             if (mat.HasProperty("_Smoothness")) mat.SetFloat("_Smoothness", 1.0f - roughness);
+            if (mat.HasProperty("_Metallic")) mat.SetFloat("_Metallic", metallic);
 
             if (!string.IsNullOrEmpty(texturePath))
             {
@@ -338,6 +351,62 @@ namespace CosmicZoom.Editor
                 return instance;
             }
             return null;
+        }
+
+        private static void AssignStarshipMaterials(GameObject flagship, GameObject scout, 
+            Material flagshipHull, Material darkArmor, Material radiatorGold, Material ionCyan, Material sensorAmber, Material canopyGlass, Material scoutHull)
+        {
+            if (flagship != null)
+            {
+                foreach (Renderer r in flagship.GetComponentsInChildren<Renderer>(true))
+                {
+                    string n = r.gameObject.name.ToLower();
+                    if (n.Contains("ion") || n.Contains("exhaust"))
+                    {
+                        r.sharedMaterial = ionCyan;
+                    }
+                    else if (n.Contains("sensor") || n.Contains("prow"))
+                    {
+                        r.sharedMaterial = sensorAmber;
+                    }
+                    else if (n.Contains("radiator"))
+                    {
+                        r.sharedMaterial = radiatorGold;
+                    }
+                    else if (n.Contains("bridge") || n.Contains("spike") || n.Contains("nozzle"))
+                    {
+                        r.sharedMaterial = darkArmor;
+                    }
+                    else
+                    {
+                        r.sharedMaterial = flagshipHull;
+                    }
+                }
+            }
+
+            if (scout != null)
+            {
+                foreach (Renderer r in scout.GetComponentsInChildren<Renderer>(true))
+                {
+                    string n = r.gameObject.name.ToLower();
+                    if (n.Contains("canopy"))
+                    {
+                        r.sharedMaterial = canopyGlass;
+                    }
+                    else if (n.Contains("ion") || n.Contains("exhaust"))
+                    {
+                        r.sharedMaterial = ionCyan;
+                    }
+                    else if (n.Contains("thruster") || n.Contains("nozzle"))
+                    {
+                        r.sharedMaterial = darkArmor;
+                    }
+                    else
+                    {
+                        r.sharedMaterial = scoutHull;
+                    }
+                }
+            }
         }
 
         private static void AssignStage1Bodies(GameObject root, Material sun, Material sunCorona, Material earth, Material jupiter, Material saturn, Material saturnRings, Material neptune, Material orbit)
