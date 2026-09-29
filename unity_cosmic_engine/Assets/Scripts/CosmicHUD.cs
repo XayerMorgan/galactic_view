@@ -28,6 +28,7 @@ namespace CosmicZoom
 
         // Right Dock Tab: 0 = Light Transit Pulse (c), 1 = Spacecraft Benchmarks, 2 = Messier & Starry Sky
         private int activeRightTab = 0;
+        private bool showLocationPicker = false;
 
         // GUI Styles
         private GUIStyle panelStyle;
@@ -701,47 +702,97 @@ namespace CosmicZoom
                 // -------------------------------------------------------------
                 // TAB 2: STARRY NIGHT & CHARLES MESSIER DEEP-SKY OBSERVATORY
                 // -------------------------------------------------------------
-                float ry = leftY + 54;
+                float ry = leftY + 50;
 
                 if (messierCatalog == null) messierCatalog = CelestialMessierCatalog.Instance ?? FindAnyObjectByType<CelestialMessierCatalog>();
 
-                // 4 Tactical Filter Toggles: Lines, Messier, Star Labels, RA/Dec Grid
-                float subBtnW = (rightW - 42) / 4.0f;
+                // Observer Location Banner with 100% Offline Privacy Guarantee
+                GUI.Box(new Rect(rightX + 15, ry, rightW - 30, 48), "", cardStyle);
+                string obsName = messierCatalog != null ? messierCatalog.currentObserver.locationName : "Mauna Kea Observatory";
+                float obsLat = messierCatalog != null ? messierCatalog.currentObserver.latitude : 19.82f;
+                float obsLon = messierCatalog != null ? messierCatalog.currentObserver.longitude : -155.47f;
+                string latSign = obsLat >= 0 ? $"{obsLat:0.0}°N" : $"{-obsLat:0.0}°S";
+                string lonSign = obsLon >= 0 ? $"{obsLon:0.0}°E" : $"{-obsLon:0.0}°W";
+
+                GUI.Label(new Rect(rightX + 25, ry + 4, rightW - 170, 20), $"📍 OBSERVER: {obsName.ToUpper()}", statValueGoldStyle);
+                GUI.Label(new Rect(rightX + 25, ry + 24, rightW - 170, 18), $"🔒 {latSign}, {lonSign} • 100% LOCAL PRIVACY (ZERO NETWORK)", hudMicroStyle);
+
+                if (GUI.Button(new Rect(rightX + rightW - 150, ry + 8, 125, 32), showLocationPicker ? "✓ Close [Done]" : "📍 Set Location", showLocationPicker ? activeButtonStyle : buttonStyle))
+                {
+                    showLocationPicker = !showLocationPicker;
+                }
+                ry += 52;
+
+                if (showLocationPicker)
+                {
+                    // Location Preset Drawer (No GPS / No Remote API needed)
+                    GUI.Box(new Rect(rightX + 15, ry, rightW - 30, 142), "", cardStyle);
+                    GUI.Label(new Rect(rightX + 25, ry + 6, rightW - 50, 18), "SELECT DARK-SKY OBSERVATORY OR CITY PRESET (OFFLINE):", statLabelStyle);
+
+                    float locBtnW = (rightW - 55) / 3.0f;
+                    float locBtnH = 24f;
+                    for (int bi = 0; bi < CelestialMessierCatalog.BuiltinLocations.Length; bi++)
+                    {
+                        var loc = CelestialMessierCatalog.BuiltinLocations[bi];
+                        int lRow = bi / 3;
+                        int lCol = bi % 3;
+                        Rect lRect = new Rect(rightX + 20 + lCol * (locBtnW + 5), ry + 24 + lRow * (locBtnH + 4), locBtnW, locBtnH);
+                        bool isCurLoc = messierCatalog != null && messierCatalog.currentObserver.locationName == loc.locationName;
+                        if (GUI.Button(lRect, loc.locationName, isCurLoc ? activeButtonStyle : buttonStyle))
+                        {
+                            if (messierCatalog != null)
+                            {
+                                messierCatalog.SetObserverLocation(loc.locationName, loc.latitude, loc.longitude, loc.regionDesc);
+                                if (audioController != null) audioController.PlaySoftChime();
+                            }
+                        }
+                    }
+                    ry += 148;
+                }
+
+                // 5 Tactical Filter Toggles: Lines, Messier, Star Labels, Horizon Ring, RA/Dec Grid
+                float subBtnW = (rightW - 46) / 5.0f;
                 bool linesOn = messierCatalog != null && messierCatalog.showConstellationLines;
-                if (GUI.Button(new Rect(rightX + 15, ry, subBtnW, 30), linesOn ? "✨ Lines: ON" : "✨ Lines: OFF", linesOn ? activeButtonStyle : buttonStyle))
+                if (GUI.Button(new Rect(rightX + 15, ry, subBtnW, 28), linesOn ? "✨ Lines" : "✨ Off", linesOn ? activeButtonStyle : buttonStyle))
                 {
                     if (messierCatalog != null) messierCatalog.showConstellationLines = !messierCatalog.showConstellationLines;
                 }
 
                 bool messierOn = messierCatalog != null && messierCatalog.showMessierMarkers;
-                if (GUI.Button(new Rect(rightX + 19 + subBtnW, ry, subBtnW, 30), messierOn ? "🌀 Messier: ON" : "🌀 Messier: OFF", messierOn ? activeButtonStyle : buttonStyle))
+                if (GUI.Button(new Rect(rightX + 18 + subBtnW, ry, subBtnW, 28), messierOn ? "🌀 Messier" : "🌀 Off", messierOn ? activeButtonStyle : buttonStyle))
                 {
                     if (messierCatalog != null) messierCatalog.showMessierMarkers = !messierCatalog.showMessierMarkers;
                 }
 
                 bool starsOn = messierCatalog != null && messierCatalog.showStarLabels;
-                if (GUI.Button(new Rect(rightX + 23 + subBtnW * 2, ry, subBtnW, 30), starsOn ? "⭐ Stars: ON" : "⭐ Stars: OFF", starsOn ? activeButtonStyle : buttonStyle))
+                if (GUI.Button(new Rect(rightX + 21 + subBtnW * 2, ry, subBtnW, 28), starsOn ? "⭐ Stars" : "⭐ Off", starsOn ? activeButtonStyle : buttonStyle))
                 {
                     if (messierCatalog != null) messierCatalog.showStarLabels = !messierCatalog.showStarLabels;
                 }
 
+                bool horizOn = messierCatalog != null && messierCatalog.showLocalHorizonPlane;
+                if (GUI.Button(new Rect(rightX + 24 + subBtnW * 3, ry, subBtnW, 28), horizOn ? "🌍 Horizon" : "🌍 Off", horizOn ? activeButtonStyle : buttonStyle))
+                {
+                    if (messierCatalog != null) messierCatalog.showLocalHorizonPlane = !messierCatalog.showLocalHorizonPlane;
+                }
+
                 bool gridOn = messierCatalog != null && messierCatalog.showRaDecGrid;
-                if (GUI.Button(new Rect(rightX + 27 + subBtnW * 3, ry, subBtnW, 30), gridOn ? "🌐 Grid: ON" : "🌐 Grid: OFF", gridOn ? activeButtonStyle : buttonStyle))
+                if (GUI.Button(new Rect(rightX + 27 + subBtnW * 4, ry, subBtnW, 28), gridOn ? "🌐 Grid" : "🌐 Off", gridOn ? activeButtonStyle : buttonStyle))
                 {
                     if (messierCatalog != null) messierCatalog.showRaDecGrid = !messierCatalog.showRaDecGrid;
                 }
 
-                ry += 36;
+                ry += 32;
 
                 // Quick Targets Selector Grid
                 GUI.Label(new Rect(rightX + 18, ry, rightW - 36, 18), "QUICK TARGET SELECTOR // MESSIER DEEP SKY:", statLabelStyle);
-                ry += 20;
+                ry += 18;
 
                 string[] quickIds = new string[] { "M31", "M42", "M45", "M13", "M1", "M16", "M27", "M51", "M57", "M87", "M104", "STAR-SIRIUS" };
                 string[] quickLabels = new string[] { "M31 Andromeda", "M42 Orion", "M45 Pleiades", "M13 Hercules", "M1 Crab", "M16 Pillars", "M27 Dumbbell", "M51 Whirlpool", "M57 Ring", "M87 Virgo A", "M104 Sombrero", "Sirius" };
 
                 float qW = (rightW - 42) / 4.0f;
-                float qH = 26f;
+                float qH = 24f;
                 for (int qi = 0; qi < quickIds.Length; qi++)
                 {
                     int row = qi / 4;
@@ -753,13 +804,13 @@ namespace CosmicZoom
                         if (messierCatalog != null) messierCatalog.SelectTargetById(quickIds[qi]);
                     }
                 }
-                ry += (qH + 3) * 3 + 6;
+                ry += (qH + 3) * 3 + 4;
 
                 // Deep-Sky Observation Eyepiece Card
                 var target = messierCatalog != null ? messierCatalog.currentTarget : null;
                 if (target != null)
                 {
-                    GUI.Box(new Rect(rightX + 15, ry, rightW - 30, 240), "", cardStyle);
+                    GUI.Box(new Rect(rightX + 15, ry, rightW - 30, 248), "", cardStyle);
 
                     float eyeX = rightX + 25;
                     float eyeY = ry + 8;
@@ -773,18 +824,27 @@ namespace CosmicZoom
                     GUI.Label(new Rect(eyeX + 48, eyeY + 18, rightW - 110, 18), $"{target.objectType} • {target.constellation.ToUpper()} ({target.ngcOrAlt})", statLabelStyle);
 
                     float gridY = eyeY + 44;
-                    GUI.Label(new Rect(eyeX, gridY, 180, 16), "COORDINATES:", statLabelStyle);
+                    GUI.Label(new Rect(eyeX, gridY, 180, 16), "COORDINATES (RA / DEC):", statLabelStyle);
                     GUI.Label(new Rect(eyeX, gridY + 14, 210, 20), target.GetFormattedCoordinates(), compValueStyle);
+
+                    // Real-Time Alt / Az & Horizon Visibility (Calculated 100% locally from observer lat/lon + sidereal time)
+                    var (alt, az, isAbove) = messierCatalog.CalculateAltAz(target.raHours, target.decDegrees);
+                    string compass = GetCompassDirection(az);
+                    string visText = isAbove
+                        ? $"🟢 ALT: {alt:+0.0;-0.0}° (High in {compass}) • AZ: {az:000}° [VISIBLE TONIGHT]"
+                        : $"🔴 ALT: {alt:+0.0;-0.0}° • AZ: {az:000}° [BELOW HORIZON]";
 
                     GUI.Label(new Rect(eyeX + 220, gridY, 180, 16), "MAGNITUDE & DISTANCE:", statLabelStyle);
                     double distKm = target.distanceLy * TravelTimeCalculator.LY_KM;
                     string distStr = TravelTimeCalculator.FormatDistanceSpan(distKm, activeUnitSystem);
                     GUI.Label(new Rect(eyeX + 220, gridY + 14, 180, 20), $"m = {target.apparentMag:+0.00;-0.00;0.00}", compValueStyle);
-                    GUI.Label(new Rect(eyeX, gridY + 36, rightW - 50, 20), $"Dist: {target.distanceLy:N0} LY • {distStr}", statValueCyanStyle);
 
-                    GUI.Label(new Rect(eyeX, gridY + 56, rightW - 50, 44), target.description, bodyStyle);
+                    GUI.Label(new Rect(eyeX, gridY + 36, rightW - 50, 20), visText, isAbove ? statValueCyanStyle : statLabelStyle);
+                    GUI.Label(new Rect(eyeX, gridY + 54, rightW - 50, 20), $"Dist: {target.distanceLy:N0} LY • {distStr}", statValueGoldStyle);
 
-                    if (GUI.Button(new Rect(eyeX, gridY + 104, rightW - 50, 42), $"🎯 LOCK TELESCOPE ON [{target.id}] (AIM CAMERA)", activeButtonStyle))
+                    GUI.Label(new Rect(eyeX, gridY + 74, rightW - 50, 38), target.description, bodyStyle);
+
+                    if (GUI.Button(new Rect(eyeX, gridY + 114, rightW - 50, 40), $"🎯 LOCK TELESCOPE ON [{target.id}] (AIM CAMERA)", activeButtonStyle))
                     {
                         if (messierCatalog != null)
                         {
@@ -905,6 +965,19 @@ namespace CosmicZoom
             userScale = Mathf.Clamp(newScale, 0.9f, 2.0f);
             PlayerPrefs.SetFloat("Cosmic_A11y_Scale", userScale);
             if (audioController != null) audioController.PlaySoftChime();
+        }
+
+        private string GetCompassDirection(float azDeg)
+        {
+            azDeg = (azDeg % 360f + 360f) % 360f;
+            if (azDeg >= 337.5f || azDeg < 22.5f) return "N";
+            if (azDeg >= 22.5f && azDeg < 67.5f) return "NE";
+            if (azDeg >= 67.5f && azDeg < 112.5f) return "E";
+            if (azDeg >= 112.5f && azDeg < 157.5f) return "SE";
+            if (azDeg >= 157.5f && azDeg < 202.5f) return "S";
+            if (azDeg >= 202.5f && azDeg < 247.5f) return "SW";
+            if (azDeg >= 247.5f && azDeg < 292.5f) return "W";
+            return "NW";
         }
     }
 }

@@ -66,6 +66,15 @@ namespace CosmicZoom
     }
 
     [System.Serializable]
+    public class ObserverLocation
+    {
+        public string locationName;
+        public float latitude;  // -90 to +90
+        public float longitude; // -180 to +180
+        public string regionDesc;
+    }
+
+    [System.Serializable]
     public class ConstellationOutline
     {
         public string name;
@@ -79,11 +88,40 @@ namespace CosmicZoom
     /// Native Unity Starry Night observation engine.
     /// Manages the real astronomical celestial vault, constellation line networks,
     /// and the complete Charles Messier deep-sky catalog (M1 through M110).
-    /// Provides telescope lock-on, RA/Dec coordinate math, and optical reticles.
+    /// Provides telescope lock-on, RA/Dec coordinate math, optical reticles,
+    /// and 100% privacy-preserving local offline horizontal ephemeris (Alt/Az & LST).
     /// </summary>
     public class CelestialMessierCatalog : MonoBehaviour
     {
         public static CelestialMessierCatalog Instance { get; private set; }
+
+        [Header("Privacy-Preserving Local Observer Location (100% Offline)")]
+        public ObserverLocation currentObserver = new ObserverLocation
+        {
+            locationName = "Mauna Kea Dark-Sky Observatory",
+            latitude = 19.82f,
+            longitude = -155.47f,
+            regionDesc = "Hawaii (Premier Optical Observatory)"
+        };
+
+        public bool onlyShowVisibleTonight = false;
+        public bool showLocalHorizonPlane = true;
+
+        // Built-in Offline Preset Locations (No remote IP tracking or external geolocation)
+        public static readonly ObserverLocation[] BuiltinLocations = new ObserverLocation[]
+        {
+            new ObserverLocation { locationName = "Mauna Kea Observatory", latitude = 19.82f, longitude = -155.47f, regionDesc = "Hawaii (Premier Optical Observatory)" },
+            new ObserverLocation { locationName = "Paranal VLT Observatory", latitude = -24.63f, longitude = -70.40f, regionDesc = "Atacama Desert, Chile (Ultra Dark Sky)" },
+            new ObserverLocation { locationName = "Palomar Observatory", latitude = 33.36f, longitude = -116.86f, regionDesc = "California, USA" },
+            new ObserverLocation { locationName = "Royal Observatory Greenwich", latitude = 51.48f, longitude = 0.00f, regionDesc = "London, UK (Prime Meridian)" },
+            new ObserverLocation { locationName = "New York City", latitude = 40.71f, longitude = -74.01f, regionDesc = "US East Coast" },
+            new ObserverLocation { locationName = "Chicago / Midwest", latitude = 41.88f, longitude = -87.63f, regionDesc = "US Midwest" },
+            new ObserverLocation { locationName = "Los Angeles", latitude = 34.05f, longitude = -118.24f, regionDesc = "US West Coast" },
+            new ObserverLocation { locationName = "London", latitude = 51.51f, longitude = -0.13f, regionDesc = "United Kingdom" },
+            new ObserverLocation { locationName = "Paris", latitude = 48.86f, longitude = 2.35f, regionDesc = "France" },
+            new ObserverLocation { locationName = "Tokyo", latitude = 35.68f, longitude = 139.69f, regionDesc = "Japan" },
+            new ObserverLocation { locationName = "Sydney", latitude = -33.87f, longitude = 151.21f, regionDesc = "Australia" }
+        };
 
         [Header("Vault Configuration")]
         public float celestialSphereRadius = 18000f;
@@ -112,6 +150,7 @@ namespace CosmicZoom
         private void Awake()
         {
             Instance = this;
+            LoadObserverLocation();
             BuildMessierDatabase();
             BuildConstellationDatabase();
             BuildRaDecGrid();
@@ -473,6 +512,105 @@ namespace CosmicZoom
             aimCoroutine = null;
         }
 
+        public void SetObserverLocation(string name, float lat, float lon, string region)
+        {
+            currentObserver.locationName = name;
+            currentObserver.latitude = Mathf.Clamp(lat, -90f, 90f);
+            currentObserver.longitude = Mathf.Clamp(lon, -180f, 180f);
+            currentObserver.regionDesc = region;
+
+            PlayerPrefs.SetString("Cosmic_Obs_Name", currentObserver.locationName);
+            PlayerPrefs.SetFloat("Cosmic_Obs_Lat", currentObserver.latitude);
+            PlayerPrefs.SetFloat("Cosmic_Obs_Lon", currentObserver.longitude);
+            PlayerPrefs.SetString("Cosmic_Obs_Region", currentObserver.regionDesc);
+            PlayerPrefs.Save();
+        }
+
+        public void LoadObserverLocation()
+        {
+            if (PlayerPrefs.HasKey("Cosmic_Obs_Name"))
+            {
+                currentObserver.locationName = PlayerPrefs.GetString("Cosmic_Obs_Name", currentObserver.locationName);
+                currentObserver.latitude = PlayerPrefs.GetFloat("Cosmic_Obs_Lat", currentObserver.latitude);
+                currentObserver.longitude = PlayerPrefs.GetFloat("Cosmic_Obs_Lon", currentObserver.longitude);
+                currentObserver.regionDesc = PlayerPrefs.GetString("Cosmic_Obs_Region", currentObserver.regionDesc);
+            }
+        }
+
+        /// <summary>
+        /// 100% Offline Greenwich Mean Sidereal Time (GMST) calculation.
+        /// Preserves zero-network local privacy.
+        /// </summary>
+        public static double GetCurrentGMSTHours()
+        {
+            DateTime utc = DateTime.UtcNow;
+            DateTime j2000 = new DateTime(2000, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+            double d = (utc - j2000).TotalDays;
+
+            double gmst = 18.697374558 + 24.06570982441908 * d;
+            gmst = (gmst % 24.0 + 24.0) % 24.0;
+            return gmst;
+        }
+
+        /// <summary>
+        /// 100% Offline Local Sidereal Time (LST) calculation for observer's longitude.
+        /// </summary>
+        public double GetLocalSiderealTimeHours()
+        {
+            double gmst = GetCurrentGMSTHours();
+            double lst = gmst + (currentObserver.longitude / 15.0);
+            return (lst % 24.0 + 24.0) % 24.0;
+        }
+
+        /// <summary>
+        /// Computes Altitude (h) and Azimuth (A) for an object from the observer's location.
+        /// h > 0 indicates the object is above the horizon (visible tonight).
+        /// </summary>
+        public (float altitudeDeg, float azimuthDeg, bool isAboveHorizon) CalculateAltAz(float raHours, float decDeg)
+        {
+            double lstHours = GetLocalSiderealTimeHours();
+            double hourAngleHours = lstHours - raHours;
+            double haRad = (hourAngleHours * 15.0) * Mathf.Deg2Rad;
+            double latRad = currentObserver.latitude * Mathf.Deg2Rad;
+            double decRad = decDeg * Mathf.Deg2Rad;
+
+            // sin(alt) = sin(lat)*sin(dec) + cos(lat)*cos(dec)*cos(HA)
+            double sinAlt = Math.Sin(latRad) * Math.Sin(decRad) + Math.Cos(latRad) * Math.Cos(decRad) * Math.Cos(haRad);
+            sinAlt = Math.Max(-1.0, Math.Min(1.0, sinAlt));
+            double altRad = Math.Asin(sinAlt);
+            float altDeg = (float)(altRad * Mathf.Rad2Deg);
+
+            // cos(az) = (sin(dec) - sin(lat)*sin(alt)) / (cos(lat)*cos(alt))
+            double cosAlt = Math.Cos(altRad);
+            float azDeg = 0f;
+            if (Math.Abs(cosAlt) > 1e-5)
+            {
+                double cosAz = (Math.Sin(decRad) - Math.Sin(latRad) * sinAlt) / (Math.Cos(latRad) * cosAlt);
+                cosAz = Math.Max(-1.0, Math.Min(1.0, cosAz));
+                double azRad = Math.Acos(cosAz);
+                azDeg = (float)(azRad * Mathf.Rad2Deg);
+                if (Math.Sin(haRad) > 0)
+                {
+                    azDeg = 360f - azDeg;
+                }
+            }
+
+            return (altDeg, azDeg, altDeg > 0f);
+        }
+
+        public Vector3 GetObserverZenithUnitVector()
+        {
+            double lst = GetLocalSiderealTimeHours();
+            float raRad = (float)(lst / 24.0 * Math.PI * 2.0);
+            float decRad = currentObserver.latitude * Mathf.Deg2Rad;
+
+            float x = Mathf.Cos(decRad) * Mathf.Cos(raRad);
+            float y = Mathf.Sin(decRad);
+            float z = Mathf.Cos(decRad) * Mathf.Sin(raRad);
+
+            return new Vector3(x, y, z).normalized;
+        }
+
         private void OnRenderObject()
         {
             if (!isStarryNightActive) return;
@@ -506,7 +644,7 @@ namespace CosmicZoom
                     }
                 }
 
-                // RA/Dec grid
+                // RA/Dec equatorial grid
                 if (showRaDecGrid && gridLines.Count > 0)
                 {
                     GL.Color(new Color(1.0f, 0.85f, 0.3f, 0.25f));
@@ -514,6 +652,29 @@ namespace CosmicZoom
                     {
                         GL.Vertex(gridLines[i]);
                         GL.Vertex(gridLines[i + 1]);
+                    }
+                }
+
+                // Local Observer Horizon Circle (Altitude = 0)
+                if (showLocalHorizonPlane)
+                {
+                    Vector3 zenith = GetObserverZenithUnitVector();
+                    Vector3 north = Vector3.Cross(zenith, Vector3.right).normalized;
+                    if (north == Vector3.zero) north = Vector3.Cross(zenith, Vector3.forward).normalized;
+                    Vector3 east = Vector3.Cross(zenith, north).normalized;
+
+                    GL.Color(new Color(0.1f, 0.95f, 0.5f, 0.65f)); // Crisp green horizon ring
+                    int hSegs = 64;
+                    for (int i = 0; i < hSegs; i++)
+                    {
+                        float a0 = (float)i / hSegs * Mathf.PI * 2f;
+                        float a1 = (float)(i + 1) / hSegs * Mathf.PI * 2f;
+
+                        Vector3 hp0 = (north * Mathf.Cos(a0) + east * Mathf.Sin(a0)) * (celestialSphereRadius * 0.98f);
+                        Vector3 hp1 = (north * Mathf.Cos(a1) + east * Mathf.Sin(a1)) * (celestialSphereRadius * 0.98f);
+
+                        GL.Vertex(hp0);
+                        GL.Vertex(hp1);
                     }
                 }
 
