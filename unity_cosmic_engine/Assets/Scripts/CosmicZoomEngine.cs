@@ -79,6 +79,12 @@ namespace CosmicZoom
                 FirePulse();
             }
 
+            // Zero Gyro / Reset Camera: Key R
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                ResetCamera();
+            }
+
             // Continuous scroll wheel zoom
             float scroll = Input.GetAxis("Mouse ScrollWheel");
             if (Mathf.Abs(scroll) > 0.01f)

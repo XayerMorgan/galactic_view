@@ -75,14 +75,26 @@
       pointer-events: auto;
     }
 
-    /* Glassmorphism Panels */
+    /* Tactical Starship Cockpit Console Panels */
     .glass-card {
-      background: var(--panel-bg);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid var(--panel-border);
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 0 16px var(--panel-glow);
-      border-radius: 8px;
+      background: rgba(5, 11, 24, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8), inset 0 0 18px rgba(56, 189, 248, 0.08);
+      clip-path: polygon(0 8px, 8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px));
+      position: relative;
+    }
+
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, var(--accent-cyan) 25%, var(--accent-cyan) 75%, transparent 100%);
+      pointer-events: none;
     }
 
     /* Header Bar */
@@ -740,37 +752,143 @@
       transition: width 0.3s ease;
     }
 
-    /* Reticle Marker on screen */
+    /* Spaceship Canopy HUD Overlay */
+    .canopy-hud-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    /* Viewport Canopy Frame Struts */
+    .canopy-strut {
+      position: absolute;
+      background: rgba(8, 16, 32, 0.88);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.2);
+    }
+    .canopy-strut.top-left {
+      top: 0; left: 0; width: 140px; height: 10px;
+      border-bottom: 2px solid var(--accent-cyan);
+    }
+    .canopy-strut.top-left::after {
+      content: ''; position: absolute; top: 0; left: 0; width: 10px; height: 100px;
+      background: rgba(8, 16, 32, 0.88); border-right: 2px solid var(--accent-cyan);
+    }
+    .canopy-strut.top-right {
+      top: 0; right: 0; width: 140px; height: 10px;
+      border-bottom: 2px solid var(--accent-cyan);
+    }
+    .canopy-strut.top-right::after {
+      content: ''; position: absolute; top: 0; right: 0; width: 10px; height: 100px;
+      background: rgba(8, 16, 32, 0.88); border-left: 2px solid var(--accent-cyan);
+    }
+    .canopy-strut.bottom-left {
+      bottom: 0; left: 0; width: 140px; height: 10px;
+      border-top: 2px solid var(--accent-cyan);
+    }
+    .canopy-strut.bottom-left::after {
+      content: ''; position: absolute; bottom: 0; left: 0; width: 10px; height: 100px;
+      background: rgba(8, 16, 32, 0.88); border-right: 2px solid var(--accent-cyan);
+    }
+    .canopy-strut.bottom-right {
+      bottom: 0; right: 0; width: 140px; height: 10px;
+      border-top: 2px solid var(--accent-cyan);
+    }
+    .canopy-strut.bottom-right::after {
+      content: ''; position: absolute; bottom: 0; right: 0; width: 10px; height: 100px;
+      background: rgba(8, 16, 32, 0.88); border-left: 2px solid var(--accent-cyan);
+    }
+
+    /* Central Cockpit Flight Reticle */
     .reticle-center {
       position: absolute;
-      top: 50%;
+      top: 48%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 32px;
-      height: 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
       pointer-events: none;
-      opacity: 0.3;
+      opacity: 0.85;
       transition: opacity 0.3s;
     }
 
-    .reticle-center::before, .reticle-center::after {
+    .reticle-box {
+      width: 74px;
+      height: 74px;
+      position: relative;
+      border: 1px dashed rgba(56, 189, 248, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Corner tick brackets on reticle box */
+    .reticle-box::before, .reticle-box::after {
       content: '';
       position: absolute;
-      background: var(--accent-cyan);
+      width: 10px;
+      height: 10px;
+      border-color: var(--accent-cyan);
+      border-style: solid;
+    }
+    .reticle-box::before {
+      top: -2px; left: -2px; border-width: 2px 0 0 2px;
+    }
+    .reticle-box::after {
+      bottom: -2px; right: -2px; border-width: 0 2px 2px 0;
     }
 
-    .reticle-center::before {
-      top: 15px;
-      left: 0;
-      width: 32px;
-      height: 2px;
+    .reticle-cross {
+      width: 18px;
+      height: 18px;
+      position: relative;
+    }
+    .reticle-cross::before {
+      content: ''; position: absolute; top: 8px; left: 0; width: 18px; height: 2px; background: var(--accent-cyan);
+    }
+    .reticle-cross::after {
+      content: ''; position: absolute; left: 8px; top: 0; width: 2px; height: 18px; background: var(--accent-cyan);
     }
 
-    .reticle-center::after {
-      left: 15px;
-      top: 0;
-      width: 2px;
-      height: 32px;
+    .reticle-pitch-ladder {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: rgba(56, 189, 248, 0.6);
+      letter-spacing: 1px;
+    }
+
+    .pitch-line {
+      border-bottom: 1px solid rgba(56, 189, 248, 0.35);
+      padding: 0 8px;
+    }
+
+    .reticle-telemetry-top {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: rgba(56, 189, 248, 0.85);
+      letter-spacing: 1.5px;
+      text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+    }
+
+    .reticle-telemetry-bottom {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: rgba(251, 191, 36, 0.85);
+      letter-spacing: 1.5px;
+      text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
     }
 
     /* Light Pulse Particle Animation on Canvas HUD */
@@ -1075,8 +1193,28 @@
   <!-- WebGL Render Canvas -->
   <canvas id="webgl-canvas"></canvas>
 
-  <!-- Reticle Indicator -->
-  <div class="reticle-center"></div>
+  <!-- Spaceship Canopy HUD Overlay (Reticle, Flight Vector & Corner Struts) -->
+  <div class="canopy-hud-overlay">
+    <!-- Viewport Canopy Frame Struts -->
+    <div class="canopy-strut top-left"></div>
+    <div class="canopy-strut top-right"></div>
+    <div class="canopy-strut bottom-left"></div>
+    <div class="canopy-strut bottom-right"></div>
+
+    <!-- Center Canopy Flight Reticle -->
+    <div class="reticle-center">
+      <div class="reticle-telemetry-top">◈ SENSOR TRACK: NOMINAL // VECTOR: [0.00, +0.45, +1.00] ◈</div>
+      <div class="reticle-box">
+        <div class="reticle-cross"></div>
+        <div class="reticle-pitch-ladder">
+          <div class="pitch-line p-pos">+5°</div>
+          <div class="pitch-line p-zero">0° HORIZON</div>
+          <div class="pitch-line p-neg">-5°</div>
+        </div>
+      </div>
+      <div class="reticle-telemetry-bottom">LORENTZ FACTOR γ = 1.0000 // WARP FIELD: STABLE</div>
+    </div>
+  </div>
 
   <!-- HUD Interface Layer -->
   <div class="hud-layer">
@@ -1086,8 +1224,8 @@
       <div class="title-group">
         <div class="engine-logo"></div>
         <div class="title-text">
-          <h1>Cosmic Zoom Engine</h1>
-          <div class="subtitle">UNIVERSAL SCALE &amp; RELATIVISTIC TRAVEL COMPASS</div>
+          <h1>USS Astronautica // Helm 01</h1>
+          <div class="subtitle">AVIONICS RELATIVISTIC COMPASS &amp; QUANTUM SENSOR ARRAY</div>
         </div>
       </div>
 
@@ -1102,8 +1240,8 @@
           <span class="stat-value gold" id="hud-fov-span">8.33 Light-Hours</span>
         </div>
         <div class="stat-pill">
-          <span class="stat-label">Cosmic Constant (c)</span>
-          <span class="stat-value purple">299,792.458 km/s</span>
+          <span class="stat-label">Speed Constant (c)</span>
+          <span class="stat-value purple" id="c-constant-display">299,792.458 km/s</span>
         </div>
         <div class="stat-pill" id="pill-music" style="cursor:pointer;" title="Click to skip to next acoustic movement">
           <span class="stat-label">Acoustic Score</span>
@@ -1113,6 +1251,11 @@
 
       <!-- Top Action Buttons -->
       <div class="top-actions">
+        <!-- Units System Toggle Button (KM / Miles / Dual) -->
+        <button class="btn-icon" id="btn-unit-toggle" title="Switch Measurement System: KM / Miles / Dual (U)">
+          <span>📏</span> <span id="unit-status-text">Units: KM (U)</span>
+        </button>
+
         <!-- Quick Accessibility Font Steppers -->
         <div style="display:flex; align-items:center; gap:3px; background:rgba(15,23,42,0.6); padding:2px 4px; border-radius:6px; border:1px solid rgba(56,189,248,0.3);">
           <button class="btn-icon" id="btn-font-dec" title="Decrease Font Size (Ctrl + -)" style="padding:6px 9px; font-weight:800; font-size:0.85rem;">A−</button>
@@ -1131,8 +1274,8 @@
         <button class="btn-icon" id="btn-narrator-toggle" title="Toggle ElevenLabs Voice Narration">
           <span>🎙️</span> <span id="narrator-status-text">Narrator: Auto</span>
         </button>
-        <button class="btn-icon" id="btn-tour-toggle" title="Launch Automated Universe Flythrough">
-          <span>🚀</span> <span id="tour-status-text">Tour</span>
+        <button class="btn-icon" id="btn-tour-toggle" title="Launch Automated Universe Flythrough (T)">
+          <span>🚀</span> <span id="tour-status-text">Tour [T]</span>
         </button>
         <button class="btn-icon" id="btn-info" title="Cosmic Zoom Engine Documentation">
           <span>ℹ️</span> Info
@@ -1262,7 +1405,7 @@
             <div class="comp-row">
               <div class="comp-name">
                 <span style="color:var(--accent-amber);">✦</span> Photon (Light Speed)
-                <span class="comp-speed">1.0c</span>
+                <span class="comp-speed" id="speed-lbl-photon">1.0c (299,792 km/s)</span>
               </div>
               <div class="comp-time" id="comp-photon">8h 20m</div>
             </div>
@@ -1270,7 +1413,7 @@
             <div class="comp-row">
               <div class="comp-name">
                 <span style="color:var(--accent-cyan);">✦</span> Relativistic Starship
-                <span class="comp-speed">0.1c</span>
+                <span class="comp-speed" id="speed-lbl-relativistic">0.1c (29,979 km/s)</span>
               </div>
               <div class="comp-time" id="comp-relativistic">3.47 Days</div>
             </div>
@@ -1278,7 +1421,7 @@
             <div class="comp-row">
               <div class="comp-name">
                 <span style="color:var(--accent-purple);">✦</span> Parker Solar Probe
-                <span class="comp-speed">192 km/s</span>
+                <span class="comp-speed" id="speed-lbl-parker">192 km/s</span>
               </div>
               <div class="comp-time" id="comp-parker">1.48 Years</div>
             </div>
@@ -1286,7 +1429,7 @@
             <div class="comp-row">
               <div class="comp-name">
                 <span style="color:var(--text-muted);">✦</span> Voyager 1 Probe
-                <span class="comp-speed">17 km/s</span>
+                <span class="comp-speed" id="speed-lbl-voyager">17 km/s</span>
               </div>
               <div class="comp-time" id="comp-voyager">16.8 Years</div>
             </div>
@@ -1294,7 +1437,7 @@
             <div class="comp-row">
               <div class="comp-name">
                 <span style="color:var(--text-muted);">✦</span> Jetliner
-                <span class="comp-speed">900 km/h</span>
+                <span class="comp-speed" id="speed-lbl-jetliner">900 km/h</span>
               </div>
               <div class="comp-time" id="comp-jetliner">1,141 Years</div>
             </div>
@@ -1382,11 +1525,14 @@
 
         <!-- Cockpit Trigger Buttons -->
         <div class="cockpit-actions">
-          <button class="btn-cockpit pulse-btn" id="btn-fire-pulse" title="Fire a simulated photon wavefront traveling at light speed">
-            <span>⚡ Fire Light Pulse (c)</span>
+          <button class="btn-cockpit" id="btn-cockpit-tour" title="Launch Automated Universe Flythrough (T)">
+            <span id="cockpit-tour-text">🚀 Engage Tour [T]</span>
           </button>
-          <button class="btn-cockpit primary" id="btn-reset-view" title="Reset Camera Perspective">
-            <span>↺ Reset Camera</span>
+          <button class="btn-cockpit pulse-btn" id="btn-fire-pulse" title="Discharge a simulated photon wavefront traveling at light speed (Space)">
+            <span>⚡ Discharge Pulse [Space]</span>
+          </button>
+          <button class="btn-cockpit primary" id="btn-reset-view" title="Zero Gyro & Reset Camera Perspective (R)">
+            <span>↺ Zero Gyro [R]</span>
           </button>
         </div>
 
@@ -2467,16 +2613,121 @@
       }
     }
 
+    const KM_TO_MILES = 0.621371192237334;
+    let currentUnitSystem = localStorage.getItem('cosmic_unit_system') || 'km'; // 'km', 'miles', 'both'
+
+    const btnUnitToggle = document.getElementById('btn-unit-toggle');
+    const unitStatusText = document.getElementById('unit-status-text');
+
+    function updateUnitDisplay() {
+      if (unitStatusText) {
+        if (currentUnitSystem === 'miles') unitStatusText.textContent = "Units: MILES (U)";
+        else if (currentUnitSystem === 'both') unitStatusText.textContent = "Units: DUAL (U)";
+        else unitStatusText.textContent = "Units: KM (U)";
+      }
+      updateCraftSpeedLabels();
+      updateTelemetry(currentZoom);
+    }
+
+    function cycleUnitSystem() {
+      playSoftChime();
+      if (currentUnitSystem === 'km') currentUnitSystem = 'miles';
+      else if (currentUnitSystem === 'miles') currentUnitSystem = 'both';
+      else currentUnitSystem = 'km';
+      localStorage.setItem('cosmic_unit_system', currentUnitSystem);
+      updateUnitDisplay();
+    }
+
+    if (btnUnitToggle) {
+      btnUnitToggle.addEventListener('click', cycleUnitSystem);
+    }
+
+    function formatDistanceSpan(spanKm) {
+      const mi = spanKm * KM_TO_MILES;
+      if (spanKm < LY_KM * 0.1) {
+        const lh = spanKm / LH_KM;
+        const au = spanKm / AU_KM;
+        if (currentUnitSystem === 'miles') {
+          return `${lh.toFixed(2)} Light-Hours (${au.toFixed(1)} AU • ${mi.toExponential(2)} mi)`;
+        } else if (currentUnitSystem === 'both') {
+          return `${lh.toFixed(2)} Light-Hours (${au.toFixed(1)} AU • ${spanKm.toExponential(2)} km / ${mi.toExponential(2)} mi)`;
+        } else {
+          return `${lh.toFixed(2)} Light-Hours (${au.toFixed(1)} AU • ${spanKm.toExponential(2)} km)`;
+        }
+      } else if (spanKm < MLY_KM * 0.1) {
+        const ly = spanKm / LY_KM;
+        if (currentUnitSystem === 'miles') {
+          return `${ly.toLocaleString(undefined, { maximumFractionDigits: 0 })} Light-Years (${mi.toExponential(2)} mi)`;
+        } else if (currentUnitSystem === 'both') {
+          return `${ly.toLocaleString(undefined, { maximumFractionDigits: 0 })} Light-Years (${spanKm.toExponential(2)} km | ${mi.toExponential(2)} mi)`;
+        } else {
+          return `${ly.toLocaleString(undefined, { maximumFractionDigits: 0 })} Light-Years (${spanKm.toExponential(2)} km)`;
+        }
+      } else if (spanKm < GLY_KM * 0.1) {
+        const mly = spanKm / MLY_KM;
+        if (currentUnitSystem === 'miles') {
+          return `${mly.toFixed(2)} Million Light-Years (${mi.toExponential(2)} mi)`;
+        } else if (currentUnitSystem === 'both') {
+          return `${mly.toFixed(2)} Million Light-Years (${spanKm.toExponential(2)} km | ${mi.toExponential(2)} mi)`;
+        } else {
+          return `${mly.toFixed(2)} Million Light-Years (${spanKm.toExponential(2)} km)`;
+        }
+      } else {
+        const gly = spanKm / GLY_KM;
+        if (currentUnitSystem === 'miles') {
+          return `${gly.toFixed(1)} Billion Light-Years (${mi.toExponential(2)} mi)`;
+        } else if (currentUnitSystem === 'both') {
+          return `${gly.toFixed(1)} Billion Light-Years (${spanKm.toExponential(2)} km | ${mi.toExponential(2)} mi)`;
+        } else {
+          return `${gly.toFixed(1)} Billion Light-Years (${spanKm.toExponential(2)} km)`;
+        }
+      }
+    }
+
+    function updateCraftSpeedLabels() {
+      const lblPhoton = document.getElementById('speed-lbl-photon');
+      const lblRelativistic = document.getElementById('speed-lbl-relativistic');
+      const lblParker = document.getElementById('speed-lbl-parker');
+      const lblVoyager = document.getElementById('speed-lbl-voyager');
+      const lblJetliner = document.getElementById('speed-lbl-jetliner');
+      const lblConstant = document.getElementById('c-constant-display');
+
+      if (lblConstant) {
+        if (currentUnitSystem === 'miles') lblConstant.textContent = '186,282.4 mi/s';
+        else if (currentUnitSystem === 'both') lblConstant.textContent = '299,792 km/s [186,282 mi/s]';
+        else lblConstant.textContent = '299,792.458 km/s';
+      }
+
+      if (lblPhoton) {
+        if (currentUnitSystem === 'miles') lblPhoton.textContent = '1.0c • 186,282 mi/s';
+        else if (currentUnitSystem === 'both') lblPhoton.textContent = '1.0c • 299,792 km/s | 186,282 mi/s';
+        else lblPhoton.textContent = '1.0c (299,792 km/s)';
+      }
+      if (lblRelativistic) {
+        if (currentUnitSystem === 'miles') lblRelativistic.textContent = '0.1c • 18,628 mi/s';
+        else if (currentUnitSystem === 'both') lblRelativistic.textContent = '0.1c • 29,979 km/s | 18,628 mi/s';
+        else lblRelativistic.textContent = '0.1c (29,979 km/s)';
+      }
+      if (lblParker) {
+        if (currentUnitSystem === 'miles') lblParker.textContent = '429,500 mph (119.3 mi/s)';
+        else if (currentUnitSystem === 'both') lblParker.textContent = '192 km/s [429,500 mph]';
+        else lblParker.textContent = '192 km/s (691,200 km/h)';
+      }
+      if (lblVoyager) {
+        if (currentUnitSystem === 'miles') lblVoyager.textContent = '38,000 mph (10.6 mi/s)';
+        else if (currentUnitSystem === 'both') lblVoyager.textContent = '17 km/s [38,000 mph]';
+        else lblVoyager.textContent = '17 km/s (61,200 km/h)';
+      }
+      if (lblJetliner) {
+        if (currentUnitSystem === 'miles') lblJetliner.textContent = '560 mph';
+        else if (currentUnitSystem === 'both') lblJetliner.textContent = '900 km/h [560 mph]';
+        else lblJetliner.textContent = '900 km/h (250 m/s)';
+      }
+    }
+
     function updateTelemetry(z) {
       // Logarithmic interpolation between scale regimes
-      // z = 1.0 (Solar System) -> z = 4.0 (Universe)
-      // Span in km smoothly interpolates:
-      // Stage 1: ~8.996e9 km (8.33 LH)
-      // Stage 2: ~9.461e17 km (100,000 LY)
-      // Stage 3: ~9.461e19 km (10 MLY)
-      // Stage 4: ~8.798e23 km (93 GLY)
       let spanKm = 0;
-      let labelSpan = "";
       let domainTitle = "";
 
       if (z <= 2.0) {
@@ -2502,26 +2753,13 @@
       const tVoyager = spanKm / 17;
       const tJetliner = spanKm / (900 / 3.6); // 250 m/s = 0.25 km/s
 
-      // Human-readable Span units
-      if (spanKm < LY_KM * 0.1) {
-        const lh = spanKm / LH_KM;
-        labelSpan = `${lh.toFixed(2)} Light-Hours (${(spanKm / AU_KM).toFixed(1)} AU)`;
-      } else if (spanKm < MLY_KM * 0.1) {
-        const ly = spanKm / LY_KM;
-        labelSpan = `${ly.toLocaleString(undefined, { maximumFractionDigits: 0 })} Light-Years`;
-      } else if (spanKm < GLY_KM * 0.1) {
-        const mly = spanKm / MLY_KM;
-        labelSpan = `${mly.toFixed(2)} Million Light-Years`;
-      } else {
-        const gly = spanKm / GLY_KM;
-        labelSpan = `${gly.toFixed(1)} Billion Light-Years`;
-      }
+      const labelSpan = formatDistanceSpan(spanKm);
 
       // Update DOM
       hudDomainName.textContent = domainTitle;
       hudFovSpan.textContent = labelSpan;
       hudTravelTimeMain.textContent = formatTime(transitSeconds);
-      hudTravelTimeExact.textContent = `Span: ${spanKm.toExponential(3)} km (${labelSpan})`;
+      hudTravelTimeExact.textContent = `Diameter: ${labelSpan}`;
 
       compPhoton.textContent = formatTime(transitSeconds);
       compRelativistic.textContent = formatTime(tRelativistic);
@@ -2532,13 +2770,19 @@
       // Scale Ruler update
       const rulerSpanKm = spanKm * 0.12;
       if (rulerSpanKm < LH_KM * 10) {
-        rulerText.textContent = `${(rulerSpanKm / LH_KM).toFixed(2)} Light-Hours`;
+        const lh = rulerSpanKm / LH_KM;
+        rulerText.textContent = currentUnitSystem === 'miles'
+          ? `${lh.toFixed(2)} Light-Hours (${(rulerSpanKm * KM_TO_MILES).toExponential(2)} mi)`
+          : (currentUnitSystem === 'both' ? `${lh.toFixed(2)} LH (${rulerSpanKm.toExponential(2)} km / ${(rulerSpanKm * KM_TO_MILES).toExponential(2)} mi)` : `${lh.toFixed(2)} Light-Hours`);
       } else if (rulerSpanKm < LY_KM * 1000) {
-        rulerText.textContent = `${(rulerSpanKm / LY_KM).toFixed(0)} Light-Years`;
+        const ly = rulerSpanKm / LY_KM;
+        rulerText.textContent = `${ly.toFixed(0)} Light-Years`;
       } else if (rulerSpanKm < MLY_KM * 50) {
-        rulerText.textContent = `${(rulerSpanKm / MLY_KM).toFixed(1)} Mega-LY`;
+        const mly = rulerSpanKm / MLY_KM;
+        rulerText.textContent = `${mly.toFixed(1)} Mega-LY`;
       } else {
-        rulerText.textContent = `${(rulerSpanKm / GLY_KM).toFixed(1)} Giga-LY`;
+        const gly = rulerSpanKm / GLY_KM;
+        rulerText.textContent = `${gly.toFixed(1)} Giga-LY`;
       }
     }
 
@@ -3250,21 +3494,64 @@
     // Automated Universe Tour Mode (Gives narrator full chance to finish speaking at each stage)
     const btnTourToggle = document.getElementById('btn-tour-toggle');
     const tourStatusText = document.getElementById('tour-status-text');
+    const btnCockpitTour = document.getElementById('btn-cockpit-tour');
+    const cockpitTourText = document.getElementById('cockpit-tour-text');
+
+    function syncTourUI(active) {
+      if (active) {
+        tourStatusText.textContent = "Stop Tour";
+        btnTourToggle.classList.add('active');
+        if (cockpitTourText) cockpitTourText.textContent = "🚀 Tour: ACTIVE [T]";
+        if (btnCockpitTour) btnCockpitTour.classList.add('primary');
+      } else {
+        tourStatusText.textContent = "Tour [T]";
+        btnTourToggle.classList.remove('active');
+        if (cockpitTourText) cockpitTourText.textContent = "🚀 Engage Tour [T]";
+        if (btnCockpitTour) btnCockpitTour.classList.remove('primary');
+      }
+    }
 
     btnTourToggle.addEventListener('click', () => {
       isAutoTouring = !isAutoTouring;
+      syncTourUI(isAutoTouring);
       if (isAutoTouring) {
-        tourStatusText.textContent = "Stop Tour";
-        btnTourToggle.classList.add('active');
         tourStageIndex = 1;
         runTourStep();
       } else {
-        tourStatusText.textContent = "Tour";
-        btnTourToggle.classList.remove('active');
         clearTimeout(tourTimer);
         for (let s in narrations) {
           if (narrations[s]) narrations[s].onended = null;
         }
+      }
+    });
+
+    if (btnCockpitTour) {
+      btnCockpitTour.addEventListener('click', () => {
+        btnTourToggle.click();
+      });
+    }
+
+    // Global Starship Helm Hotkeys: U (Units), T (Tour), R (Zero Gyro), Space (Pulse), 1-4 (Stages)
+    window.addEventListener('keydown', e => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === 'u' || e.key === 'U') {
+        cycleUnitSystem();
+      } else if (e.key === 't' || e.key === 'T') {
+        btnTourToggle.click();
+      } else if (e.key === 'r' || e.key === 'R') {
+        playSoftChime();
+        jumpToStage(activeStageIndex);
+      } else if (e.code === 'Space') {
+        e.preventDefault();
+        btnFirePulse.click();
+      } else if (e.key === '1') {
+        jumpToStage(1);
+      } else if (e.key === '2') {
+        jumpToStage(2);
+      } else if (e.key === '3') {
+        jumpToStage(3);
+      } else if (e.key === '4') {
+        jumpToStage(4);
       }
     });
 
@@ -3509,6 +3796,7 @@
 
     // Initialize application
     updateStageOpacities(1.0);
+    updateUnitDisplay();
     updateInspector('earth');
     animate();
 
