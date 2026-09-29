@@ -7,23 +7,29 @@ namespace CosmicZoom
     /// spectral star classes (O-B blue giants, G yellow suns, M red dwarfs)
     /// using high-performance procedural mesh geometry.
     /// </summary>
+    [ExecuteAlways]
     public class CosmicStarfield : MonoBehaviour
     {
-        [SerializeField] private int starCount = 3000;
-        [SerializeField] private float starfieldRadius = 50000f;
-        [SerializeField] private float minStarSize = 25.0f;
-        [SerializeField] private float maxStarSize = 90.0f;
+        [SerializeField] private int starCount = 4000;
+        [SerializeField] private float starfieldRadius = 8000f;
+        [SerializeField] private float minStarSize = 35.0f;
+        [SerializeField] private float maxStarSize = 140.0f;
 
         // Stellar Spectral Classes Colors
         private readonly Color[] spectralColors = new Color[]
         {
-            new Color(0.65f, 0.82f, 1.00f, 1.0f), // Class O/B (Blue-White Giants)
-            new Color(0.88f, 0.94f, 1.00f, 0.95f), // Class A (White)
-            new Color(1.00f, 0.98f, 0.92f, 0.95f), // Class F (Yellow-White)
-            new Color(1.00f, 0.92f, 0.65f, 0.90f), // Class G (Solar Yellow)
-            new Color(1.00f, 0.75f, 0.45f, 0.85f), // Class K (Orange)
-            new Color(1.00f, 0.45f, 0.35f, 0.80f)  // Class M (Red Supergiant)
+            new Color(0.75f, 0.88f, 1.00f, 1.0f), // Class O/B (Blue-White Giants)
+            new Color(0.92f, 0.96f, 1.00f, 1.0f), // Class A (White)
+            new Color(1.00f, 0.98f, 0.92f, 1.0f), // Class F (Yellow-White)
+            new Color(1.00f, 0.92f, 0.65f, 1.0f), // Class G (Solar Yellow)
+            new Color(1.00f, 0.75f, 0.45f, 1.0f), // Class K (Orange)
+            new Color(1.00f, 0.45f, 0.35f, 1.0f)  // Class M (Red Supergiant)
         };
+
+        private void OnEnable()
+        {
+            BuildStarfieldMesh();
+        }
 
         private void Start()
         {
@@ -39,7 +45,7 @@ namespace CosmicZoom
             Material mat = new Material(shader);
             mat.mainTexture = MakeStarTexture(64);
             if (mat.HasProperty("_TintColor")) mat.SetColor("_TintColor", Color.white);
-            mr.material = mat;
+            mr.sharedMaterial = mat;
 
             Mesh mesh = new Mesh
             {

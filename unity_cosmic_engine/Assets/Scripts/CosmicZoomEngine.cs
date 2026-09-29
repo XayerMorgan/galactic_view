@@ -203,6 +203,11 @@ namespace CosmicZoom
         {
             if (isTourActive) StopTour();
             targetZoom = Mathf.Clamp(zoomVal, 1.0f, 4.0f);
+            if (!Application.isPlaying)
+            {
+                currentZoom = targetZoom;
+                ApplyZoom(currentZoom);
+            }
         }
 
         public void FirePulse()
@@ -230,7 +235,7 @@ namespace CosmicZoom
             JumpToStage(activeStageIndex);
         }
 
-        private void ApplyZoom(float z)
+        public void ApplyZoom(float z)
         {
             // Clean, non-overlapping visibility thresholds (prevents visual clutter/clipping)
             if (stage1SolarSystem != null) stage1SolarSystem.SetActive(z < 1.75f);
@@ -253,6 +258,12 @@ namespace CosmicZoom
                 {
                     audioController.PlayStageNarration(newStage);
                 }
+            }
+
+            // DO NOT override camera orientation if Starry Night / telescope mode is active
+            if (CelestialMessierCatalog.Instance != null && CelestialMessierCatalog.Instance.isStarryNightActive)
+            {
+                return;
             }
 
             // Camera distance positioning

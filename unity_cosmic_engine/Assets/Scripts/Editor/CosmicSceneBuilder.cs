@@ -34,28 +34,30 @@ namespace CosmicZoom.Editor
             ConfigureTextureImporter("Assets/Textures/andromeda_galaxy_disk.png", true);
             ConfigureTextureImporter("Assets/Textures/cosmic_web_simulation.png", true);
             ConfigureTextureImporter("Assets/Textures/sun_corona_glow.png", true);
+            ConfigureTextureImporter("Assets/Textures/cockpit_canopy_overlay.png", true);
+            ConfigureTextureImporter("Assets/Resources/cockpit_canopy_overlay.png", true);
 
-            // Create PBR & Transparent Additive Materials
-            Material matSun = CreateMaterial("Mat_Sun", "Assets/Textures/sun_photosphere.jpg", new Color(1f, 0.95f, 0.8f), 3.0f);
-            Material matSunCorona = CreateMaterial("Mat_SunCorona", "Assets/Textures/sun_corona_glow.png", new Color(1f, 0.9f, 0.5f), 3.5f, 0.5f, isAdditive: true);
+            // Create PBR, Unlit, and Additive Materials
+            Material matSun = CreateMaterial("Mat_Sun", "Assets/Textures/sun_photosphere.jpg", new Color(1f, 0.96f, 0.88f), 4.0f, isUnlit: true);
+            Material matSunCorona = CreateMaterial("Mat_SunCorona", "Assets/Textures/sun_corona_glow.png", new Color(1f, 0.9f, 0.5f), 4.0f, 0.5f, isAdditive: true);
             Material matEarth = CreateMaterial("Mat_Earth", "Assets/Textures/earth_photosphere.jpg", Color.white, 0f, 0.2f);
             Material matJupiter = CreateMaterial("Mat_Jupiter", "Assets/Textures/jupiter_photosphere.jpg", Color.white, 0f, 0.5f);
-            Material matSaturn = CreateMaterial("Mat_Saturn", "Assets/Textures/jupiter_photosphere.jpg", new Color(0.95f, 0.9f, 0.75f), 0.2f, 0.5f);
-            Material matSaturnRings = CreateMaterial("Mat_SaturnRings", "Assets/Textures/jupiter_photosphere.jpg", new Color(0.9f, 0.85f, 0.7f, 0.8f), 0.5f, 0.5f, isAdditive: false, isTransparent: true);
-            Material matNeptune = CreateMaterial("Mat_Neptune", "Assets/Textures/earth_photosphere.jpg", new Color(0.2f, 0.5f, 1.0f), 0.3f, 0.4f);
-            Material matOrbit = CreateMaterial("Mat_OrbitBoundary", "", new Color(0.25f, 0.75f, 1.0f, 0.8f), 2.0f, 0.5f, isAdditive: true);
+            Material matSaturn = CreateMaterial("Mat_Saturn", "Assets/Textures/jupiter_photosphere.jpg", new Color(0.95f, 0.9f, 0.75f), 0.1f, 0.5f);
+            Material matSaturnRings = CreateMaterial("Mat_SaturnRings", "Assets/Textures/jupiter_photosphere.jpg", new Color(0.9f, 0.85f, 0.7f, 0.85f), 0.5f, 0.5f, isAdditive: false, isTransparent: true);
+            Material matNeptune = CreateMaterial("Mat_Neptune", "Assets/Textures/earth_photosphere.jpg", new Color(0.2f, 0.5f, 1.0f), 0.1f, 0.4f);
+            Material matOrbit = CreateMaterial("Mat_OrbitBoundary", "", new Color(0.12f, 0.45f, 0.85f, 0.25f), 1.0f, 0.5f, isAdditive: true);
 
             // Stage 2 Milky Way (Additive: Black space adds 0 light, zero square boundaries)
-            Material matMilkyWay = CreateMaterial("Mat_MilkyWay", "Assets/Textures/milky_way_disk.png", Color.white, 2.5f, 0.5f, isAdditive: true);
+            Material matMilkyWay = CreateMaterial("Mat_MilkyWay", "Assets/Textures/milky_way_disk.png", Color.white, 3.0f, 0.5f, isAdditive: true);
             Material matBeacon = CreateMaterial("Mat_Beacon", "Assets/Textures/sun_corona_glow.png", new Color(1.0f, 0.85f, 0.2f), 5.0f, 0.5f, isAdditive: true);
-            Material matSgrA = CreateMaterial("Mat_SgrA", "Assets/Textures/sun_photosphere.jpg", new Color(1.0f, 0.95f, 0.7f), 5.0f, 0.5f);
+            Material matSgrA = CreateMaterial("Mat_SgrA", "Assets/Textures/sun_photosphere.jpg", new Color(1.0f, 0.95f, 0.7f), 5.0f, 0.5f, isUnlit: true);
 
             // Stage 3 Local Group
-            Material matAndromeda = CreateMaterial("Mat_Andromeda", "Assets/Textures/andromeda_galaxy_disk.png", new Color(0.95f, 0.95f, 1.0f), 2.5f, 0.5f, isAdditive: true);
+            Material matAndromeda = CreateMaterial("Mat_Andromeda", "Assets/Textures/andromeda_galaxy_disk.png", new Color(0.95f, 0.95f, 1.0f), 3.0f, 0.5f, isAdditive: true);
 
             // Stage 4 Cosmic Web & CMB
-            Material matCosmicWeb = CreateMaterial("Mat_CosmicWeb", "Assets/Textures/cosmic_web_simulation.png", new Color(1f, 0.85f, 0.4f), 2.2f, 0.5f, isAdditive: true);
-            Material matCMB = CreateMaterial("Mat_CMBHorizon", "Assets/Textures/cmb_horizon_sky.jpg", new Color(0.3f, 0.7f, 1f), 1.8f);
+            Material matCosmicWeb = CreateMaterial("Mat_CosmicWeb", "Assets/Textures/cosmic_web_simulation.png", new Color(1f, 0.85f, 0.4f), 2.5f, 0.5f, isAdditive: true);
+            Material matCMB = CreateMaterial("Mat_CMBHorizon", "Assets/Textures/cmb_horizon_sky.jpg", new Color(0.35f, 0.75f, 1f), 1.0f, isUnlit: true);
 
             // 2. Root Manager GameObject
             GameObject managerObj = new GameObject("[Cosmic_Zoom_Engine]");
@@ -64,6 +66,7 @@ namespace CosmicZoom.Editor
             CosmicHUD hud = managerObj.AddComponent<CosmicHUD>();
             LightPulseEmitter pulseEmitter = managerObj.AddComponent<LightPulseEmitter>();
             CelestialMessierCatalog messierCatalog = managerObj.AddComponent<CelestialMessierCatalog>();
+            messierCatalog.Build3DVault();
 
             // 3. Camera Setup WITH AudioListener & CosmicStarfield
             GameObject camObj = new GameObject("Main Camera");
@@ -84,17 +87,24 @@ namespace CosmicZoom.Editor
             camObj.AddComponent<CosmicStarfield>();
 
             // 4. Ambient & Directional Lighting
-            RenderSettings.ambientLight = new Color(0.20f, 0.28f, 0.42f, 1.0f);
+            RenderSettings.ambientLight = new Color(0.22f, 0.28f, 0.42f, 1.0f);
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
 
             GameObject dirLightObj = new GameObject("Sun_PointLight");
             Light sunLight = dirLightObj.AddComponent<Light>();
             sunLight.type = LightType.Point;
-            sunLight.color = new Color(1.0f, 0.98f, 0.92f);
-            sunLight.intensity = 5.0f;
-            sunLight.range = 5000f;
+            sunLight.color = new Color(1.0f, 0.96f, 0.88f);
+            sunLight.intensity = 8.0f;
+            sunLight.range = 50000f;
             sunLight.shadows = LightShadows.None; // Prevent shadow acne artifacts
             dirLightObj.transform.position = Vector3.zero;
+
+            GameObject fillLightObj = new GameObject("Galactic_Fill_Light");
+            Light fillLight = fillLightObj.AddComponent<Light>();
+            fillLight.type = LightType.Directional;
+            fillLight.color = new Color(0.35f, 0.45f, 0.62f);
+            fillLight.intensity = 0.90f;
+            fillLightObj.transform.rotation = Quaternion.Euler(35f, 25f, 0f);
 
             // 5. Stage Hierarchies
             GameObject stage1 = new GameObject("Stage1_Solar_System");
@@ -116,14 +126,14 @@ namespace CosmicZoom.Editor
             GameObject s3Obj = LoadAndInstantiateModel("Assets/Models/local_group_galaxies.fbx", stage3.transform);
             GameObject s4Obj = LoadAndInstantiateModel("Assets/Models/observable_universe_boundary.fbx", stage4.transform);
 
-            // Project GALAXY: Instantiate 3D Starships (Astronautica Survey Flagship & Sol Scout)
+            // Project GALAXY: Instantiate Modern Exploration Starships
             GameObject flagship = LoadAndInstantiateModel("Assets/GALAXY/Models_3D/USS_Astronautica_Flagship.fbx", stage1.transform);
             if (flagship != null)
             {
-                flagship.name = "Astronautica_Survey_Flagship";
-                flagship.transform.position = new Vector3(22.0f, 3.5f, 14.0f);
-                flagship.transform.localScale = Vector3.one * 0.28f;
-                flagship.transform.rotation = Quaternion.Euler(12f, 40f, -5f);
+                flagship.name = "Survey_Flagship";
+                flagship.transform.position = new Vector3(14.0f, 4.5f, 18.0f);
+                flagship.transform.localScale = Vector3.one * 0.7f;
+                flagship.transform.rotation = Quaternion.Euler(14f, -32f, 8f);
                 var rot = flagship.AddComponent<GalacticRotator>();
                 rot.rotationAxis = Vector3.up;
                 rot.rotationSpeed = 0.8f;
@@ -132,10 +142,10 @@ namespace CosmicZoom.Editor
             GameObject scout = LoadAndInstantiateModel("Assets/GALAXY/Models_3D/Sol_Scout_Ship.fbx", stage1.transform);
             if (scout != null)
             {
-                scout.name = "Sol_Scout_Fighter";
-                scout.transform.position = new Vector3(26.0f, 5.0f, 10.5f);
-                scout.transform.localScale = Vector3.one * 0.22f;
-                scout.transform.rotation = Quaternion.Euler(8f, 55f, -12f);
+                scout.name = "Sol_Scout_Interceptor";
+                scout.transform.position = new Vector3(20.0f, 7.5f, 14.0f);
+                scout.transform.localScale = Vector3.one * 0.55f;
+                scout.transform.rotation = Quaternion.Euler(10f, -20f, -10f);
             }
 
             // Assign Textures, Materials, Kinematics & Rotation to Renderers
@@ -162,8 +172,29 @@ namespace CosmicZoom.Editor
             soEngine.FindProperty("lightPulseEmitter").objectReferenceValue = pulseEmitter;
             soEngine.ApplyModifiedProperties();
 
-            // Wire up Audio Controller Clips
+            // Wire up Audio Controller Sources & Clips
+            AudioSource srcNarration = managerObj.AddComponent<AudioSource>();
+            srcNarration.playOnAwake = false;
+            srcNarration.volume = 1.0f;
+
+            AudioSource srcMusicA = managerObj.AddComponent<AudioSource>();
+            srcMusicA.playOnAwake = false;
+            srcMusicA.volume = 0.75f;
+
+            AudioSource srcMusicB = managerObj.AddComponent<AudioSource>();
+            srcMusicB.playOnAwake = false;
+            srcMusicB.volume = 0f;
+
+            AudioSource srcSfx = managerObj.AddComponent<AudioSource>();
+            srcSfx.playOnAwake = false;
+            srcSfx.volume = 0.8f;
+
             SerializedObject soAudio = new SerializedObject(audioController);
+            soAudio.FindProperty("narrationSource").objectReferenceValue = srcNarration;
+            soAudio.FindProperty("musicSourceA").objectReferenceValue = srcMusicA;
+            soAudio.FindProperty("musicSourceB").objectReferenceValue = srcMusicB;
+            soAudio.FindProperty("sfxSource").objectReferenceValue = srcSfx;
+
             soAudio.FindProperty("narrationStage1").objectReferenceValue = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/narration_stage1.mp3");
             soAudio.FindProperty("narrationStage2").objectReferenceValue = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/narration_stage2.mp3");
             soAudio.FindProperty("narrationStage3").objectReferenceValue = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/narration_stage3.mp3");
@@ -182,6 +213,7 @@ namespace CosmicZoom.Editor
             SerializedObject soHud = new SerializedObject(hud);
             soHud.FindProperty("engine").objectReferenceValue = engine;
             soHud.FindProperty("audioController").objectReferenceValue = audioController;
+            soHud.FindProperty("messierCatalog").objectReferenceValue = messierCatalog;
             soHud.ApplyModifiedProperties();
 
             // Save Scene
@@ -239,7 +271,7 @@ namespace CosmicZoom.Editor
             }
         }
 
-        private static Material CreateMaterial(string name, string texturePath, Color color, float emission, float roughness = 0.5f, bool isAdditive = false, bool isTransparent = false)
+        private static Material CreateMaterial(string name, string texturePath, Color color, float emission, float roughness = 0.5f, bool isAdditive = false, bool isTransparent = false, bool isUnlit = false)
         {
             string matPath = "Assets/Materials/" + name + ".mat";
             Material mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
@@ -253,6 +285,10 @@ namespace CosmicZoom.Editor
             {
                 shader = Shader.Find("Unlit/Transparent") ?? Shader.Find("Mobile/Particles/Alpha Blended") ?? Shader.Find("Standard");
             }
+            else if (isUnlit || name.Contains("Sun") || name.Contains("CMB") || name.Contains("SgrA"))
+            {
+                shader = Shader.Find("Unlit/Texture") ?? Shader.Find("Unlit/Color") ?? Shader.Find("Standard");
+            }
             else
             {
                 shader = Shader.Find("Standard") ?? Shader.Find("Unlit/Texture");
@@ -265,6 +301,7 @@ namespace CosmicZoom.Editor
             }
 
             mat.color = color;
+            if (mat.HasProperty("_Color")) mat.SetColor("_Color", color);
             if (mat.HasProperty("_TintColor")) mat.SetColor("_TintColor", color);
             if (mat.HasProperty("_Glossiness")) mat.SetFloat("_Glossiness", 1.0f - roughness);
             if (mat.HasProperty("_Smoothness")) mat.SetFloat("_Smoothness", 1.0f - roughness);
@@ -278,7 +315,7 @@ namespace CosmicZoom.Editor
                 }
             }
 
-            if (emission > 0)
+            if (emission > 0 && mat.shader.name == "Standard")
             {
                 mat.EnableKeyword("_EMISSION");
                 if (mat.HasProperty("_EmissionColor"))
@@ -329,6 +366,14 @@ namespace CosmicZoom.Editor
                 {
                     r.sharedMaterial = sunCorona;
                 }
+                else if (n.Contains("saturn_rings") || (n.Contains("rings") && n.Contains("saturn")))
+                {
+                    r.sharedMaterial = saturnRings;
+                }
+                else if (n.Contains("orbit") || n.Contains("boundary") || (n.Contains("ring") && !n.Contains("saturn")))
+                {
+                    r.gameObject.SetActive(false); // Clean: smooth glowing vector LineRenderers handled by SolarSystemOrbits
+                }
                 else if (n.Contains("sun"))
                 {
                     r.sharedMaterial = sun;
@@ -341,7 +386,7 @@ namespace CosmicZoom.Editor
                     r.sharedMaterial = earth;
                     var body = go.AddComponent<CelestialBody>();
                     body.orbitCenter = sunTrans;
-                    body.orbitalSpeed = 12.0f;
+                    body.orbitalSpeed = 10.0f;
                     body.rotationSpeed = 35.0f;
                     body.axialTiltDegrees = 23.4f;
 
@@ -353,33 +398,25 @@ namespace CosmicZoom.Editor
                     r.sharedMaterial = jupiter;
                     var body = go.AddComponent<CelestialBody>();
                     body.orbitCenter = sunTrans;
-                    body.orbitalSpeed = 6.0f;
+                    body.orbitalSpeed = 5.0f;
                     body.rotationSpeed = 45.0f;
                     body.axialTiltDegrees = 3.1f;
-                }
-                else if (n.Contains("saturn_rings") || n.Contains("rings"))
-                {
-                    r.sharedMaterial = saturnRings;
                 }
                 else if (n.Contains("saturn"))
                 {
                     r.sharedMaterial = saturn;
                     var body = go.AddComponent<CelestialBody>();
                     body.orbitCenter = sunTrans;
-                    body.orbitalSpeed = 4.0f;
+                    body.orbitalSpeed = 3.5f;
                     body.rotationSpeed = 30.0f;
                     body.axialTiltDegrees = 26.7f;
-                }
-                else if (n.Contains("neptune_orbit") || n.Contains("boundary"))
-                {
-                    r.sharedMaterial = orbit;
                 }
                 else if (n.Contains("neptune"))
                 {
                     r.sharedMaterial = neptune;
                     var body = go.AddComponent<CelestialBody>();
                     body.orbitCenter = sunTrans;
-                    body.orbitalSpeed = 2.0f;
+                    body.orbitalSpeed = 1.8f;
                     body.rotationSpeed = 25.0f;
                     body.axialTiltDegrees = 28.3f;
                 }

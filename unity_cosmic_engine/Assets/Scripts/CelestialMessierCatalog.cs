@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -36,9 +37,7 @@ namespace CosmicZoom
 
         public Vector3 GetUnitSpherePosition()
         {
-            // Right Ascension alpha (hours to radians): 24h = 360 deg = 2*PI
             float raRad = (raHours / 24f) * Mathf.PI * 2f;
-            // Declination delta (degrees to radians): -90 to +90
             float decRad = decDegrees * Mathf.Deg2Rad;
 
             float x = Mathf.Cos(decRad) * Mathf.Cos(raRad);
@@ -87,7 +86,7 @@ namespace CosmicZoom
     /// <summary>
     /// Native Unity Starry Night observation engine.
     /// Manages the real astronomical celestial vault, constellation line networks,
-    /// and the complete Charles Messier deep-sky catalog (M1 through M110).
+    /// and the complete Charles Messier deep-sky catalog.
     /// Provides telescope lock-on, RA/Dec coordinate math, optical reticles,
     /// and 100% privacy-preserving local offline horizontal ephemeris (Alt/Az & LST).
     /// </summary>
@@ -107,7 +106,6 @@ namespace CosmicZoom
         public bool onlyShowVisibleTonight = false;
         public bool showLocalHorizonPlane = true;
 
-        // Built-in Offline Preset Locations (No remote IP tracking or external geolocation)
         public static readonly ObserverLocation[] BuiltinLocations = new ObserverLocation[]
         {
             new ObserverLocation { locationName = "Mauna Kea Observatory", latitude = 19.82f, longitude = -155.47f, regionDesc = "Hawaii (Premier Optical Observatory)" },
@@ -124,7 +122,7 @@ namespace CosmicZoom
         };
 
         [Header("Vault Configuration")]
-        public float celestialSphereRadius = 18000f;
+        public float celestialSphereRadius = 8000f;
         public bool isStarryNightActive = false;
         public bool showConstellationLines = true;
         public bool showMessierMarkers = true;
@@ -139,10 +137,20 @@ namespace CosmicZoom
         private List<Vector3> gridLines = new List<Vector3>();
 
         private Material lineMat;
+        private Material starMat;
         private Material markerMat;
         private Camera mainCamera;
         private Transform cameraFocus;
         private Coroutine aimCoroutine;
+
+        // 3D Vault hierarchy container
+        public GameObject vault3DRoot;
+        private GameObject targetReticle3D;
+
+        private Vector3 savedFlightCameraPos;
+        private Quaternion savedFlightCameraRot;
+        private float savedFlightFov = 45f;
+        private bool hasSavedFlightCamera = false;
 
         public IReadOnlyList<CelestialObjectData> Catalog => catalog;
         public IReadOnlyList<ConstellationOutline> Constellations => constellations;
@@ -151,13 +159,10 @@ namespace CosmicZoom
         {
             Instance = this;
             LoadObserverLocation();
-            BuildMessierDatabase();
-            BuildConstellationDatabase();
-            BuildRaDecGrid();
+            EnsureDatabaseBuilt();
             CreateMaterials();
 
-            // Default target: M31 Andromeda Galaxy
-            currentTarget = catalog.Find(c => c.id == "M31") ?? catalog[0];
+            currentTarget = catalog.Find(c => c.id == "M31") ?? (catalog.Count > 0 ? catalog[0] : null);
         }
 
         private void Start()
@@ -168,13 +173,324 @@ namespace CosmicZoom
             {
                 cameraFocus = engine.cameraFocusTarget;
             }
+
+            if (vault3DRoot == null)
+            {
+                Build3DVault();
+            }
+        }
+
+        private void Update()
+        {
+            if (!isStarryNightActive) return;
+
+            if (mainCamera == null) mainCamera = Camera.main;
+            if (mainCamera == null) return;
+
+            // 1. Mouse Drag / Right-Click Look Controls
+            if (Input.GetMouseButton(1) || Input.GetMouseButton(0))
+            {
+                float mx = Input.GetAxis("Mouse X");
+                float my = Input.GetAxis("Mouse Y");
+                if (Mathf.Abs(mx) > 0.01f || Mathf.Abs(my) > 0.01f)
+                {
+                    if (aimCoroutine != null)
+                    {
+                        StopCoroutine(aimCoroutine);
+                        aimCoroutine = null;
+                    }
+
+                    mainCamera.transform.Rotate(Vector3.up, mx * 2.2f, Space.World);
+                    mainCamera.transform.Rotate(Vector3.right, -my * 2.2f, Space.Self);
+                }
+            }
+
+            // 2. Keyboard Pan Controls (Arrow keys / WASD)
+            float h = Input.GetAxis("Horizontal");
+            float v = Input.GetAxis("Vertical");
+            if (Mathf.Abs(h) > 0.05f || Mathf.Abs(v) > 0.05f)
+            {
+                if (aimCoroutine != null)
+                {
+                    StopCoroutine(aimCoroutine);
+                    aimCoroutine = null;
+                }
+                mainCamera.transform.Rotate(Vector3.up, h * 35f * Time.deltaTime, Space.World);
+                mainCamera.transform.Rotate(Vector3.right, -v * 35f * Time.deltaTime, Space.Self);
+            }
+
+            // 3. Telescope Optical Magnification Zoom (Scroll wheel)
+            float scroll = Input.GetAxis("Mouse ScrollWheel");
+            if (Mathf.Abs(scroll) > 0.001f)
+            {
+                mainCamera.fieldOfView = Mathf.Clamp(mainCamera.fieldOfView - scroll * 20f, 10f, 65f);
+            }
+
+            // 4. Quick Exit Hotkey (Esc or S handled in CosmicHUD)
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                ExitStarryNight();
+            }
+
+            // 5. Update 3D Target Reticle Animation
+            if (targetReticle3D != null && currentTarget != null)
+            {
+                Vector3 targetPos = RaDecToSpherePoint(currentTarget.raHours, currentTarget.decDegrees, celestialSphereRadius * 0.96f);
+                targetReticle3D.transform.position = targetPos;
+                targetReticle3D.transform.LookAt(mainCamera.transform.position);
+                targetReticle3D.transform.Rotate(Vector3.forward, 45f * Time.deltaTime);
+
+                float pulse = 1.0f + 0.12f * Mathf.Sin(Time.time * 4f);
+                targetReticle3D.transform.localScale = Vector3.one * (65f * pulse);
+            }
+        }
+
+        public void EnsureDatabaseBuilt()
+        {
+            if (catalog.Count == 0) BuildMessierDatabase();
+            if (constellations.Count == 0) BuildConstellationDatabase();
+            if (gridLines.Count == 0) BuildRaDecGrid();
         }
 
         private void CreateMaterials()
         {
-            Shader shader = Shader.Find("Mobile/Particles/Additive") ?? Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Color");
-            lineMat = new Material(shader) { color = new Color(0.2f, 0.7f, 1.0f, 0.45f) };
-            markerMat = new Material(shader);
+            Shader spriteShader = Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Color");
+            lineMat = new Material(spriteShader) { color = new Color(0.22f, 0.74f, 0.97f, 0.65f) };
+
+            Shader addShader = Shader.Find("Mobile/Particles/Additive") ?? Shader.Find("Unlit/Transparent") ?? Shader.Find("Standard");
+            starMat = new Material(addShader);
+            starMat.mainTexture = MakeStarTexture(64);
+            if (starMat.HasProperty("_TintColor")) starMat.SetColor("_TintColor", Color.white);
+
+            markerMat = new Material(addShader);
+            markerMat.mainTexture = MakeReticleTexture(64);
+            if (markerMat.HasProperty("_TintColor")) markerMat.SetColor("_TintColor", new Color(0.22f, 0.85f, 0.97f, 0.9f));
+        }
+
+        public void Build3DVault()
+        {
+            EnsureDatabaseBuilt();
+            CreateMaterials();
+
+            Transform existing = transform.Find("Celestial_Vault_3D");
+            if (existing != null)
+            {
+                if (Application.isPlaying) Destroy(existing.gameObject);
+                else DestroyImmediate(existing.gameObject);
+            }
+
+            vault3DRoot = new GameObject("Celestial_Vault_3D");
+            vault3DRoot.transform.SetParent(transform);
+            vault3DRoot.transform.localPosition = Vector3.zero;
+            vault3DRoot.transform.localRotation = Quaternion.identity;
+
+            // 1. Build Constellation Lines
+            GameObject constellationsObj = new GameObject("Constellations");
+            constellationsObj.transform.SetParent(vault3DRoot.transform);
+            constellationsObj.transform.localPosition = Vector3.zero;
+
+            foreach (var constell in constellations)
+            {
+                if (constell.starCoordsRaDec == null || constell.lineConnections == null) continue;
+
+                for (int i = 0; i < constell.lineConnections.Length; i += 2)
+                {
+                    int idxA = constell.lineConnections[i];
+                    int idxB = constell.lineConnections[i + 1];
+                    if (idxA >= constell.starCoordsRaDec.Length || idxB >= constell.starCoordsRaDec.Length) continue;
+
+                    Vector2 cA = constell.starCoordsRaDec[idxA];
+                    Vector2 cB = constell.starCoordsRaDec[idxB];
+
+                    Vector3 pA = RaDecToSpherePoint(cA.x, cA.y, celestialSphereRadius * 0.99f);
+                    Vector3 pB = RaDecToSpherePoint(cB.x, cB.y, celestialSphereRadius * 0.99f);
+
+                    GameObject segObj = new GameObject($"{constell.name}_Seg_{idxA}_{idxB}");
+                    segObj.transform.SetParent(constellationsObj.transform);
+                    segObj.transform.localPosition = Vector3.zero;
+
+                    LineRenderer lr = segObj.AddComponent<LineRenderer>();
+                    lr.useWorldSpace = false;
+                    lr.positionCount = 2;
+                    lr.SetPositions(new Vector3[] { pA, pB });
+                    lr.startWidth = 4.0f;
+                    lr.endWidth = 4.0f;
+                    lr.startColor = new Color(0.22f, 0.74f, 0.97f, 0.65f);
+                    lr.endColor = new Color(0.22f, 0.74f, 0.97f, 0.65f);
+                    lr.sharedMaterial = lineMat;
+                }
+            }
+
+            // 2. Build Major Stars (Brilliant 3D billboard points)
+            GameObject starsObj = new GameObject("Major_Stars");
+            starsObj.transform.SetParent(vault3DRoot.transform);
+            starsObj.transform.localPosition = Vector3.zero;
+
+            foreach (var obj in catalog)
+            {
+                if (obj.objectType != CelestialObjectType.MajorStar) continue;
+
+                Vector3 pos = RaDecToSpherePoint(obj.raHours, obj.decDegrees, celestialSphereRadius * 0.985f);
+                GameObject starQuad = CreateBillboardQuad($"{obj.id}_{obj.commonName}", pos, 48f, obj.markerColor, starMat);
+                starQuad.transform.SetParent(starsObj.transform);
+            }
+
+            // 3. Build Messier Object Target Nodes
+            GameObject messierObj = new GameObject("Messier_Nodes");
+            messierObj.transform.SetParent(vault3DRoot.transform);
+            messierObj.transform.localPosition = Vector3.zero;
+
+            foreach (var obj in catalog)
+            {
+                if (obj.objectType == CelestialObjectType.MajorStar) continue;
+
+                Vector3 pos = RaDecToSpherePoint(obj.raHours, obj.decDegrees, celestialSphereRadius * 0.97f);
+                GameObject nodeQuad = CreateBillboardQuad($"Node_{obj.id}_{obj.commonName}", pos, 38f, obj.markerColor, markerMat);
+                nodeQuad.transform.SetParent(messierObj.transform);
+            }
+
+            // 4. Build Active Telescope Target Reticle
+            targetReticle3D = CreateBillboardQuad("Active_Telescope_Target_Reticle", Vector3.forward * (celestialSphereRadius * 0.96f), 65f, new Color(0.2f, 0.95f, 1.0f, 0.95f), markerMat);
+            targetReticle3D.transform.SetParent(vault3DRoot.transform);
+
+            // 5. Build Local Observer Horizon Ring
+            GameObject horizonObj = new GameObject("Observer_Horizon_Ring");
+            horizonObj.transform.SetParent(vault3DRoot.transform);
+            horizonObj.transform.localPosition = Vector3.zero;
+
+            LineRenderer hLr = horizonObj.AddComponent<LineRenderer>();
+            hLr.useWorldSpace = false;
+            hLr.loop = true;
+            int hSegs = 96;
+            hLr.positionCount = hSegs;
+            Vector3[] hPositions = new Vector3[hSegs];
+
+            Vector3 zenith = GetObserverZenithUnitVector();
+            Vector3 north = Vector3.Cross(zenith, Vector3.right).normalized;
+            if (north == Vector3.zero) north = Vector3.Cross(zenith, Vector3.forward).normalized;
+            Vector3 east = Vector3.Cross(zenith, north).normalized;
+
+            for (int i = 0; i < hSegs; i++)
+            {
+                float a = (float)i / hSegs * Mathf.PI * 2f;
+                hPositions[i] = (north * Mathf.Cos(a) + east * Mathf.Sin(a)) * (celestialSphereRadius * 0.95f);
+            }
+            hLr.SetPositions(hPositions);
+            hLr.startWidth = 2.0f;
+            hLr.endWidth = 2.0f;
+            hLr.startColor = new Color(0.12f, 0.85f, 0.55f, 0.35f);
+            hLr.endColor = new Color(0.12f, 0.85f, 0.55f, 0.35f);
+
+            Material horizonMat = new Material(lineMat);
+            horizonMat.color = new Color(0.12f, 0.85f, 0.55f, 0.35f);
+            hLr.sharedMaterial = horizonMat;
+
+            Debug.Log($"[CelestialMessierCatalog] 3D Vault built with {constellations.Count} constellations and {catalog.Count} celestial objects.");
+        }
+
+        private GameObject CreateBillboardQuad(string name, Vector3 pos, float size, Color col, Material baseMat)
+        {
+            GameObject quad = new GameObject(name);
+            quad.transform.position = pos;
+            quad.transform.localScale = Vector3.one * size;
+
+            MeshFilter mf = quad.AddComponent<MeshFilter>();
+            MeshRenderer mr = quad.AddComponent<MeshRenderer>();
+
+            Mesh mesh = new Mesh { name = name + "_Mesh" };
+            mesh.vertices = new Vector3[]
+            {
+                new Vector3(-0.5f, -0.5f, 0f),
+                new Vector3( 0.5f, -0.5f, 0f),
+                new Vector3( 0.5f,  0.5f, 0f),
+                new Vector3(-0.5f,  0.5f, 0f)
+            };
+            mesh.uv = new Vector2[]
+            {
+                new Vector2(0f, 0f),
+                new Vector2(1f, 0f),
+                new Vector2(1f, 1f),
+                new Vector2(0f, 1f)
+            };
+            mesh.triangles = new int[] { 0, 2, 1, 0, 3, 2 };
+            mesh.colors = new Color[] { col, col, col, col };
+            mesh.RecalculateNormals();
+            mf.sharedMesh = mesh;
+
+            Material mat = new Material(baseMat);
+            mat.color = col;
+            if (mat.HasProperty("_TintColor")) mat.SetColor("_TintColor", col);
+            mr.sharedMaterial = mat;
+
+            // Orient directly toward origin
+            quad.transform.LookAt(Vector3.zero);
+            quad.transform.Rotate(0, 180f, 0);
+
+            return quad;
+        }
+
+        private Texture2D MakeStarTexture(int size)
+        {
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            float center = (size - 1) / 2.0f;
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float dx = (x - center) / center;
+                    float dy = (y - center) / center;
+                    float r = Mathf.Sqrt(dx * dx + dy * dy);
+
+                    if (r >= 1.0f)
+                    {
+                        tex.SetPixel(x, y, Color.clear);
+                    }
+                    else
+                    {
+                        float core = Mathf.Pow(1.0f - r, 2.8f);
+                        float flareH = Mathf.Pow(Mathf.Clamp01(1.0f - Mathf.Abs(dy) * 7f), 3f) * Mathf.Pow(Mathf.Clamp01(1.0f - Mathf.Abs(dx)), 2f) * 0.6f;
+                        float flareV = Mathf.Pow(Mathf.Clamp01(1.0f - Mathf.Abs(dx) * 7f), 3f) * Mathf.Pow(Mathf.Clamp01(1.0f - Mathf.Abs(dy)), 2f) * 0.6f;
+                        float a = Mathf.Clamp01(core + flareH + flareV);
+                        tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+                    }
+                }
+            }
+            tex.Apply();
+            return tex;
+        }
+
+        private Texture2D MakeReticleTexture(int size)
+        {
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            float center = (size - 1) / 2.0f;
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float dx = Mathf.Abs((x - center) / center);
+                    float dy = Mathf.Abs((y - center) / center);
+                    float diamondDist = dx + dy;
+
+                    float alpha = 0f;
+                    // Diamond border: ~0.78 to 0.94
+                    if (diamondDist >= 0.78f && diamondDist <= 0.94f)
+                    {
+                        alpha = 0.95f;
+                    }
+                    // Central luminous core
+                    float r = Mathf.Sqrt(dx * dx + dy * dy);
+                    if (r < 0.22f)
+                    {
+                        alpha = Mathf.Max(alpha, (1.0f - r / 0.22f));
+                    }
+
+                    tex.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+                }
+            }
+            tex.Apply();
+            return tex;
         }
 
         private void BuildMessierDatabase()
@@ -243,19 +559,19 @@ namespace CosmicZoom
                 "Brilliant white bulbous core encircled by a dramatic dark dust lane, resembling a broad-brimmed sombrero hat.");
 
             // Major Reference Stars
-            AddMajorStar("STAR-SIRIUS", "Sirius (Alpha Canis Majoris)", CelestialObjectType.MajorStar, "Canis Major", 6.75f, -16.71f, -1.46f, 8.6, "⭐", new Color(0.7f, 0.85f, 1.0f),
-                "The brightest star in Earth's night sky. A binary system with a white dwarf companion (The Pup).");
+            AddMajorStar("STAR-SIRIUS", "Sirius (Alpha Canis Majoris)", CelestialObjectType.MajorStar, "Canis Major", 6.75f, -16.71f, -1.46f, 8.6, "⭐", new Color(0.75f, 0.88f, 1.0f),
+                "The brightest star in Earth's night sky. A brilliant binary system with a white dwarf companion (The Pup).");
 
             AddMajorStar("STAR-BETELGEUSE", "Betelgeuse (Alpha Orionis)", CelestialObjectType.MajorStar, "Orion", 5.92f, 7.41f, 0.50f, 642, "⭐", new Color(1.0f, 0.45f, 0.25f),
                 "Luminous red supergiant marking Orion's right shoulder, candidate for a future core-collapse supernova.");
 
-            AddMajorStar("STAR-RIGEL", "Rigel (Beta Orionis)", CelestialObjectType.MajorStar, "Orion", 5.24f, -8.2f, 0.13f, 860, "⭐", new Color(0.6f, 0.85f, 1.0f),
+            AddMajorStar("STAR-RIGEL", "Rigel (Beta Orionis)", CelestialObjectType.MajorStar, "Orion", 5.24f, -8.2f, 0.13f, 860, "⭐", new Color(0.65f, 0.88f, 1.0f),
                 "Blue supergiant star marking Orion's left foot, 47,000 times more luminous than our Sun.");
 
             AddMajorStar("STAR-POLARIS", "Polaris (North Star)", CelestialObjectType.MajorStar, "Ursa Minor", 2.53f, 89.26f, 1.98f, 433, "⭐", new Color(0.95f, 0.95f, 0.7f),
                 "Current northern celestial pole star, located less than 1 degree from true celestial north.");
 
-            AddMajorStar("STAR-VEGA", "Vega (Alpha Lyrae)", CelestialObjectType.MajorStar, "Lyra", 18.61f, 38.78f, 0.03f, 25, "⭐", new Color(0.75f, 0.9f, 1.0f),
+            AddMajorStar("STAR-VEGA", "Vega (Alpha Lyrae)", CelestialObjectType.MajorStar, "Lyra", 18.61f, 38.78f, 0.03f, 25, "⭐", new Color(0.85f, 0.95f, 1.0f),
                 "Fifth-brightest star in the sky, standard zero-baseline for the astronomical photometric scale.");
 
             AddMajorStar("STAR-ARCTURUS", "Arcturus (Alpha Boötis)", CelestialObjectType.MajorStar, "Boötes", 14.26f, 19.18f, -0.05f, 36.7, "⭐", new Color(1.0f, 0.65f, 0.35f),
@@ -263,6 +579,15 @@ namespace CosmicZoom
 
             AddMajorStar("STAR-ALDEBARAN", "Aldebaran (Alpha Tauri)", CelestialObjectType.MajorStar, "Taurus", 4.59f, 16.51f, 0.85f, 65.3, "⭐", new Color(1.0f, 0.6f, 0.3f),
                 "Orange giant representing the fiery eye of the Bull in the constellation Taurus.");
+
+            AddMajorStar("STAR-DENEB", "Deneb (Alpha Cygni)", CelestialObjectType.MajorStar, "Cygnus", 20.69f, 45.28f, 1.25f, 2600, "⭐", new Color(0.9f, 0.95f, 1.0f),
+                "Extremely luminous white supergiant marking the tail of Cygnus the Swan and vertex of the Summer Triangle.");
+
+            AddMajorStar("STAR-ALTAIR", "Altair (Alpha Aquilae)", CelestialObjectType.MajorStar, "Aquila", 19.84f, 8.87f, 0.77f, 16.7, "⭐", new Color(0.95f, 0.98f, 1.0f),
+                "Rapidly rotating white main-sequence star, flattened at its poles by centrifugal rotation.");
+
+            AddMajorStar("STAR-SPICA", "Spica (Alpha Virginis)", CelestialObjectType.MajorStar, "Virgo", 13.42f, -11.16f, 0.98f, 250, "⭐", new Color(0.7f, 0.85f, 1.0f),
+                "Bright spectroscopic binary star in Virgo; spike down from Arcturus to find Spica.");
         }
 
         private void AddMessier(string id, string name, string alt, CelestialObjectType type, string constell, float ra, float dec, float mag, double distLy, string icon, Color col, string desc)
@@ -432,12 +757,62 @@ namespace CosmicZoom
                     3, 4
                 }
             });
+
+            // 6. Ursa Minor (Little Dipper)
+            constellations.Add(new ConstellationOutline
+            {
+                name = "Ursa Minor",
+                latinName = "Ursa Minor (Little Bear / Little Dipper)",
+                abbreviation = "UMi",
+                starCoordsRaDec = new Vector2[]
+                {
+                    new Vector2(2.53f, 89.26f),  // 0: Polaris
+                    new Vector2(16.96f, 82.04f), // 1: Yildun
+                    new Vector2(15.73f, 77.79f), // 2: Anwar al Farkadain
+                    new Vector2(15.34f, 71.83f), // 3: Akhfa al Farkadain
+                    new Vector2(15.14f, 74.16f), // 4: Kochab
+                    new Vector2(15.85f, 72.82f)  // 5: Pherkad
+                },
+                lineConnections = new int[]
+                {
+                    0, 1,
+                    1, 2,
+                    2, 3,
+                    3, 4,
+                    4, 5,
+                    5, 2
+                }
+            });
+
+            // 7. Leo (The Lion)
+            constellations.Add(new ConstellationOutline
+            {
+                name = "Leo",
+                latinName = "Leo (The Lion)",
+                abbreviation = "Leo",
+                starCoordsRaDec = new Vector2[]
+                {
+                    new Vector2(10.14f, 11.97f), // 0: Regulus
+                    new Vector2(10.33f, 19.84f), // 1: Algieba
+                    new Vector2(10.28f, 23.42f), // 2: Adhafera
+                    new Vector2(9.88f, 26.01f),  // 3: Rasalas
+                    new Vector2(11.23f, 15.43f), // 4: Chertan
+                    new Vector2(11.82f, 14.57f)  // 5: Denebola
+                },
+                lineConnections = new int[]
+                {
+                    0, 1,
+                    1, 2,
+                    2, 3,
+                    1, 4,
+                    4, 5
+                }
+            });
         }
 
         private void BuildRaDecGrid()
         {
             gridLines.Clear();
-            // Build Equator ring (Dec = 0)
             int segments = 72;
             for (int i = 0; i < segments; i++)
             {
@@ -448,21 +823,11 @@ namespace CosmicZoom
                 gridLines.Add(p0);
                 gridLines.Add(p1);
             }
-
-            // Build Polar Ecliptic Meridian
-            for (int i = 0; i < segments; i++)
-            {
-                float t0 = (float)i / segments * Mathf.PI * 2f;
-                float t1 = (float)(i + 1) / segments * Mathf.PI * 2f;
-                Vector3 p0 = new Vector3(Mathf.Cos(t0), Mathf.Sin(t0), 0) * celestialSphereRadius;
-                Vector3 p1 = new Vector3(Mathf.Cos(t1), Mathf.Sin(t1), 0) * celestialSphereRadius;
-                gridLines.Add(p0);
-                gridLines.Add(p1);
-            }
         }
 
         public void SelectTargetById(string id)
         {
+            EnsureDatabaseBuilt();
             var match = catalog.Find(c => c.id.Equals(id, StringComparison.OrdinalIgnoreCase));
             if (match != null)
             {
@@ -474,20 +839,78 @@ namespace CosmicZoom
         {
             if (target == null) return;
             currentTarget = target;
+
+            if (mainCamera == null) mainCamera = Camera.main;
+            if (mainCamera != null && !isStarryNightActive)
+            {
+                savedFlightCameraPos = mainCamera.transform.position;
+                savedFlightCameraRot = mainCamera.transform.rotation;
+                savedFlightFov = mainCamera.fieldOfView;
+                hasSavedFlightCamera = true;
+            }
+
             isStarryNightActive = true;
+            if (vault3DRoot != null) vault3DRoot.SetActive(true);
 
             if (aimCoroutine != null) StopCoroutine(aimCoroutine);
             aimCoroutine = StartCoroutine(SmoothAimAtTarget(target));
         }
 
-        private System.Collections.IEnumerator SmoothAimAtTarget(CelestialObjectData target)
+        public void ExitStarryNight()
+        {
+            if (!isStarryNightActive) return;
+
+            if (aimCoroutine != null) StopCoroutine(aimCoroutine);
+            aimCoroutine = StartCoroutine(SmoothReturnToFlightDeck());
+        }
+
+        private IEnumerator SmoothReturnToFlightDeck()
+        {
+            if (mainCamera == null) mainCamera = Camera.main;
+
+            if (mainCamera != null && hasSavedFlightCamera)
+            {
+                Vector3 startPos = mainCamera.transform.position;
+                Quaternion startRot = mainCamera.transform.rotation;
+                float startFov = mainCamera.fieldOfView;
+
+                float duration = 1.0f;
+                float elapsed = 0f;
+
+                while (elapsed < duration)
+                {
+                    elapsed += Time.deltaTime;
+                    float t = Mathf.Clamp01(elapsed / duration);
+                    float ease = 0.5f - 0.5f * Mathf.Cos(t * Mathf.PI);
+
+                    mainCamera.transform.position = Vector3.Lerp(startPos, savedFlightCameraPos, ease);
+                    mainCamera.transform.rotation = Quaternion.Slerp(startRot, savedFlightCameraRot, ease);
+                    mainCamera.fieldOfView = Mathf.Lerp(startFov, savedFlightFov, ease);
+                    yield return null;
+                }
+
+                mainCamera.transform.position = savedFlightCameraPos;
+                mainCamera.transform.rotation = savedFlightCameraRot;
+                mainCamera.fieldOfView = savedFlightFov;
+            }
+
+            isStarryNightActive = false;
+            hasSavedFlightCamera = false;
+            aimCoroutine = null;
+
+            var engine = FindAnyObjectByType<CosmicZoomEngine>();
+            if (engine != null)
+            {
+                engine.JumpToStage(engine.activeStageIndex);
+            }
+        }
+
+        private IEnumerator SmoothAimAtTarget(CelestialObjectData target)
         {
             if (mainCamera == null) mainCamera = Camera.main;
             if (mainCamera == null) yield break;
 
             Vector3 worldTargetDir = target.GetUnitSpherePosition();
-
-            // Look directly toward the celestial target on the celestial vault sphere
             Quaternion startRot = mainCamera.transform.rotation;
             Quaternion targetRot = Quaternion.LookRotation(worldTargetDir, Vector3.up);
 
@@ -533,10 +956,6 @@ namespace CosmicZoom
             }
         }
 
-        /// <summary>
-        /// 100% Offline Greenwich Mean Sidereal Time (GMST) calculation.
-        /// Preserves zero-network local privacy.
-        /// </summary>
         public static double GetCurrentGMSTHours()
         {
             DateTime utc = DateTime.UtcNow;
@@ -548,9 +967,6 @@ namespace CosmicZoom
             return gmst;
         }
 
-        /// <summary>
-        /// 100% Offline Local Sidereal Time (LST) calculation for observer's longitude.
-        /// </summary>
         public double GetLocalSiderealTimeHours()
         {
             double gmst = GetCurrentGMSTHours();
@@ -558,10 +974,6 @@ namespace CosmicZoom
             return (lst % 24.0 + 24.0) % 24.0;
         }
 
-        /// <summary>
-        /// Computes Altitude (h) and Azimuth (A) for an object from the observer's location.
-        /// h > 0 indicates the object is above the horizon (visible tonight).
-        /// </summary>
         public (float altitudeDeg, float azimuthDeg, bool isAboveHorizon) CalculateAltAz(float raHours, float decDeg)
         {
             double lstHours = GetLocalSiderealTimeHours();
@@ -570,13 +982,11 @@ namespace CosmicZoom
             double latRad = currentObserver.latitude * Mathf.Deg2Rad;
             double decRad = decDeg * Mathf.Deg2Rad;
 
-            // sin(alt) = sin(lat)*sin(dec) + cos(lat)*cos(dec)*cos(HA)
             double sinAlt = Math.Sin(latRad) * Math.Sin(decRad) + Math.Cos(latRad) * Math.Cos(decRad) * Math.Cos(haRad);
             sinAlt = Math.Max(-1.0, Math.Min(1.0, sinAlt));
             double altRad = Math.Asin(sinAlt);
             float altDeg = (float)(altRad * Mathf.Rad2Deg);
 
-            // cos(az) = (sin(dec) - sin(lat)*sin(alt)) / (cos(lat)*cos(alt))
             double cosAlt = Math.Cos(altRad);
             float azDeg = 0f;
             if (Math.Abs(cosAlt) > 1e-5)
@@ -607,117 +1017,7 @@ namespace CosmicZoom
             return new Vector3(x, y, z).normalized;
         }
 
-        private void OnRenderObject()
-        {
-            if (!isStarryNightActive) return;
-
-            // Render Constellation Stick Figures
-            if (showConstellationLines && lineMat != null)
-            {
-                lineMat.SetPass(0);
-                GL.PushMatrix();
-                GL.MultMatrix(Matrix4x4.identity);
-                GL.Begin(GL.LINES);
-                GL.Color(new Color(0.2f, 0.75f, 1.0f, 0.55f));
-
-                foreach (var constell in constellations)
-                {
-                    if (constell.starCoordsRaDec == null || constell.lineConnections == null) continue;
-
-                    for (int i = 0; i < constell.lineConnections.Length; i += 2)
-                    {
-                        int idxA = constell.lineConnections[i];
-                        int idxB = constell.lineConnections[i + 1];
-                        if (idxA >= constell.starCoordsRaDec.Length || idxB >= constell.starCoordsRaDec.Length) continue;
-
-                        Vector2 cA = constell.starCoordsRaDec[idxA];
-                        Vector2 cB = constell.starCoordsRaDec[idxB];
-
-                        Vector3 pA = RaDecToSpherePoint(cA.x, cA.y, celestialSphereRadius);
-                        Vector3 pB = RaDecToSpherePoint(cB.x, cB.y, celestialSphereRadius);
-
-                        GL.Vertex(pA);
-                        GL.Vertex(pB);
-                    }
-                }
-
-                // RA/Dec equatorial grid
-                if (showRaDecGrid && gridLines.Count > 0)
-                {
-                    GL.Color(new Color(1.0f, 0.85f, 0.3f, 0.25f));
-                    for (int i = 0; i < gridLines.Count; i += 2)
-                    {
-                        GL.Vertex(gridLines[i]);
-                        GL.Vertex(gridLines[i + 1]);
-                    }
-                }
-
-                // Local Observer Horizon Circle (Altitude = 0)
-                if (showLocalHorizonPlane)
-                {
-                    Vector3 zenith = GetObserverZenithUnitVector();
-                    Vector3 north = Vector3.Cross(zenith, Vector3.right).normalized;
-                    if (north == Vector3.zero) north = Vector3.Cross(zenith, Vector3.forward).normalized;
-                    Vector3 east = Vector3.Cross(zenith, north).normalized;
-
-                    GL.Color(new Color(0.1f, 0.95f, 0.5f, 0.65f)); // Crisp green horizon ring
-                    int hSegs = 64;
-                    for (int i = 0; i < hSegs; i++)
-                    {
-                        float a0 = (float)i / hSegs * Mathf.PI * 2f;
-                        float a1 = (float)(i + 1) / hSegs * Mathf.PI * 2f;
-
-                        Vector3 hp0 = (north * Mathf.Cos(a0) + east * Mathf.Sin(a0)) * (celestialSphereRadius * 0.98f);
-                        Vector3 hp1 = (north * Mathf.Cos(a1) + east * Mathf.Sin(a1)) * (celestialSphereRadius * 0.98f);
-
-                        GL.Vertex(hp0);
-                        GL.Vertex(hp1);
-                    }
-                }
-
-                GL.End();
-
-                // Delicate Optical Target Reticles for Messier Objects & Bright Stars on the Celestial Vault
-                if (showMessierMarkers && mainCamera != null)
-                {
-                    GL.Begin(GL.LINES);
-                    Vector3 camR = mainCamera.transform.right;
-                    Vector3 camU = mainCamera.transform.up;
-
-                    foreach (var obj in catalog)
-                    {
-                        Vector3 center = GetWorldPositionOfObject(obj);
-                        bool isCurrent = (currentTarget == obj);
-                        float sz = isCurrent ? 70f : (obj.objectType == CelestialObjectType.MajorStar ? 24f : 36f);
-
-                        Color col = obj.markerColor;
-                        col.a = isCurrent ? 0.95f : 0.40f;
-                        GL.Color(col);
-
-                        Vector3 vr = camR * sz;
-                        Vector3 vu = camU * sz;
-
-                        // Precise Diamond Reticle (◆)
-                        GL.Vertex(center + vr); GL.Vertex(center + vu);
-                        GL.Vertex(center + vu); GL.Vertex(center - vr);
-                        GL.Vertex(center - vr); GL.Vertex(center - vu);
-                        GL.Vertex(center - vu); GL.Vertex(center + vr);
-
-                        // Precision Crosshair Ticks for Targeted Object
-                        if (isCurrent)
-                        {
-                            GL.Vertex(center - vr * 1.6f); GL.Vertex(center + vr * 1.6f);
-                            GL.Vertex(center - vu * 1.6f); GL.Vertex(center + vu * 1.6f);
-                        }
-                    }
-                    GL.End();
-                }
-
-                GL.PopMatrix();
-            }
-        }
-
-        private Vector3 RaDecToSpherePoint(float raHours, float decDeg, float radius)
+        public Vector3 RaDecToSpherePoint(float raHours, float decDeg, float radius)
         {
             float raRad = (raHours / 24f) * Mathf.PI * 2f;
             float decRad = decDeg * Mathf.Deg2Rad;

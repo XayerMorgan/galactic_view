@@ -72,6 +72,7 @@ namespace CosmicZoom
         private Texture2D texBorder;
         private Texture2D texWhite;
         private Texture2D strutTex;
+        private Texture2D texCockpitCanopy;
 
         private bool stylesInitialized = false;
 
@@ -116,8 +117,11 @@ namespace CosmicZoom
             if (messierCatalog == null) messierCatalog = CelestialMessierCatalog.Instance ?? FindAnyObjectByType<CelestialMessierCatalog>();
             if (messierCatalog != null)
             {
-                messierCatalog.isStarryNightActive = !messierCatalog.isStarryNightActive;
                 if (messierCatalog.isStarryNightActive)
+                {
+                    messierCatalog.ExitStarryNight();
+                }
+                else
                 {
                     activeRightTab = 2; // Switch directly to Messier tab
                     if (messierCatalog.currentTarget == null && messierCatalog.Catalog.Count > 0)
@@ -127,14 +131,6 @@ namespace CosmicZoom
                     if (messierCatalog.currentTarget != null)
                     {
                         messierCatalog.LockTelescopeOnTarget(messierCatalog.currentTarget);
-                    }
-                }
-                else
-                {
-                    // Reset camera orientation back to flight deck stage view
-                    if (engine != null)
-                    {
-                        engine.JumpToStage(engine.activeStageIndex);
                     }
                 }
 
@@ -175,6 +171,8 @@ namespace CosmicZoom
             texBorder = MakeColorTexture(2, 2, new Color(0.18f, 0.35f, 0.52f, 0.65f));       // 1px tech border
             texWhite = MakeColorTexture(2, 2, Color.white);
             strutTex = MakeColorTexture(2, 2, new Color(0.02f, 0.04f, 0.09f, 0.75f));
+
+            texCockpitCanopy = Resources.Load<Texture2D>("cockpit_canopy_overlay");
 
             headerTitleStyle = new GUIStyle
             {
@@ -447,6 +445,24 @@ namespace CosmicZoom
             float zoom = engine != null ? engine.currentZoom : 1.0f;
             double spanKm = TravelTimeCalculator.GetSpanKmFromZoom(zoom);
             double lightTransitSecs = TravelTimeCalculator.GetLightTransitSeconds(spanKm);
+
+            // 1. Diegetic Starfighter Cockpit Canopy Overlay
+            if (texCockpitCanopy != null)
+            {
+                GUI.DrawTexture(new Rect(0, 0, virtualW, virtualH), texCockpitCanopy, ScaleMode.StretchToFill);
+            }
+
+            // 2. High-Visibility Return to Flight Deck Banner Button (If in Starry Night mode)
+            bool isStarryMode = messierCatalog != null && messierCatalog.isStarryNightActive;
+            if (isStarryMode)
+            {
+                float returnBtnW = 340f;
+                float returnBtnX = (virtualW - returnBtnW) / 2.0f;
+                if (DrawSleekButton(new Rect(returnBtnX, 74, returnBtnW, 42), "🚀 RETURN TO FLIGHT DECK [S]", true, Color.cyan, 12))
+                {
+                    ToggleStarryNight();
+                }
+            }
 
             // Center Viewport HUD Reticle
             DrawCenterFlightHUD(virtualW, virtualH);
