@@ -190,7 +190,61 @@ namespace CosmicZoom
             engine.JumpToStage(2);
             Check(!engine.lightPulseEmitter.IsPulseActive, "Changing scale cancels the previous pulse");
             engine.FocusOnOrionSpur();
-            Check(engine.currentTargetTransform != null && engine.currentTargetTransform.name.Contains("Beacon"), "Solar beacon tracks the rotating galaxy");
+            Check(engine.currentTargetTransform != null && engine.currentTargetTransform.name.Contains("Beacon"), "Solar beacon focuses the actual Orion Spur marker");
+            engine.FocusOnMilkyWay();
+            yield return new WaitForSeconds(1.5f);
+            var sun = engine.SolarBeacon;
+            // Independent fixture from the annotated NASA image: marked Sun is at 49.96%, 69.18%.
+            Check(sun != null && Mathf.Abs(sun.localPosition.x + .054f) < .02f && Mathf.Abs(sun.localPosition.z + 28.768f) < .03f,
+                "Sun beacon coincides with NASA map's Orion Spur circle");
+            Vector2 sunScreen = engine.mainCamera.WorldToScreenPoint(sun.position);
+            Check(engine.IsSunHit(sunScreen), "The rendered solar beacon is selectable");
+            engine.HandleMapPointer(sunScreen, true, true, false, false);
+            engine.HandleMapPointer(sunScreen + Vector2.right * 40, false, true, false, false);
+            engine.HandleMapPointer(sunScreen, false, false, true, false);
+            Check(engine.activeStageIndex == 2, "Dragging away from the Sun and back does not navigate");
+            engine.HandleMapPointer(sunScreen, true, true, false, true);
+            engine.HandleMapPointer(sunScreen, false, false, true, false);
+            Check(engine.activeStageIndex == 2, "A gesture beginning over the console cannot select the Sun");
+            hud.OpenGallery();
+            engine.HandleMapPointer(sunScreen, true, true, false, false);
+            engine.HandleMapPointer(sunScreen, false, false, true, false);
+            Check(engine.activeStageIndex == 2, "Gallery prevents Sun click-through");
+            hud.CloseOverlay();
+            engine.FirePulse();
+            engine.HandleMapPointer(sunScreen, true, true, false, false);
+            engine.HandleMapPointer(sunScreen, false, false, true, false);
+            Check(engine.activeStageIndex == 1 && roots[0].activeSelf && !roots[1].activeSelf && engine.currentTargetName == "Solar System Overview",
+                "Clicking our Sun returns to the solar-system overview");
+            Check(!engine.lightPulseEmitter.IsPulseActive, "Returning home clears the galactic light pulse");
+            engine.JumpToStage(3);
+            Check(engine.LocalMilkyWay != null && engine.Andromeda != null && engine.Triangulum != null,
+                "Local Group contains all three major spiral galaxies");
+            Check(roots[2].GetComponentsInChildren<MeshRenderer>().Length == 3, "Local Group coverage agrees with its three-galaxy description");
+            Check(engine.Triangulum.GetComponent<Renderer>().sharedMaterial.mainTexture.name == "triangulum_dss",
+                "M33 uses its own full-galaxy telescope photograph");
+            engine.FocusOnTriangulum();
+            yield return new WaitForSeconds(1.5f);
+            Check(engine.currentTargetTransform == engine.Triangulum && Vector3.Distance(engine.currentTargetPosition, engine.Triangulum.position) < .01f,
+                "Triangulum focus centers the actual M33 galaxy");
+            yield return Capture("triangulum_detail");
+            engine.FocusOnLocalGroup();
+            Screen.SetResolution(1280, 720, FullScreenMode.Windowed);
+            yield return new WaitForSeconds(1.5f);
+            Check(hud.TryGetGalaxyLabelBounds(engine.LocalMilkyWay, out _) && hud.TryGetGalaxyLabelBounds(engine.Andromeda, out _)
+                && hud.TryGetGalaxyLabelBounds(engine.Triangulum, out _), "All three galaxy labels remain visible at 1280x720");
+            yield return Capture("local_group_1280");
+            engine.JumpToStage(2);
+            yield return new WaitForSeconds(1.5f);
+            Check(hud.TryGetGalaxyLabelBounds(engine.SolarBeacon, out Rect sunLabel), "Sun navigation label remains visible at 1280x720");
+            Vector2 labelPoint = sunLabel.center * hud.InterfaceScale;
+            labelPoint.y = Screen.height - labelPoint.y;
+            Check(hud.SunLabelContains(labelPoint), "Sun label hit area follows the responsive layout");
+            yield return Capture("milky_way_1280");
+            engine.HandleMapPointer(labelPoint, true, true, false, false);
+            engine.HandleMapPointer(labelPoint, false, false, true, false);
+            Check(engine.activeStageIndex == 1, "Clicking the Sun label returns home at 1280x720");
+            Screen.SetResolution(1920, 1080, FullScreenMode.Windowed);
             engine.JumpToStage(3);
             engine.FocusOnAndromeda();
             Check(engine.currentTargetTransform != null && engine.currentTargetTransform.name.Contains("Andromeda"), "Andromeda focus tracks the actual galaxy");

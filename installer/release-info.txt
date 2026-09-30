@@ -14,6 +14,7 @@ The MIT license does not relicense those assets. Image credits are also shown
 in the gallery. Created in collaboration with ElevenLabs.
 
 Coordinates and distances are educational approximations. The Local Group
-view contains only the Milky Way and Andromeda; it is not a complete catalog.
+view shows Milky Way, Andromeda and Triangulum. Dwarf galaxies are not modeled.
+Click our Sun in the Milky Way map to return to the solar system.
 
 Source and updates: https://github.com/XayerMorgan/galactic_view

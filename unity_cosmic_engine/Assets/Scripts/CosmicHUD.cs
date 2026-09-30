@@ -41,8 +41,8 @@ namespace CosmicZoom
         private static readonly string[] StageSpans = { "60.14 AU / orbital diameter", "100,000 light-years", "10 million light-years", "93 billion light-years" };
         private static readonly string[] StageNotes = {
             "Across Neptune's orbit. Planet sizes and orbit spacing are illustrative.",
-            "Our galactic home. Explore the disk, central core and the solar beacon.",
-            "Two-galaxy schematic: Milky Way and Andromeda. Triangulum and dwarf members are not yet included.",
+            "Our Sun is in the Orion Spur, between Sagittarius and Perseus. Select its gold beacon to go home.",
+            "Three major spirals: Milky Way, Andromeda and Triangulum. Dwarf galaxies are not modeled; spacing is schematic.",
             "The observable universe. An illustrative web within the particle horizon."
         };
 
@@ -224,7 +224,7 @@ namespace CosmicZoom
             else
             {
                 string[] names = Stage == 1 ? new[] { "Sun", "Earth", "Jupiter", "Saturn", "Overview" } :
-                    Stage == 2 ? new[] { "Galactic core", "Solar beacon", "Galaxy overview" } : Stage == 3 ? new[] { "Andromeda", "Group overview" } : new[] { "Web filaments", "Particle horizon" };
+                    Stage == 2 ? new[] { "Galactic core", "Orion Spur", "Galaxy overview", "Solar system" } : Stage == 3 ? new[] { "Milky Way", "Andromeda", "Triangulum", "Group overview" } : new[] { "Web filaments", "Particle horizon" };
                 for (int i = 0; i < names.Length; i++)
                 {
                     Rect r = new Rect((i % 2) * (w / 2 + 2), 358 + (i / 2) * 40, w / 2 - 3, 34);
@@ -243,8 +243,8 @@ namespace CosmicZoom
                 Action[] actions = { engine.FocusOnSun, engine.FocusOnEarth, engine.FocusOnJupiter, engine.FocusOnSaturn, engine.FocusOnOverview };
                 actions[i]();
             }
-            else if (Stage == 2) { if (i == 0) engine.FocusOnSgrA(); else if (i == 1) engine.FocusOnOrionSpur(); else engine.FocusOnMilkyWay(); }
-            else if (Stage == 3) { if (i == 0) engine.FocusOnAndromeda(); else engine.FocusOnLocalGroup(); }
+            else if (Stage == 2) { if (i == 0) engine.FocusOnSgrA(); else if (i == 1) engine.FocusOnOrionSpur(); else if (i == 2) engine.FocusOnMilkyWay(); else engine.ReturnToSolarSystem(); }
+            else if (Stage == 3) { if (i == 0) engine.FocusOnLocalMilkyWay(); else if (i == 1) engine.FocusOnAndromeda(); else if (i == 2) engine.FocusOnTriangulum(); else engine.FocusOnLocalGroup(); }
             else { if (i == 0) engine.FocusOnCosmicFilaments(); else engine.FocusOnCMB(); }
         }
 
@@ -450,7 +450,8 @@ namespace CosmicZoom
         }
         private void DrawWorldLabels()
         {
-            if (!SkyActive || Camera.main == null) return;
+            if (Camera.main == null) return;
+            if (!SkyActive) { DrawGalaxyLabels(); return; }
             DrawHorizonLabels();
             skyLabelBounds.Clear();
             // Reserve the selected target first; crowded neighbors remain selectable in the catalog.
@@ -476,6 +477,63 @@ namespace CosmicZoom
                 art.Text(new Rect(p.x + 17, p.y + 10, 150, 19), $"Alt {horizontal.altitudeDeg:+0.0;-0.0}°  Az {horizontal.azimuthDeg:000}°", 10, art.Muted);
                 if (!showSettings && GUI.Button(labelBounds, GUIContent.none, GUIStyle.none)) messierCatalog.LockTelescopeOnTarget(obj);
             }
+        }
+
+        private bool GalaxyLabel(Transform target, out Vector2 point, out Rect label)
+        {
+            point = Vector2.zero; label = new Rect();
+            if (target == null || Camera.main == null || currentHUDMode == HUDViewMode.Hidden || SkyActive) return false;
+            Vector3 screen = Camera.main.WorldToScreenPoint(target.position);
+            point = new Vector2(screen.x, Screen.height - screen.y) / InterfaceScale;
+            label = new Rect(point.x - 14, point.y - 15, 238, 62);
+            if (OverUI(label.max) || label.xMax > width - 20) label.x = point.x - 224;
+            if (label.yMax > footer.y - 100) label.y = point.y - 68;
+            return screen.z > 0 && label.xMin > 20 && label.xMax < width - 20 && label.yMin > 215 && label.yMax < footer.y - 100
+                && !OverUI(label.min) && !OverUI(label.max);
+        }
+
+        public bool TryGetGalaxyLabelBounds(Transform target, out Rect bounds)
+        {
+            Layout();
+            return GalaxyLabel(target, out _, out bounds);
+        }
+
+        public bool SunLabelContains(Vector2 screenPoint)
+        {
+            Layout();
+            return !BlocksSceneInput && engine != null && Stage == 2 && GalaxyLabel(engine.SolarBeacon, out _, out Rect rect)
+                && rect.Contains(new Vector2(screenPoint.x, Screen.height - screenPoint.y) / InterfaceScale);
+        }
+
+        private void DrawGalaxyLabels()
+        {
+            if (engine == null || BlocksSceneInput) return;
+            if (Stage == 2)
+                DrawGalaxyLabel(engine.SolarBeacon, "OUR SUN / ORION SPUR", "26,000 ly from center · Click to go home", null, true);
+            else if (Stage == 3)
+            {
+                DrawGalaxyLabel(engine.LocalMilkyWay, "MILKY WAY", "Our home galaxy", engine.FocusOnLocalMilkyWay);
+                DrawGalaxyLabel(engine.Andromeda, "ANDROMEDA / M31", "Major spiral galaxy", engine.FocusOnAndromeda);
+                DrawGalaxyLabel(engine.Triangulum, "TRIANGULUM / M33", "Third-largest Local Group galaxy", engine.FocusOnTriangulum);
+            }
+            else return;
+            float left = currentHUDMode == HUDViewMode.Full && !isLeftPanelCollapsed ? navigation.xMax + 30 : 42;
+            float right = currentHUDMode == HUDViewMode.Full && !isRightPanelCollapsed ? instrument.x - 30 : width - 42;
+            string credit = Stage == 2 ? "Milky Way artist's map: NASA/JPL-Caltech/R. Hurt (SSC/Caltech)" :
+                "M33: ESO/Digitized Sky Survey 2. Acknowledgement: Davide De Martin\nMilky Way map: NASA/JPL-Caltech/R. Hurt (SSC/Caltech)";
+            art.Text(new Rect(left, footer.y - 108, right - left, 42), credit, 10, art.Muted);
+        }
+
+        private void DrawGalaxyLabel(Transform target, string title, string subtitle, Action focus, bool sun = false)
+        {
+            if (!GalaxyLabel(target, out Vector2 p, out Rect label)) return;
+            art.Arc(p, sun ? 10 : 5, 0, 360, sun ? art.Amber : art.Teal, 2);
+            float textX = label.x < p.x - 30 ? label.x + 8 : p.x + 25;
+            art.Round(new Rect(textX - 8, label.y + 1, 210, 56), new Color(.015f, .027f, .032f, .91f));
+            art.Text(new Rect(textX, label.y + 4, 195, 20), title, 11, sun ? art.Amber : art.Teal, bold: true);
+            art.Text(new Rect(textX, label.y + 25, 193, 30), subtitle, 10, art.Ink);
+            // Sun activation is handled on pointer release by the engine, with drag cancellation.
+            if (focus != null && GUI.Button(label, GUIContent.none, GUIStyle.none)) { engine.StopTour(); focus(); }
         }
         private void DrawHorizonLabels()
         {

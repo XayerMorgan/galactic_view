@@ -66,6 +66,25 @@ streaming services, selling isolated tracks or creating a reusable music library
 Replace the recordings with appropriately licensed audio for uses that require
 broader rights. The application can be built without audio clips.
 
+## Galaxy map imagery
+
+`Assets/Textures/milky_way_nasa.jpg`: NASA/JPL-Caltech/R. Hurt (SSC/Caltech),
+annotated artist’s concept ssc2008-10b1. Source:
+https://science.nasa.gov/resource/the-milky-way-galaxy/
+NASA image-use guidelines: https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+`Assets/Textures/triangulum_dss.jpg`: ESO/Digitized Sky Survey 2.
+Acknowledgement: Davide De Martin. Image heic1901f, CC BY 4.0.
+https://esahubble.org/images/heic1901f/
+https://esahubble.org/copyright/
+https://creativecommons.org/licenses/by/4.0/
+
+Original JPEGs are retained. Rendering projects the images onto circular surfaces
+with feathered edges; M33 uses the central 38% of its wide field. These images
+retain their own terms and are not part of the code's MIT license. On-screen
+map credits and the offline field guide identify the contributors. Provenance,
+checksums and Sun anchor coordinates: `asset_pipeline/galaxy_sources.json`.
+
 ## Illustrative art and legacy assets
 
 Planet/galaxy/cosmic-web textures under `assets/textures` and the Unity texture

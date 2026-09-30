@@ -48,8 +48,8 @@ The Sky tab lets you browse without entering the observatory. **Observatory [S]*
 The highlights are the North America, Helix, Carina, Western Veil, Bubble, Rosette and Tarantula nebulae, NGC 2392, 47 Tucanae, Omega Centauri, Centaurus A and NGC 869 in the Double Cluster. Telescope photographs can show a detail or surrounding field. M102 uses the traditional, historically disputed NGC 5866 identification. The image collection is separate from the schematic 3D Local Group.
 
 - **Solar system:** Sun, Earth, Jupiter, Saturn and Neptune. The span is Neptune's **orbital diameter** (60.14 AU), not the Sun-to-Neptune radius. Body sizes and orbital spacing are schematic.
-- **Milky Way:** a textured galactic disk, core and tracked solar-position beacon; a 100,000-light-year benchmark span.
-- **Local group:** a two-galaxy schematic containing only Milky Way and Andromeda models; a 10-million-light-year benchmark span. This is **not a complete Local Group**: Triangulum (M33) and the dwarf galaxies are not included.
+- **Milky Way:** NASA/JPL’s annotated artist map with our Sun anchored to the Orion Spur, between Sagittarius and Perseus, about 26,000 light-years from the center. Click the gold Sun beacon or its label to return to the solar system. The transit benchmark is 100,000 light-years.
+- **Local group:** the three major spirals—Milky Way, Andromeda (M31) and Triangulum (M33)—with labels and focus controls. M33 uses its own ESO/Digitized Sky Survey 2 image. **Dwarf galaxies are not modeled**; sizes, spacing and orientations are schematic. The 10-million-light-year transit benchmark is independent of the diagram.
 - **Cosmic web:** an illustrative textured filament disk and transparent particle-horizon boundary; a 93-billion-light-year benchmark span.
 - **Observatory:** a curated celestial catalog, constellation lines, and local horizon. Catalog coordinates are tied to the observer and time; the background star field and landscape are decorative. Daylight, weather and atmospheric refraction are not modeled. This is a coordinate/targeting view, not a photographic telescope image.
 
@@ -90,4 +90,6 @@ The older editor menu **Capture Scene-Only Reference Screenshots** writes camera
 
 ## Art direction still to develop
 
-The repaired console provides the functional foundation. Existing galaxy and planet textures are retained; the two survey ships are removed from the app. Some galaxy artwork has labels baked into its texture, and the web is still a flat illustrative layer. A future art pass can replace these with richer spatial assets and develop the console's original visual language without copying a franchise interface.
+The repaired console provides the functional foundation. The two survey ships are removed from the app. The Milky Way uses a credited NASA/JPL arm map and M33 uses a telescope image; the original Andromeda and planet art remain. Galaxy surfaces and the cosmic web are illustrative layers. A future art pass can replace these with richer spatial assets and develop the console's original visual language without copying a franchise interface.
+
+Galaxy map assembly is defined in `Assets/Scripts/Editor/CosmicGalaxyBuilder.cs` within the Unity project. The older Blender Milky Way/Local Group layouts are legacy workbench assets and are not loaded by the application. Image sources, Sun anchor coordinates and reuse terms are recorded in `asset_pipeline/galaxy_sources.json`.

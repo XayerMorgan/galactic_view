@@ -48,6 +48,12 @@ namespace CosmicZoom
         public float cameraYaw = 0.0f;
         private float targetPitch = 24.0f;
         private float targetYaw = 0.0f;
+        private bool sunPointerDown;
+        private Vector2 sunPointerStart;
+        public Transform SolarBeacon => FindChildRecursive(stage2MilkyWay, "Our_Position_Sun_Beacon");
+        public Transform LocalMilkyWay => FindChildRecursive(stage3LocalGroup, "LocalGroup_MilkyWay");
+        public Transform Andromeda => FindChildRecursive(stage3LocalGroup, "LocalGroup_Andromeda_M31");
+        public Transform Triangulum => FindChildRecursive(stage3LocalGroup, "LocalGroup_Triangulum_M33");
 
         [Header("Automated Guided Tour")]
         public bool isTourActive { get; private set; } = false;
@@ -86,7 +92,7 @@ namespace CosmicZoom
                 }
             }
 
-            if (CosmicHUD.Instance != null && CosmicHUD.Instance.BlocksSceneInput) return;
+            if (CosmicHUD.Instance != null && CosmicHUD.Instance.BlocksSceneInput) { sunPointerDown = false; return; }
             if (Input.GetKeyDown(KeyCode.G)) { CosmicHUD.Instance?.OpenGallery(); return; }
 
             // Keyboard Shortcuts: Keys 1, 2, 3, 4 for Universal Scales
@@ -142,6 +148,7 @@ namespace CosmicZoom
             }
 
             // 2. Continuous Inspection Mouse Wheel Zooming
+            HandleMapPointer(Input.mousePosition, Input.GetMouseButtonDown(0), Input.GetMouseButton(0), Input.GetMouseButtonUp(0), IsPointerOverConsoleUI());
             float scroll = Input.GetAxis("Mouse ScrollWheel");
             if (Mathf.Abs(scroll) > 0.001f && !IsPointerOverConsoleUI())
             {
@@ -152,7 +159,7 @@ namespace CosmicZoom
             }
 
             // 3. Smooth Orbit Controls (Right Mouse Button ALWAYS, or Left Drag outside active HUD)
-            if ((Input.GetMouseButton(1) || Input.GetMouseButton(0)) && !IsPointerOverConsoleUI())
+            if ((Input.GetMouseButton(1) || (Input.GetMouseButton(0) && !sunPointerDown)) && !IsPointerOverConsoleUI())
             {
                 float mx = Input.GetAxis("Mouse X");
                 float my = Input.GetAxis("Mouse Y");
@@ -197,6 +204,32 @@ namespace CosmicZoom
         {
             return CosmicHUD.Instance != null && CosmicHUD.Instance.IsPointerOverInterface();
         }
+
+        public bool IsSunHit(Vector2 screenPoint)
+        {
+            if (activeStageIndex != 2 || SolarBeacon == null || mainCamera == null) return false;
+            Vector3 p = mainCamera.WorldToScreenPoint(SolarBeacon.position);
+            if (p.z <= 0) return false;
+            Vector3 edge = mainCamera.WorldToScreenPoint(SolarBeacon.position + mainCamera.transform.right * .7f);
+            float radius = Mathf.Max(16, Vector2.Distance(p, edge));
+            return Vector2.Distance(screenPoint, p) <= radius || (CosmicHUD.Instance != null && CosmicHUD.Instance.SunLabelContains(screenPoint));
+        }
+
+        // The release must finish on the same target. Moving away and back is still a drag.
+        public void HandleMapPointer(Vector2 position, bool down, bool held, bool up, bool overInterface)
+        {
+            if (overInterface || activeStageIndex != 2 || (CosmicHUD.Instance != null && CosmicHUD.Instance.BlocksSceneInput)
+                || (CelestialMessierCatalog.Instance != null && CelestialMessierCatalog.Instance.isStarryNightActive))
+            { sunPointerDown = false; return; }
+            if (down) { sunPointerDown = IsSunHit(position); sunPointerStart = position; }
+            if (sunPointerDown && (held || up) && Vector2.Distance(position, sunPointerStart) > 8) sunPointerDown = false;
+            if (!up) return;
+            bool travel = sunPointerDown && IsSunHit(position);
+            sunPointerDown = false;
+            if (travel) ReturnToSolarSystem();
+        }
+
+        public void ReturnToSolarSystem() { JumpToStage(1); }
 
         public void QuitApplication()
         {
@@ -274,13 +307,15 @@ namespace CosmicZoom
 
         public void FocusOnOrionSpur()
         {
-            Transform t = FindChildRecursive(stage2MilkyWay, "Our_Position_Sun_Beacon");
-            FocusOnTarget("Orion Spur (Solar Beacon)", t != null ? t.position : Vector3.zero, 14f, 3f, 220f, t);
+            Transform t = SolarBeacon;
+            FocusOnTarget("Our Sun / Orion Spur / about 26,000 light-years from the center", t != null ? t.position : Vector3.zero, 65f, 3f, 220f, t);
+            targetPitch = 70;
         }
 
         public void FocusOnMilkyWay()
         {
-            FocusOnTarget("Milky Way Disk", Vector3.zero, defaultDist: 205.0f, minDist: 6.0f, maxDist: 400.0f, null);
+            FocusOnTarget("Milky Way Disk", Vector3.zero, defaultDist: 235.0f, minDist: 6.0f, maxDist: 400.0f, null);
+            targetPitch = 70;
         }
 
         public void FocusOnAndromeda()
@@ -291,7 +326,22 @@ namespace CosmicZoom
 
         public void FocusOnLocalGroup()
         {
-            FocusOnTarget("Local Group Cluster", Vector3.zero, defaultDist: 220.0f, minDist: 7.0f, maxDist: 400.0f, null);
+            FocusOnTarget("Local Group / three major spirals / schematic spacing", Vector3.zero, defaultDist: 220.0f, minDist: 7.0f, maxDist: 400.0f, null);
+            targetPitch = 60;
+        }
+
+        public void FocusOnTriangulum()
+        {
+            Transform t = Triangulum;
+            FocusOnTarget("Triangulum Galaxy (M33) / about 3 million light-years away", t != null ? t.position : Vector3.zero, 85, 7, 250, t);
+            targetPitch = 70;
+        }
+
+        public void FocusOnLocalMilkyWay()
+        {
+            Transform t = LocalMilkyWay;
+            FocusOnTarget("Milky Way / our home galaxy", t != null ? t.position : Vector3.zero, 110, 7, 250, t);
+            targetPitch = 70;
         }
 
         public void FocusOnCosmicFilaments()
@@ -323,6 +373,7 @@ namespace CosmicZoom
 
         public void JumpToStage(int stageNumber, bool fromTour = false)
         {
+            sunPointerDown = false;
             if (!fromTour && isTourActive)
             {
                 StopTour();

@@ -11,7 +11,7 @@ namespace CosmicZoom.Editor
     /// - CosmicStarfield (3,500 twinkling spectral background stars)
     /// - Orbital kinematics & axial rotation on all planets and Sun
     /// - Glowing orbital trajectory lines (Earth 1 AU, Jupiter 5.2 AU, Saturn 9 AU, Neptune 30 AU)
-    /// - Galactic rotation on Milky Way disk and Andromeda M31
+    /// - Source-backed Milky Way and Local Group maps with stable labels
     /// - Atmospheric radiance and solar corona halos
     /// - Circular disk geometry with transparent alpha-masked materials (ZERO black boxes)
     /// </summary>
@@ -30,7 +30,8 @@ namespace CosmicZoom.Editor
             }
 
             // Configure Texture Importers for alpha transparency
-            ConfigureTextureImporter("Assets/Textures/milky_way_disk.png", true);
+            ConfigureTextureImporter("Assets/Textures/milky_way_nasa.jpg", false);
+            ConfigureTextureImporter("Assets/Textures/triangulum_dss.jpg", false);
             ConfigureTextureImporter("Assets/Textures/andromeda_galaxy_disk.png", true);
             ConfigureTextureImporter("Assets/Textures/cosmic_web_simulation.png", true);
             ConfigureTextureImporter("Assets/Textures/sun_corona_glow.png", true);
@@ -60,12 +61,13 @@ namespace CosmicZoom.Editor
             Material matOrbit = CreateMaterial("Mat_OrbitBoundary", "", new Color(0.12f, 0.45f, 0.85f, 0.25f), 1.0f, 0.5f, isAdditive: true);
 
             // Stage 2 Milky Way (Additive: Black space adds 0 light, zero square boundaries)
-            Material matMilkyWay = CreateMaterial("Mat_MilkyWay", "Assets/Textures/milky_way_disk.png", Color.white, 3.0f, 0.5f, isAdditive: true);
-            Material matBeacon = CreateMaterial("Mat_Beacon", "Assets/Textures/sun_corona_glow.png", new Color(1.0f, 0.85f, 0.2f), 5.0f, 0.5f, isAdditive: true);
+            Material matMilkyWay = CreateMaterial("Mat_MilkyWay", "Assets/Textures/milky_way_nasa.jpg", Color.white, 3.0f, 0.5f, isAdditive: true);
             Material matSgrA = CreateMaterial("Mat_SgrA", "Assets/Textures/sun_photosphere.jpg", new Color(1.0f, 0.95f, 0.7f), 5.0f, 0.5f, isUnlit: true);
 
             // Stage 3 Local Group
             Material matAndromeda = CreateMaterial("Mat_Andromeda", "Assets/Textures/andromeda_galaxy_disk.png", new Color(0.95f, 0.95f, 1.0f), 3.0f, 0.5f, isAdditive: true);
+
+            Material matTriangulum = CreateMaterial("Mat_Triangulum", "Assets/Textures/triangulum_dss.jpg", Color.white, 1, isAdditive: true);
 
             // Stage 4 Cosmic Web & CMB
             Material matCosmicWeb = CreateMaterial("Mat_CosmicWeb", "Assets/Textures/cosmic_web_simulation.png", new Color(1f, 0.85f, 0.4f), 2.5f, 0.5f, isAdditive: true);
@@ -132,21 +134,18 @@ namespace CosmicZoom.Editor
             // Add Glowing Orbital Trajectory Lines to Stage 1
             stage1.AddComponent<SolarSystemOrbits>();
 
-            // Add Smooth Galactic Rotation to Stages 2, 3, and 4
-            stage2.AddComponent<GalacticRotator>();
-            stage3.AddComponent<GalacticRotator>();
+            // Rotate the cosmic web; keep annotated galaxy maps steady.
+            // Annotated maps keep a stable orientation; users can still orbit the camera.
             stage4.AddComponent<GalacticRotator>();
 
             // Instantiate Blender FBX Models
             GameObject s1Obj = LoadAndInstantiateModel("Assets/Models/solar_system_bodies.fbx", stage1.transform);
-            GameObject s2Obj = LoadAndInstantiateModel("Assets/Models/milky_way_spiral.fbx", stage2.transform);
-            GameObject s3Obj = LoadAndInstantiateModel("Assets/Models/local_group_galaxies.fbx", stage3.transform);
+            CosmicGalaxyBuilder.BuildMilkyWay(stage2.transform, matMilkyWay, matSgrA);
+            CosmicGalaxyBuilder.BuildLocalGroup(stage3.transform, matMilkyWay, matAndromeda, matTriangulum);
             GameObject s4Obj = LoadAndInstantiateModel("Assets/Models/observable_universe_boundary.fbx", stage4.transform);
 
             // Assign Textures, Materials, Kinematics & Rotation to Renderers
             AssignStage1Bodies(s1Obj, matSun, matSunCorona, matEarth, matJupiter, matSaturn, matSaturnRings, matNeptune, matOrbit);
-            AssignMaterialsToStage2(s2Obj, matMilkyWay, matBeacon, matSgrA);
-            AssignMaterialsToStage3(s3Obj, matMilkyWay, matAndromeda);
             AssignMaterialsToStage4(s4Obj, matCMB, matCosmicWeb);
 
             // Stage initial visibility: Stage 1 active, others inactive until zoom threshold
@@ -495,39 +494,6 @@ namespace CosmicZoom.Editor
                     body.rotationSpeed = 25.0f;
                     body.axialTiltDegrees = 28.3f;
                 }
-            }
-        }
-
-        private static void AssignMaterialsToStage2(GameObject root, Material milkyWay, Material beacon, Material sgrA)
-        {
-            if (root == null) return;
-            foreach (Renderer r in root.GetComponentsInChildren<Renderer>(true))
-            {
-                string n = r.gameObject.name.ToLower();
-                if (n.Contains("beacon") || n.Contains("sun_ring"))
-                {
-                    r.sharedMaterial = beacon;
-                }
-                else if (n.Contains("sagittarius") || n.Contains("sgra"))
-                {
-                    r.sharedMaterial = sgrA;
-                    SmoothSphere(r.GetComponent<MeshFilter>());
-                }
-                else
-                {
-                    r.sharedMaterial = milkyWay;
-                }
-            }
-        }
-
-        private static void AssignMaterialsToStage3(GameObject root, Material milkyWay, Material andromeda)
-        {
-            if (root == null) return;
-            foreach (Renderer r in root.GetComponentsInChildren<Renderer>(true))
-            {
-                string n = r.gameObject.name.ToLower();
-                if (n.Contains("andromeda") || n.Contains("m31")) r.sharedMaterial = andromeda;
-                else r.sharedMaterial = milkyWay;
             }
         }
 

@@ -58,9 +58,17 @@ shuffle persist. A 1280×720 window or larger is recommended.
 
 ## Scientific scope
 
-The 3D Local Group currently contains only Milky Way and Andromeda, not every
-member. M33 and dwarf galaxies are not represented there. The 3D solar system
-contains Sun, Earth, Jupiter, Saturn and Neptune with schematic sizes/spacing.
+The Local Group shows its three major spirals: Milky Way, Andromeda and
+Triangulum (M33). Each has a label and a focus control. Dwarf galaxies are not
+modeled, and spacing, sizes and orientations are schematic.
+
+The Milky Way uses NASA/JPL’s annotated artist map. Our Sun sits in the Orion
+Spur, between Sagittarius and Perseus, about 26,000 light-years from the center.
+Select **Orion Spur** to inspect the neighborhood. Click the gold Sun beacon
+or its label to return to the solar-system overview. Dragging still orbits.
+The map remains still so its arm labels stay readable.
+
+The 3D solar system contains Sun, Earth, Jupiter, Saturn and Neptune with schematic sizes/spacing.
 Travel times use distance ÷ speed without acceleration, relativistic traveler
 time or cosmic expansion. Pulses compress travel into ten playback seconds at
 1×; the displayed transit time is separate.

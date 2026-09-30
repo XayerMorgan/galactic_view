@@ -1,0 +1,27 @@
+{
+  "milky_way_nasa.jpg": {
+    "source": "https://science.nasa.gov/resource/the-milky-way-galaxy/",
+    "download": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/s/ssc2008-10b1.jpg",
+    "credit": "NASA/JPL-Caltech/R. Hurt (SSC/Caltech)",
+    "terms": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    "sunPixelTopLeft": [
+      2798,
+      3874
+    ],
+    "imageSize": [
+      5600,
+      5600
+    ],
+    "rendering": "Circular projection with feathered rim. Artist concept, not measured 3D geometry.",
+    "sha256": "6a6dfe05dab006ea1acf4925410791b1f2c65ef51c5575a78a0cd9b24a8e311b"
+  },
+  "triangulum_dss.jpg": {
+    "source": "https://esahubble.org/images/heic1901f/",
+    "download": "https://cdn.esahubble.org/archives/images/publicationjpg/heic1901f.jpg",
+    "credit": "ESO/Digitized Sky Survey 2. Acknowledgement: Davide De Martin",
+    "terms": "https://esahubble.org/copyright/",
+    "license": "CC BY 4.0",
+    "rendering": "Central 38% UV crop, circular projection with feathered rim. Schematic placement and size.",
+    "sha256": "bea65974b05599a502ae078a2e7581a5d065b2fd21aada38dae08617deedb8d9"
+  }
+}

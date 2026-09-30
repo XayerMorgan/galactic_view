@@ -543,15 +543,15 @@ PASS Stage 2 visibility of root 2
 PASS Stage 2 visibility of root 3
 PASS Stage 2 visibility of root 4
 PASS Supported material on MilkyWay_Galactic_Disk
-PASS Supported material on Our_Position_Sun_Beacon
-PASS Supported material on Our_Position_Sun_Ring
 PASS Supported material on Sagittarius_A_Horizon
+PASS Supported material on Our_Position_Sun_Beacon
 PASS Stage 3 visibility of root 1
 PASS Stage 3 visibility of root 2
 PASS Stage 3 visibility of root 3
 PASS Stage 3 visibility of root 4
-PASS Supported material on LocalGroup_Andromeda_M31
 PASS Supported material on LocalGroup_MilkyWay
+PASS Supported material on LocalGroup_Andromeda_M31
+PASS Supported material on LocalGroup_Triangulum_M33
 PASS Stage 4 visibility of root 1
 PASS Stage 4 visibility of root 2
 PASS Stage 4 visibility of root 3
@@ -563,7 +563,22 @@ PASS Pulse never moves the engine root or celestial vault
 PASS Pulse starts
 PASS Paused pulse holds its progress
 PASS Changing scale cancels the previous pulse
-PASS Solar beacon tracks the rotating galaxy
+PASS Solar beacon focuses the actual Orion Spur marker
+PASS Sun beacon coincides with NASA map's Orion Spur circle
+PASS The rendered solar beacon is selectable
+PASS Dragging away from the Sun and back does not navigate
+PASS A gesture beginning over the console cannot select the Sun
+PASS Gallery prevents Sun click-through
+PASS Clicking our Sun returns to the solar-system overview
+PASS Returning home clears the galactic light pulse
+PASS Local Group contains all three major spiral galaxies
+PASS Local Group coverage agrees with its three-galaxy description
+PASS M33 uses its own full-galaxy telescope photograph
+PASS Triangulum focus centers the actual M33 galaxy
+PASS All three galaxy labels remain visible at 1280x720
+PASS Sun navigation label remains visible at 1280x720
+PASS Sun label hit area follows the responsive layout
+PASS Clicking the Sun label returns home at 1280x720
 PASS Andromeda focus tracks the actual galaxy
 PASS Observatory enters with an active celestial vault
 PASS Observatory isolates sky from Stage1_Solar_System
