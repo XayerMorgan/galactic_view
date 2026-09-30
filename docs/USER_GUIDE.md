@@ -18,7 +18,8 @@ or clone the repository, or install a release, to view the rendered guide.
    or stops the narrated tour; **Space** launches an illustrative light pulse.
 4. **S** opens the observatory. Set **Sky → Change observer location** before
    interpreting local altitude and azimuth. The initial preset is Mauna Kea,
-   not your detected location.
+   not your detected location. **San Marcos, TX** is available in the preset list;
+   select it to update the local horizon and altitude/azimuth for that city.
 5. **G** opens the offline gallery. Search for **M42**, choose the photograph,
    and use **Locate in the sky** when it is above the horizon.
 

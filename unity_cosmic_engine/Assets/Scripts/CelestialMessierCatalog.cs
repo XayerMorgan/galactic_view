@@ -134,6 +134,8 @@ namespace CosmicZoom
             new ObserverLocation { locationName = "Royal Observatory Greenwich", latitude = 51.48f, longitude = 0.00f, regionDesc = "London, UK (Prime Meridian)" },
             new ObserverLocation { locationName = "New York City", latitude = 40.71f, longitude = -74.01f, regionDesc = "US East Coast" },
             new ObserverLocation { locationName = "Chicago / Midwest", latitude = 41.88f, longitude = -87.63f, regionDesc = "US Midwest" },
+            // Approximate city reference point: U.S. Census TIGERweb BAS26, place 4865600.
+            new ObserverLocation { locationName = "San Marcos, TX", latitude = 29.8736f, longitude = -97.9367f, regionDesc = "Texas, USA" },
             new ObserverLocation { locationName = "Los Angeles", latitude = 34.05f, longitude = -118.24f, regionDesc = "US West Coast" },
             new ObserverLocation { locationName = "London", latitude = 51.51f, longitude = -0.13f, regionDesc = "United Kingdom" },
             new ObserverLocation { locationName = "Paris", latitude = 48.86f, longitude = 2.35f, regionDesc = "France" },
