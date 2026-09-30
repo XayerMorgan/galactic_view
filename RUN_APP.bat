@@ -1,2 +1,3 @@
 @echo off
-start "" "%~dp0CosmicZoomEngine_App\CosmicZoomEngine.exe"
+cd /d "%~dp0CosmicZoomEngine_App"
+start "" "CosmicZoomEngine.exe"
