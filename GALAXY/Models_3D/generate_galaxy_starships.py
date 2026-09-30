@@ -176,7 +176,7 @@ def build_sol_scout_ship():
     bpy.ops.object.shade_smooth()
 
 def main():
-    out_dir = r"d:\Vibe Code Repo\galactic_view\GALAXY\Models_3D"
+    out_dir = os.path.dirname(os.path.abspath(__file__))
     os.makedirs(out_dir, exist_ok=True)
 
     # 1. Build & Export USS Astronautica Flagship

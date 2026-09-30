@@ -31,11 +31,6 @@ namespace CosmicZoom
             BuildStarfieldMesh();
         }
 
-        private void Start()
-        {
-            BuildStarfieldMesh();
-        }
-
         private void BuildStarfieldMesh()
         {
             MeshFilter mf = GetComponent<MeshFilter>();
@@ -63,6 +58,7 @@ namespace CosmicZoom
             Color[] colors = new Color[starCount * 4];
             int[] triangles = new int[starCount * 6];
 
+            var randomState = Random.state;
             Random.InitState(42);
 
             for (int i = 0; i < starCount; i++)
@@ -109,6 +105,7 @@ namespace CosmicZoom
                 triangles[ti + 5] = vi + 2;
             }
 
+            Random.state = randomState;
             mesh.vertices = vertices;
             mesh.uv = uvs;
             mesh.colors = colors;

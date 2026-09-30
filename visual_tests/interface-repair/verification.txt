@@ -1,0 +1,731 @@
+PASS The offline field guide is included in the player
+PASS The offline guide stylesheet is included
+PASS The player reports the release version
+PASS Nine soundtrack selections are available
+PASS The first streamed track starts without being skipped while loading
+PASS Five generated instrumental tracks are assigned
+PASS Three-minute instrumental streams without loading the entire decoded track: space_asterism
+PASS Three-minute instrumental streams without loading the entire decoded track: space_drift_beyond_orion
+PASS Three-minute instrumental streams without loading the entire decoded track: space_ion_trails
+PASS Three-minute instrumental streams without loading the entire decoded track: space_pale_blue_horizon
+PASS Three-minute instrumental streams without loading the entire decoded track: space_the_long_return
+PASS Skipping while muted keeps both music decks muted
+PASS Skipping while muted keeps both music decks muted
+PASS Skipping while muted keeps both music decks muted
+PASS Skipping while muted keeps both music decks muted
+PASS Skipping while muted keeps both music decks muted
+PASS Skipping while muted keeps both music decks muted
+PASS Skipping while muted keeps both music decks muted
+PASS Skipping while muted keeps both music decks muted
+PASS Shuffle visits every track before repeating
+PASS Music pause stops both decks during a transition
+PASS Skipping while paused stays paused
+PASS Music resumes while retaining the global mute
+PASS Generated track decodes and advances through playback: space_asterism
+PASS Generated track decodes and advances through playback: space_drift_beyond_orion
+PASS Generated track decodes and advances through playback: space_ion_trails
+PASS Generated track decodes and advances through playback: space_pale_blue_horizon
+PASS Generated track decodes and advances through playback: space_the_long_return
+PASS Unique catalog ID: M1
+PASS Bundled photograph and thumbnail decode: M1
+PASS Image attribution and source are present: M1
+PASS Unique catalog ID: M2
+PASS Bundled photograph and thumbnail decode: M2
+PASS Image attribution and source are present: M2
+PASS Unique catalog ID: M3
+PASS Bundled photograph and thumbnail decode: M3
+PASS Image attribution and source are present: M3
+PASS Unique catalog ID: M4
+PASS Bundled photograph and thumbnail decode: M4
+PASS Image attribution and source are present: M4
+PASS Unique catalog ID: M5
+PASS Bundled photograph and thumbnail decode: M5
+PASS Image attribution and source are present: M5
+PASS Unique catalog ID: M6
+PASS Bundled photograph and thumbnail decode: M6
+PASS Image attribution and source are present: M6
+PASS Unique catalog ID: M7
+PASS Bundled photograph and thumbnail decode: M7
+PASS Image attribution and source are present: M7
+PASS Unique catalog ID: M8
+PASS Bundled photograph and thumbnail decode: M8
+PASS Image attribution and source are present: M8
+PASS Unique catalog ID: M9
+PASS Bundled photograph and thumbnail decode: M9
+PASS Image attribution and source are present: M9
+PASS Unique catalog ID: M10
+PASS Bundled photograph and thumbnail decode: M10
+PASS Image attribution and source are present: M10
+PASS Unique catalog ID: M11
+PASS Bundled photograph and thumbnail decode: M11
+PASS Image attribution and source are present: M11
+PASS Unique catalog ID: M12
+PASS Bundled photograph and thumbnail decode: M12
+PASS Image attribution and source are present: M12
+PASS Unique catalog ID: M13
+PASS Bundled photograph and thumbnail decode: M13
+PASS Image attribution and source are present: M13
+PASS Unique catalog ID: M14
+PASS Bundled photograph and thumbnail decode: M14
+PASS Image attribution and source are present: M14
+PASS Unique catalog ID: M15
+PASS Bundled photograph and thumbnail decode: M15
+PASS Image attribution and source are present: M15
+PASS Unique catalog ID: M16
+PASS Bundled photograph and thumbnail decode: M16
+PASS Image attribution and source are present: M16
+PASS Unique catalog ID: M17
+PASS Bundled photograph and thumbnail decode: M17
+PASS Image attribution and source are present: M17
+PASS Unique catalog ID: M18
+PASS Bundled photograph and thumbnail decode: M18
+PASS Image attribution and source are present: M18
+PASS Unique catalog ID: M19
+PASS Bundled photograph and thumbnail decode: M19
+PASS Image attribution and source are present: M19
+PASS Unique catalog ID: M20
+PASS Bundled photograph and thumbnail decode: M20
+PASS Image attribution and source are present: M20
+PASS Unique catalog ID: M21
+PASS Bundled photograph and thumbnail decode: M21
+PASS Image attribution and source are present: M21
+PASS Unique catalog ID: M22
+PASS Bundled photograph and thumbnail decode: M22
+PASS Image attribution and source are present: M22
+PASS Unique catalog ID: M23
+PASS Bundled photograph and thumbnail decode: M23
+PASS Image attribution and source are present: M23
+PASS Unique catalog ID: M24
+PASS Bundled photograph and thumbnail decode: M24
+PASS Image attribution and source are present: M24
+PASS Unique catalog ID: M25
+PASS Bundled photograph and thumbnail decode: M25
+PASS Image attribution and source are present: M25
+PASS Unique catalog ID: M26
+PASS Bundled photograph and thumbnail decode: M26
+PASS Image attribution and source are present: M26
+PASS Unique catalog ID: M27
+PASS Bundled photograph and thumbnail decode: M27
+PASS Image attribution and source are present: M27
+PASS Unique catalog ID: M28
+PASS Bundled photograph and thumbnail decode: M28
+PASS Image attribution and source are present: M28
+PASS Unique catalog ID: M29
+PASS Bundled photograph and thumbnail decode: M29
+PASS Image attribution and source are present: M29
+PASS Unique catalog ID: M30
+PASS Bundled photograph and thumbnail decode: M30
+PASS Image attribution and source are present: M30
+PASS Unique catalog ID: M31
+PASS Bundled photograph and thumbnail decode: M31
+PASS Image attribution and source are present: M31
+PASS Unique catalog ID: M32
+PASS Bundled photograph and thumbnail decode: M32
+PASS Image attribution and source are present: M32
+PASS Unique catalog ID: M33
+PASS Bundled photograph and thumbnail decode: M33
+PASS Image attribution and source are present: M33
+PASS Unique catalog ID: M34
+PASS Bundled photograph and thumbnail decode: M34
+PASS Image attribution and source are present: M34
+PASS Unique catalog ID: M35
+PASS Bundled photograph and thumbnail decode: M35
+PASS Image attribution and source are present: M35
+PASS Unique catalog ID: M36
+PASS Bundled photograph and thumbnail decode: M36
+PASS Image attribution and source are present: M36
+PASS Unique catalog ID: M37
+PASS Bundled photograph and thumbnail decode: M37
+PASS Image attribution and source are present: M37
+PASS Unique catalog ID: M38
+PASS Bundled photograph and thumbnail decode: M38
+PASS Image attribution and source are present: M38
+PASS Unique catalog ID: M39
+PASS Bundled photograph and thumbnail decode: M39
+PASS Image attribution and source are present: M39
+PASS Unique catalog ID: M40
+PASS Bundled photograph and thumbnail decode: M40
+PASS Image attribution and source are present: M40
+PASS Unique catalog ID: M41
+PASS Bundled photograph and thumbnail decode: M41
+PASS Image attribution and source are present: M41
+PASS Unique catalog ID: M42
+PASS Bundled photograph and thumbnail decode: M42
+PASS Image attribution and source are present: M42
+PASS Unique catalog ID: M43
+PASS Bundled photograph and thumbnail decode: M43
+PASS Image attribution and source are present: M43
+PASS Unique catalog ID: M44
+PASS Bundled photograph and thumbnail decode: M44
+PASS Image attribution and source are present: M44
+PASS Unique catalog ID: M45
+PASS Bundled photograph and thumbnail decode: M45
+PASS Image attribution and source are present: M45
+PASS Unique catalog ID: M46
+PASS Bundled photograph and thumbnail decode: M46
+PASS Image attribution and source are present: M46
+PASS Unique catalog ID: M47
+PASS Bundled photograph and thumbnail decode: M47
+PASS Image attribution and source are present: M47
+PASS Unique catalog ID: M48
+PASS Bundled photograph and thumbnail decode: M48
+PASS Image attribution and source are present: M48
+PASS Unique catalog ID: M49
+PASS Bundled photograph and thumbnail decode: M49
+PASS Image attribution and source are present: M49
+PASS Unique catalog ID: M50
+PASS Bundled photograph and thumbnail decode: M50
+PASS Image attribution and source are present: M50
+PASS Unique catalog ID: M51
+PASS Bundled photograph and thumbnail decode: M51
+PASS Image attribution and source are present: M51
+PASS Unique catalog ID: M52
+PASS Bundled photograph and thumbnail decode: M52
+PASS Image attribution and source are present: M52
+PASS Unique catalog ID: M53
+PASS Bundled photograph and thumbnail decode: M53
+PASS Image attribution and source are present: M53
+PASS Unique catalog ID: M54
+PASS Bundled photograph and thumbnail decode: M54
+PASS Image attribution and source are present: M54
+PASS Unique catalog ID: M55
+PASS Bundled photograph and thumbnail decode: M55
+PASS Image attribution and source are present: M55
+PASS Unique catalog ID: M56
+PASS Bundled photograph and thumbnail decode: M56
+PASS Image attribution and source are present: M56
+PASS Unique catalog ID: M57
+PASS Bundled photograph and thumbnail decode: M57
+PASS Image attribution and source are present: M57
+PASS Unique catalog ID: M58
+PASS Bundled photograph and thumbnail decode: M58
+PASS Image attribution and source are present: M58
+PASS Unique catalog ID: M59
+PASS Bundled photograph and thumbnail decode: M59
+PASS Image attribution and source are present: M59
+PASS Unique catalog ID: M60
+PASS Bundled photograph and thumbnail decode: M60
+PASS Image attribution and source are present: M60
+PASS Unique catalog ID: M61
+PASS Bundled photograph and thumbnail decode: M61
+PASS Image attribution and source are present: M61
+PASS Unique catalog ID: M62
+PASS Bundled photograph and thumbnail decode: M62
+PASS Image attribution and source are present: M62
+PASS Unique catalog ID: M63
+PASS Bundled photograph and thumbnail decode: M63
+PASS Image attribution and source are present: M63
+PASS Unique catalog ID: M64
+PASS Bundled photograph and thumbnail decode: M64
+PASS Image attribution and source are present: M64
+PASS Unique catalog ID: M65
+PASS Bundled photograph and thumbnail decode: M65
+PASS Image attribution and source are present: M65
+PASS Unique catalog ID: M66
+PASS Bundled photograph and thumbnail decode: M66
+PASS Image attribution and source are present: M66
+PASS Unique catalog ID: M67
+PASS Bundled photograph and thumbnail decode: M67
+PASS Image attribution and source are present: M67
+PASS Unique catalog ID: M68
+PASS Bundled photograph and thumbnail decode: M68
+PASS Image attribution and source are present: M68
+PASS Unique catalog ID: M69
+PASS Bundled photograph and thumbnail decode: M69
+PASS Image attribution and source are present: M69
+PASS Unique catalog ID: M70
+PASS Bundled photograph and thumbnail decode: M70
+PASS Image attribution and source are present: M70
+PASS Unique catalog ID: M71
+PASS Bundled photograph and thumbnail decode: M71
+PASS Image attribution and source are present: M71
+PASS Unique catalog ID: M72
+PASS Bundled photograph and thumbnail decode: M72
+PASS Image attribution and source are present: M72
+PASS Unique catalog ID: M73
+PASS Bundled photograph and thumbnail decode: M73
+PASS Image attribution and source are present: M73
+PASS Unique catalog ID: M74
+PASS Bundled photograph and thumbnail decode: M74
+PASS Image attribution and source are present: M74
+PASS Unique catalog ID: M75
+PASS Bundled photograph and thumbnail decode: M75
+PASS Image attribution and source are present: M75
+PASS Unique catalog ID: M76
+PASS Bundled photograph and thumbnail decode: M76
+PASS Image attribution and source are present: M76
+PASS Unique catalog ID: M77
+PASS Bundled photograph and thumbnail decode: M77
+PASS Image attribution and source are present: M77
+PASS Unique catalog ID: M78
+PASS Bundled photograph and thumbnail decode: M78
+PASS Image attribution and source are present: M78
+PASS Unique catalog ID: M79
+PASS Bundled photograph and thumbnail decode: M79
+PASS Image attribution and source are present: M79
+PASS Unique catalog ID: M80
+PASS Bundled photograph and thumbnail decode: M80
+PASS Image attribution and source are present: M80
+PASS Unique catalog ID: M81
+PASS Bundled photograph and thumbnail decode: M81
+PASS Image attribution and source are present: M81
+PASS Unique catalog ID: M82
+PASS Bundled photograph and thumbnail decode: M82
+PASS Image attribution and source are present: M82
+PASS Unique catalog ID: M83
+PASS Bundled photograph and thumbnail decode: M83
+PASS Image attribution and source are present: M83
+PASS Unique catalog ID: M84
+PASS Bundled photograph and thumbnail decode: M84
+PASS Image attribution and source are present: M84
+PASS Unique catalog ID: M85
+PASS Bundled photograph and thumbnail decode: M85
+PASS Image attribution and source are present: M85
+PASS Unique catalog ID: M86
+PASS Bundled photograph and thumbnail decode: M86
+PASS Image attribution and source are present: M86
+PASS Unique catalog ID: M87
+PASS Bundled photograph and thumbnail decode: M87
+PASS Image attribution and source are present: M87
+PASS Unique catalog ID: M88
+PASS Bundled photograph and thumbnail decode: M88
+PASS Image attribution and source are present: M88
+PASS Unique catalog ID: M89
+PASS Bundled photograph and thumbnail decode: M89
+PASS Image attribution and source are present: M89
+PASS Unique catalog ID: M90
+PASS Bundled photograph and thumbnail decode: M90
+PASS Image attribution and source are present: M90
+PASS Unique catalog ID: M91
+PASS Bundled photograph and thumbnail decode: M91
+PASS Image attribution and source are present: M91
+PASS Unique catalog ID: M92
+PASS Bundled photograph and thumbnail decode: M92
+PASS Image attribution and source are present: M92
+PASS Unique catalog ID: M93
+PASS Bundled photograph and thumbnail decode: M93
+PASS Image attribution and source are present: M93
+PASS Unique catalog ID: M94
+PASS Bundled photograph and thumbnail decode: M94
+PASS Image attribution and source are present: M94
+PASS Unique catalog ID: M95
+PASS Bundled photograph and thumbnail decode: M95
+PASS Image attribution and source are present: M95
+PASS Unique catalog ID: M96
+PASS Bundled photograph and thumbnail decode: M96
+PASS Image attribution and source are present: M96
+PASS Unique catalog ID: M97
+PASS Bundled photograph and thumbnail decode: M97
+PASS Image attribution and source are present: M97
+PASS Unique catalog ID: M98
+PASS Bundled photograph and thumbnail decode: M98
+PASS Image attribution and source are present: M98
+PASS Unique catalog ID: M99
+PASS Bundled photograph and thumbnail decode: M99
+PASS Image attribution and source are present: M99
+PASS Unique catalog ID: M100
+PASS Bundled photograph and thumbnail decode: M100
+PASS Image attribution and source are present: M100
+PASS Unique catalog ID: M101
+PASS Bundled photograph and thumbnail decode: M101
+PASS Image attribution and source are present: M101
+PASS Unique catalog ID: M102
+PASS Bundled photograph and thumbnail decode: M102
+PASS Image attribution and source are present: M102
+PASS Unique catalog ID: M103
+PASS Bundled photograph and thumbnail decode: M103
+PASS Image attribution and source are present: M103
+PASS Unique catalog ID: M104
+PASS Bundled photograph and thumbnail decode: M104
+PASS Image attribution and source are present: M104
+PASS Unique catalog ID: M105
+PASS Bundled photograph and thumbnail decode: M105
+PASS Image attribution and source are present: M105
+PASS Unique catalog ID: M106
+PASS Bundled photograph and thumbnail decode: M106
+PASS Image attribution and source are present: M106
+PASS Unique catalog ID: M107
+PASS Bundled photograph and thumbnail decode: M107
+PASS Image attribution and source are present: M107
+PASS Unique catalog ID: M108
+PASS Bundled photograph and thumbnail decode: M108
+PASS Image attribution and source are present: M108
+PASS Unique catalog ID: M109
+PASS Bundled photograph and thumbnail decode: M109
+PASS Image attribution and source are present: M109
+PASS Unique catalog ID: M110
+PASS Bundled photograph and thumbnail decode: M110
+PASS Image attribution and source are present: M110
+PASS Unique catalog ID: NGC7000
+PASS Bundled photograph and thumbnail decode: NGC7000
+PASS Image attribution and source are present: NGC7000
+PASS Unique catalog ID: NGC7293
+PASS Bundled photograph and thumbnail decode: NGC7293
+PASS Image attribution and source are present: NGC7293
+PASS Unique catalog ID: NGC3372
+PASS Bundled photograph and thumbnail decode: NGC3372
+PASS Image attribution and source are present: NGC3372
+PASS Unique catalog ID: NGC0104
+PASS Bundled photograph and thumbnail decode: NGC0104
+PASS Image attribution and source are present: NGC0104
+PASS Unique catalog ID: NGC5139
+PASS Bundled photograph and thumbnail decode: NGC5139
+PASS Image attribution and source are present: NGC5139
+PASS Unique catalog ID: NGC5128
+PASS Bundled photograph and thumbnail decode: NGC5128
+PASS Image attribution and source are present: NGC5128
+PASS Unique catalog ID: NGC0869
+PASS Bundled photograph and thumbnail decode: NGC0869
+PASS Image attribution and source are present: NGC0869
+PASS Unique catalog ID: NGC6960
+PASS Bundled photograph and thumbnail decode: NGC6960
+PASS Image attribution and source are present: NGC6960
+PASS Unique catalog ID: NGC7635
+PASS Bundled photograph and thumbnail decode: NGC7635
+PASS Image attribution and source are present: NGC7635
+PASS Unique catalog ID: NGC2237
+PASS Bundled photograph and thumbnail decode: NGC2237
+PASS Image attribution and source are present: NGC2237
+PASS Unique catalog ID: NGC2070
+PASS Bundled photograph and thumbnail decode: NGC2070
+PASS Image attribution and source are present: NGC2070
+PASS Unique catalog ID: NGC2392
+PASS Bundled photograph and thumbnail decode: NGC2392
+PASS Image attribution and source are present: NGC2392
+PASS Unique catalog ID: STAR-SIRIUS
+PASS Unique catalog ID: STAR-BETELGEUSE
+PASS Unique catalog ID: STAR-RIGEL
+PASS Unique catalog ID: STAR-POLARIS
+PASS Unique catalog ID: STAR-VEGA
+PASS Unique catalog ID: STAR-ARCTURUS
+PASS Unique catalog ID: STAR-ALDEBARAN
+PASS Unique catalog ID: STAR-DENEB
+PASS Unique catalog ID: STAR-ALTAIR
+PASS Unique catalog ID: STAR-SPICA
+PASS Complete 122-image gallery plus ten reference stars
+PASS Messier entry present: M1
+PASS Messier entry present: M2
+PASS Messier entry present: M3
+PASS Messier entry present: M4
+PASS Messier entry present: M5
+PASS Messier entry present: M6
+PASS Messier entry present: M7
+PASS Messier entry present: M8
+PASS Messier entry present: M9
+PASS Messier entry present: M10
+PASS Messier entry present: M11
+PASS Messier entry present: M12
+PASS Messier entry present: M13
+PASS Messier entry present: M14
+PASS Messier entry present: M15
+PASS Messier entry present: M16
+PASS Messier entry present: M17
+PASS Messier entry present: M18
+PASS Messier entry present: M19
+PASS Messier entry present: M20
+PASS Messier entry present: M21
+PASS Messier entry present: M22
+PASS Messier entry present: M23
+PASS Messier entry present: M24
+PASS Messier entry present: M25
+PASS Messier entry present: M26
+PASS Messier entry present: M27
+PASS Messier entry present: M28
+PASS Messier entry present: M29
+PASS Messier entry present: M30
+PASS Messier entry present: M31
+PASS Messier entry present: M32
+PASS Messier entry present: M33
+PASS Messier entry present: M34
+PASS Messier entry present: M35
+PASS Messier entry present: M36
+PASS Messier entry present: M37
+PASS Messier entry present: M38
+PASS Messier entry present: M39
+PASS Messier entry present: M40
+PASS Messier entry present: M41
+PASS Messier entry present: M42
+PASS Messier entry present: M43
+PASS Messier entry present: M44
+PASS Messier entry present: M45
+PASS Messier entry present: M46
+PASS Messier entry present: M47
+PASS Messier entry present: M48
+PASS Messier entry present: M49
+PASS Messier entry present: M50
+PASS Messier entry present: M51
+PASS Messier entry present: M52
+PASS Messier entry present: M53
+PASS Messier entry present: M54
+PASS Messier entry present: M55
+PASS Messier entry present: M56
+PASS Messier entry present: M57
+PASS Messier entry present: M58
+PASS Messier entry present: M59
+PASS Messier entry present: M60
+PASS Messier entry present: M61
+PASS Messier entry present: M62
+PASS Messier entry present: M63
+PASS Messier entry present: M64
+PASS Messier entry present: M65
+PASS Messier entry present: M66
+PASS Messier entry present: M67
+PASS Messier entry present: M68
+PASS Messier entry present: M69
+PASS Messier entry present: M70
+PASS Messier entry present: M71
+PASS Messier entry present: M72
+PASS Messier entry present: M73
+PASS Messier entry present: M74
+PASS Messier entry present: M75
+PASS Messier entry present: M76
+PASS Messier entry present: M77
+PASS Messier entry present: M78
+PASS Messier entry present: M79
+PASS Messier entry present: M80
+PASS Messier entry present: M81
+PASS Messier entry present: M82
+PASS Messier entry present: M83
+PASS Messier entry present: M84
+PASS Messier entry present: M85
+PASS Messier entry present: M86
+PASS Messier entry present: M87
+PASS Messier entry present: M88
+PASS Messier entry present: M89
+PASS Messier entry present: M90
+PASS Messier entry present: M91
+PASS Messier entry present: M92
+PASS Messier entry present: M93
+PASS Messier entry present: M94
+PASS Messier entry present: M95
+PASS Messier entry present: M96
+PASS Messier entry present: M97
+PASS Messier entry present: M98
+PASS Messier entry present: M99
+PASS Messier entry present: M100
+PASS Messier entry present: M101
+PASS Messier entry present: M102
+PASS Messier entry present: M103
+PASS Messier entry present: M104
+PASS Messier entry present: M105
+PASS Messier entry present: M106
+PASS Messier entry present: M107
+PASS Messier entry present: M108
+PASS Messier entry present: M109
+PASS Messier entry present: M110
+PASS Equatorial transit reaches the zenith
+PASS Positive six-hour angle is on the western horizon
+PASS Negative six-hour angle is on the eastern horizon
+PASS Northern observer sees equatorial transit due south
+PASS Polar observers receive finite horizon coordinates
+PASS Light travel uses the physical year conversion
+PASS Sub-kilometer craft speeds retain their precision
+PASS Atmosphere fits its imported body: 1.060
+PASS No survey ships remain in the solar-system scene
+PASS Stage 1 visibility of root 1
+PASS Stage 1 visibility of root 2
+PASS Stage 1 visibility of root 3
+PASS Stage 1 visibility of root 4
+PASS Supported material on Orbit_Earth_1AU
+PASS Supported material on Orbit_Jupiter_5AU
+PASS Supported material on Orbit_Saturn_9AU
+PASS Supported material on Orbit_Neptune_30AU
+PASS Supported material on Earth
+PASS Supported material on Earth_AtmosphereGlow
+PASS Supported material on Jupiter
+PASS Supported material on Neptune
+PASS Supported material on Saturn
+PASS Supported material on Saturn_Rings
+PASS Supported material on Sun_Photosphere
+PASS Supported material on Sun_Corona_Halo
+PASS Stage 2 visibility of root 1
+PASS Stage 2 visibility of root 2
+PASS Stage 2 visibility of root 3
+PASS Stage 2 visibility of root 4
+PASS Supported material on MilkyWay_Galactic_Disk
+PASS Supported material on Our_Position_Sun_Beacon
+PASS Supported material on Our_Position_Sun_Ring
+PASS Supported material on Sagittarius_A_Horizon
+PASS Stage 3 visibility of root 1
+PASS Stage 3 visibility of root 2
+PASS Stage 3 visibility of root 3
+PASS Stage 3 visibility of root 4
+PASS Supported material on LocalGroup_Andromeda_M31
+PASS Supported material on LocalGroup_MilkyWay
+PASS Stage 4 visibility of root 1
+PASS Stage 4 visibility of root 2
+PASS Stage 4 visibility of root 3
+PASS Stage 4 visibility of root 4
+PASS Supported material on Cosmic_Web_Simulation_Plane
+PASS Supported material on Observable_Universe_CMB_Horizon
+PASS Earth focus resolves a nested FBX body
+PASS Pulse never moves the engine root or celestial vault
+PASS Pulse starts
+PASS Paused pulse holds its progress
+PASS Changing scale cancels the previous pulse
+PASS Solar beacon tracks the rotating galaxy
+PASS Andromeda focus tracks the actual galaxy
+PASS Observatory enters with an active celestial vault
+PASS Observatory isolates sky from Stage1_Solar_System
+PASS Observatory isolates sky from Stage2_Milky_Way
+PASS Observatory isolates sky from Stage3_Local_Group
+PASS Observatory isolates sky from Stage4_Cosmic_Web
+PASS Sky camera is centered on celestial coordinates
+PASS Observatory opens with the wide horizon overview
+PASS Ground has a supported depth-occluding horizon shader
+PASS Horizon coordinates agree with equatorial coordinates: M1
+PASS Horizon coordinates agree with equatorial coordinates: M2
+PASS Horizon coordinates agree with equatorial coordinates: M3
+PASS Horizon coordinates agree with equatorial coordinates: M4
+PASS Horizon coordinates agree with equatorial coordinates: M5
+PASS Horizon coordinates agree with equatorial coordinates: M6
+PASS Horizon coordinates agree with equatorial coordinates: M7
+PASS Horizon coordinates agree with equatorial coordinates: M8
+PASS Horizon coordinates agree with equatorial coordinates: M9
+PASS Horizon coordinates agree with equatorial coordinates: M10
+PASS Horizon coordinates agree with equatorial coordinates: M11
+PASS Horizon coordinates agree with equatorial coordinates: M12
+PASS Horizon coordinates agree with equatorial coordinates: M13
+PASS Horizon coordinates agree with equatorial coordinates: M14
+PASS Horizon coordinates agree with equatorial coordinates: M15
+PASS Horizon coordinates agree with equatorial coordinates: M16
+PASS Horizon coordinates agree with equatorial coordinates: M17
+PASS Horizon coordinates agree with equatorial coordinates: M18
+PASS Horizon coordinates agree with equatorial coordinates: M19
+PASS Horizon coordinates agree with equatorial coordinates: M20
+PASS Horizon coordinates agree with equatorial coordinates: M21
+PASS Horizon coordinates agree with equatorial coordinates: M22
+PASS Horizon coordinates agree with equatorial coordinates: M23
+PASS Horizon coordinates agree with equatorial coordinates: M24
+PASS Horizon coordinates agree with equatorial coordinates: M25
+PASS Horizon coordinates agree with equatorial coordinates: M26
+PASS Horizon coordinates agree with equatorial coordinates: M27
+PASS Horizon coordinates agree with equatorial coordinates: M28
+PASS Horizon coordinates agree with equatorial coordinates: M29
+PASS Horizon coordinates agree with equatorial coordinates: M30
+PASS Horizon coordinates agree with equatorial coordinates: M31
+PASS Horizon coordinates agree with equatorial coordinates: M32
+PASS Horizon coordinates agree with equatorial coordinates: M33
+PASS Horizon coordinates agree with equatorial coordinates: M34
+PASS Horizon coordinates agree with equatorial coordinates: M35
+PASS Horizon coordinates agree with equatorial coordinates: M36
+PASS Horizon coordinates agree with equatorial coordinates: M37
+PASS Horizon coordinates agree with equatorial coordinates: M38
+PASS Horizon coordinates agree with equatorial coordinates: M39
+PASS Horizon coordinates agree with equatorial coordinates: M40
+PASS Horizon coordinates agree with equatorial coordinates: M41
+PASS Horizon coordinates agree with equatorial coordinates: M42
+PASS Horizon coordinates agree with equatorial coordinates: M43
+PASS Horizon coordinates agree with equatorial coordinates: M44
+PASS Horizon coordinates agree with equatorial coordinates: M45
+PASS Horizon coordinates agree with equatorial coordinates: M46
+PASS Horizon coordinates agree with equatorial coordinates: M47
+PASS Horizon coordinates agree with equatorial coordinates: M48
+PASS Horizon coordinates agree with equatorial coordinates: M49
+PASS Horizon coordinates agree with equatorial coordinates: M50
+PASS Horizon coordinates agree with equatorial coordinates: M51
+PASS Horizon coordinates agree with equatorial coordinates: M52
+PASS Horizon coordinates agree with equatorial coordinates: M53
+PASS Horizon coordinates agree with equatorial coordinates: M54
+PASS Horizon coordinates agree with equatorial coordinates: M55
+PASS Horizon coordinates agree with equatorial coordinates: M56
+PASS Horizon coordinates agree with equatorial coordinates: M57
+PASS Horizon coordinates agree with equatorial coordinates: M58
+PASS Horizon coordinates agree with equatorial coordinates: M59
+PASS Horizon coordinates agree with equatorial coordinates: M60
+PASS Horizon coordinates agree with equatorial coordinates: M61
+PASS Horizon coordinates agree with equatorial coordinates: M62
+PASS Horizon coordinates agree with equatorial coordinates: M63
+PASS Horizon coordinates agree with equatorial coordinates: M64
+PASS Horizon coordinates agree with equatorial coordinates: M65
+PASS Horizon coordinates agree with equatorial coordinates: M66
+PASS Horizon coordinates agree with equatorial coordinates: M67
+PASS Horizon coordinates agree with equatorial coordinates: M68
+PASS Horizon coordinates agree with equatorial coordinates: M69
+PASS Horizon coordinates agree with equatorial coordinates: M70
+PASS Horizon coordinates agree with equatorial coordinates: M71
+PASS Horizon coordinates agree with equatorial coordinates: M72
+PASS Horizon coordinates agree with equatorial coordinates: M73
+PASS Horizon coordinates agree with equatorial coordinates: M74
+PASS Horizon coordinates agree with equatorial coordinates: M75
+PASS Horizon coordinates agree with equatorial coordinates: M76
+PASS Horizon coordinates agree with equatorial coordinates: M77
+PASS Horizon coordinates agree with equatorial coordinates: M78
+PASS Horizon coordinates agree with equatorial coordinates: M79
+PASS Horizon coordinates agree with equatorial coordinates: M80
+PASS Horizon coordinates agree with equatorial coordinates: M81
+PASS Horizon coordinates agree with equatorial coordinates: M82
+PASS Horizon coordinates agree with equatorial coordinates: M83
+PASS Horizon coordinates agree with equatorial coordinates: M84
+PASS Horizon coordinates agree with equatorial coordinates: M85
+PASS Horizon coordinates agree with equatorial coordinates: M86
+PASS Horizon coordinates agree with equatorial coordinates: M87
+PASS Horizon coordinates agree with equatorial coordinates: M88
+PASS Horizon coordinates agree with equatorial coordinates: M89
+PASS Horizon coordinates agree with equatorial coordinates: M90
+PASS Horizon coordinates agree with equatorial coordinates: M91
+PASS Horizon coordinates agree with equatorial coordinates: M92
+PASS Horizon coordinates agree with equatorial coordinates: M93
+PASS Horizon coordinates agree with equatorial coordinates: M94
+PASS Horizon coordinates agree with equatorial coordinates: M95
+PASS Horizon coordinates agree with equatorial coordinates: M96
+PASS Horizon coordinates agree with equatorial coordinates: M97
+PASS Horizon coordinates agree with equatorial coordinates: M98
+PASS Horizon coordinates agree with equatorial coordinates: M99
+PASS Horizon coordinates agree with equatorial coordinates: M100
+PASS Horizon coordinates agree with equatorial coordinates: M101
+PASS Horizon coordinates agree with equatorial coordinates: M102
+PASS Horizon coordinates agree with equatorial coordinates: M103
+PASS Horizon coordinates agree with equatorial coordinates: M104
+PASS Horizon coordinates agree with equatorial coordinates: M105
+PASS Horizon coordinates agree with equatorial coordinates: M106
+PASS Horizon coordinates agree with equatorial coordinates: M107
+PASS Horizon coordinates agree with equatorial coordinates: M108
+PASS Horizon coordinates agree with equatorial coordinates: M109
+PASS Horizon coordinates agree with equatorial coordinates: M110
+PASS Horizon coordinates agree with equatorial coordinates: NGC7000
+PASS Horizon coordinates agree with equatorial coordinates: NGC7293
+PASS Horizon coordinates agree with equatorial coordinates: NGC3372
+PASS Horizon coordinates agree with equatorial coordinates: NGC0104
+PASS Horizon coordinates agree with equatorial coordinates: NGC5139
+PASS Horizon coordinates agree with equatorial coordinates: NGC5128
+PASS Horizon coordinates agree with equatorial coordinates: NGC0869
+PASS Horizon coordinates agree with equatorial coordinates: NGC6960
+PASS Horizon coordinates agree with equatorial coordinates: NGC7635
+PASS Horizon coordinates agree with equatorial coordinates: NGC2237
+PASS Horizon coordinates agree with equatorial coordinates: NGC2070
+PASS Horizon coordinates agree with equatorial coordinates: NGC2392
+PASS Horizon coordinates agree with equatorial coordinates: STAR-SIRIUS
+PASS Horizon coordinates agree with equatorial coordinates: STAR-BETELGEUSE
+PASS Horizon coordinates agree with equatorial coordinates: STAR-RIGEL
+PASS Horizon coordinates agree with equatorial coordinates: STAR-POLARIS
+PASS Horizon coordinates agree with equatorial coordinates: STAR-VEGA
+PASS Horizon coordinates agree with equatorial coordinates: STAR-ARCTURUS
+PASS Horizon coordinates agree with equatorial coordinates: STAR-ALDEBARAN
+PASS Horizon coordinates agree with equatorial coordinates: STAR-DENEB
+PASS Horizon coordinates agree with equatorial coordinates: STAR-ALTAIR
+PASS Horizon coordinates agree with equatorial coordinates: STAR-SPICA
+PASS Cardinal view stays level at 0 degrees
+PASS Cardinal view stays level at 90 degrees
+PASS Cardinal view stays level at 180 degrees
+PASS Cardinal view stays level at 270 degrees
+PASS Telescope zoom has a usable lower limit
+PASS Telescope zoom has a usable wide-angle limit
+PASS Looking up never crosses the zenith or flips the camera
+PASS Reset restores the horizon without leaving the observatory
+PASS Target aiming centers an above-horizon catalog object
+PASS Sky filters change rendered objects
+PASS Gallery opens with all images and captures scene input
+PASS Messier search accepts a spaced identifier
+PASS NGC search accepts a spaced identifier without catalog padding
+PASS Unknown search returns an empty result
+PASS Alternate common names are searchable
+PASS Escape closes the gallery and preserves the sky session
+PASS Observatory returns to the previous sector and lens
+PASS Sector jump cancels an in-progress telescope slew
+PASS Sun focus resolves the nested FBX body
+PASS Saturn focus resolves the body rather than an orbit or ring
+PASS Jupiter focus resolves the body rather than an orbit
+PASS Full to minimal mode
+PASS HUD cycle restores full mode
+Failures: 0

@@ -1,0 +1,19 @@
+Welcome to Astronautica
+
+Explore four cosmic scales, orient yourself beneath a local horizon, and browse
+all 110 Messier objects plus 12 deep-sky highlights in an offline image gallery.
+
+This installer installs for your Windows account without administrator access.
+The complete app, soundtrack, image gallery and field guide are included.
+Press F1 in the app or use the Start menu Field Guide shortcut for help.
+
+Original code and documentation: MIT License.
+Telescope photographs, OpenNGC catalog data, generated audio, art textures and
+the Unity runtime have separate terms in THIRD_PARTY_NOTICES.md and Licenses/.
+The MIT license does not relicense those assets. Image credits are also shown
+in the gallery. Created in collaboration with ElevenLabs.
+
+Coordinates and distances are educational approximations. The Local Group
+view contains only the Milky Way and Andromeda; it is not a complete catalog.
+
+Source and updates: https://github.com/XayerMorgan/galactic_view

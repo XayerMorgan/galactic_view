@@ -32,7 +32,7 @@ namespace CosmicZoom
                 if (col != null) col.enabled = false;
 
                 var rend = pulseSphere.GetComponent<Renderer>();
-                var shader = Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Transparent") ?? Shader.Find("Unlit/Color");
+                var shader = Resources.Load<Shader>("CosmicRim");
                 rend.material = new Material(shader) { color = new Color(0.22f, 0.75f, 1.0f, 0.4f) };
                 if (rend.material.HasProperty("_TintColor"))
                 {
@@ -44,7 +44,8 @@ namespace CosmicZoom
 
         public void FireLightPulse(Vector3 origin, float maxRadius = 150.0f, double spanKm = 8.996e9)
         {
-            transform.position = origin;
+            // This component shares the engine root: moving it also moved the entire sky vault.
+            if (pulseSphere != null) pulseSphere.transform.position = origin;
             targetMaxRadius = Mathf.Max(50.0f, maxRadius);
             totalDistanceKm = spanKm;
             currentRadius = 0.5f;
@@ -57,8 +58,18 @@ namespace CosmicZoom
             if (pulseSphere != null)
             {
                 pulseSphere.SetActive(true);
-                pulseSphere.transform.localScale = Vector3.one * currentRadius;
+                pulseSphere.transform.localScale = Vector3.one * (currentRadius * 2f);
             }
+        }
+
+        public void CancelPulse()
+        {
+            isActive = false;
+            isPaused = false;
+            elapsedTime = 0;
+            currentDistanceKm = 0;
+            completedSummary = "";
+            if (pulseSphere != null) pulseSphere.SetActive(false);
         }
 
         public void TogglePause()

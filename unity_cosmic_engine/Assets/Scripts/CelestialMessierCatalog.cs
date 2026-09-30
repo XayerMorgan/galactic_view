@@ -15,7 +15,11 @@ namespace CosmicZoom
         SupernovaRemnant,
         GlobularCluster,
         OpenCluster,
-        MajorStar
+        MajorStar,
+        DoubleStar,
+        StarCloud,
+        Nebula,
+        Galaxy
     }
 
     [System.Serializable]
@@ -23,6 +27,7 @@ namespace CosmicZoom
     {
         public string id;
         public string commonName;
+        public string aliases;
         public string ngcOrAlt;
         public CelestialObjectType objectType;
         public string constellation;
@@ -34,6 +39,21 @@ namespace CosmicZoom
         public Color markerColor;
         [TextArea(2, 5)]
         public string description;
+        public string objectClass;
+        public bool magnitudeKnown;
+        public string coordinateEpoch;
+        public string catalogSourceUrl;
+        public string catalogLicense;
+        public string imageFile;
+        public string imageCredit;
+        public string imageSourceUrl;
+        public string imageLicense;
+        public string imageLicenseUrl;
+        public string imageProvider;
+        public string imageAlt;
+        public string imageProcessing;
+        public bool HasImage => !string.IsNullOrEmpty(imageFile);
+        public string ClassLabel => !string.IsNullOrEmpty(objectClass) ? objectClass : objectType == CelestialObjectType.MajorStar ? "Reference star" : objectType.ToString();
 
         public Vector3 GetUnitSpherePosition()
         {
@@ -151,6 +171,15 @@ namespace CosmicZoom
         private Quaternion savedFlightCameraRot;
         private float savedFlightFov = 45f;
         private bool hasSavedFlightCamera = false;
+        private bool isReturningToFlight;
+        private Transform constellationRoot, markerRoot, horizonRoot;
+        private float nextHorizonUpdate;
+        private Material horizonMaterial;
+        private float viewAzimuth = 180, viewAltitude = 12;
+        public float ViewAzimuth => viewAzimuth;
+        public float ViewAltitude => viewAltitude;
+        public float ViewFieldOfView => mainCamera != null ? mainCamera.fieldOfView : 75;
+        public string ViewDirection => new[] { "North", "Northeast", "East", "Southeast", "South", "Southwest", "West", "Northwest" }[Mathf.RoundToInt(viewAzimuth / 45) % 8];
 
         public IReadOnlyList<CelestialObjectData> Catalog => catalog;
         public IReadOnlyList<ConstellationOutline> Constellations => constellations;
@@ -174,21 +203,21 @@ namespace CosmicZoom
                 cameraFocus = engine.cameraFocusTarget;
             }
 
-            if (vault3DRoot == null)
-            {
-                Build3DVault();
-            }
+            // Runtime meshes/materials and private reticle references are not scene assets.
+            Build3DVault();
         }
 
         private void Update()
         {
-            if (!isStarryNightActive) return;
+            if (!isStarryNightActive || isReturningToFlight) return;
+            ApplyVisibility();
+            if (CosmicHUD.Instance != null && CosmicHUD.Instance.BlocksSceneInput) return;
 
             if (mainCamera == null) mainCamera = Camera.main;
             if (mainCamera == null) return;
 
             // 1. Mouse Drag / Right-Click Look Controls
-            if (Input.GetMouseButton(1) || Input.GetMouseButton(0))
+            if ((Input.GetMouseButton(1) || Input.GetMouseButton(0)) && (CosmicHUD.Instance == null || !CosmicHUD.Instance.IsPointerOverInterface()))
             {
                 float mx = Input.GetAxis("Mouse X");
                 float my = Input.GetAxis("Mouse Y");
@@ -200,14 +229,13 @@ namespace CosmicZoom
                         aimCoroutine = null;
                     }
 
-                    mainCamera.transform.Rotate(Vector3.up, mx * 2.2f, Space.World);
-                    mainCamera.transform.Rotate(Vector3.right, -my * 2.2f, Space.Self);
+                    LookToward(viewAzimuth + mx * ViewFieldOfView / 34f, viewAltitude + my * ViewFieldOfView / 34f);
                 }
             }
 
             // 2. Keyboard Pan Controls (Arrow keys / WASD)
-            float h = Input.GetAxis("Horizontal");
-            float v = Input.GetAxis("Vertical");
+            float h = (Input.GetKey(KeyCode.RightArrow) ? 1 : 0) - (Input.GetKey(KeyCode.LeftArrow) ? 1 : 0);
+            float v = (Input.GetKey(KeyCode.UpArrow) ? 1 : 0) - (Input.GetKey(KeyCode.DownArrow) ? 1 : 0);
             if (Mathf.Abs(h) > 0.05f || Mathf.Abs(v) > 0.05f)
             {
                 if (aimCoroutine != null)
@@ -215,23 +243,16 @@ namespace CosmicZoom
                     StopCoroutine(aimCoroutine);
                     aimCoroutine = null;
                 }
-                mainCamera.transform.Rotate(Vector3.up, h * 35f * Time.deltaTime, Space.World);
-                mainCamera.transform.Rotate(Vector3.right, -v * 35f * Time.deltaTime, Space.Self);
+                LookToward(viewAzimuth + h * ViewFieldOfView * 0.6f * Time.deltaTime, viewAltitude + v * ViewFieldOfView * 0.6f * Time.deltaTime);
             }
 
             // 3. Telescope Optical Magnification Zoom (Scroll wheel)
             float scroll = Input.GetAxis("Mouse ScrollWheel");
-            if (Mathf.Abs(scroll) > 0.001f)
+            if (Mathf.Abs(scroll) > 0.001f && (CosmicHUD.Instance == null || !CosmicHUD.Instance.IsPointerOverInterface()))
             {
-                mainCamera.fieldOfView = Mathf.Clamp(mainCamera.fieldOfView - scroll * 20f, 10f, 65f);
+                ZoomView(-scroll * 30f);
             }
-
-            // 4. Quick Exit Hotkey (Esc or S handled in CosmicHUD)
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                ExitStarryNight();
-            }
-
+            if (aimCoroutine == null) ApplyViewRotation();
             // 5. Update 3D Target Reticle Animation
             if (targetReticle3D != null && currentTarget != null)
             {
@@ -354,36 +375,20 @@ namespace CosmicZoom
             targetReticle3D = CreateBillboardQuad("Active_Telescope_Target_Reticle", Vector3.forward * (celestialSphereRadius * 0.96f), 65f, new Color(0.2f, 0.95f, 1.0f, 0.95f), markerMat);
             targetReticle3D.transform.SetParent(vault3DRoot.transform);
 
-            // 5. Build Local Observer Horizon Ring
-            GameObject horizonObj = new GameObject("Observer_Horizon_Ring");
-            horizonObj.transform.SetParent(vault3DRoot.transform);
-            horizonObj.transform.localPosition = Vector3.zero;
-
-            LineRenderer hLr = horizonObj.AddComponent<LineRenderer>();
-            hLr.useWorldSpace = false;
-            hLr.loop = true;
-            int hSegs = 96;
-            hLr.positionCount = hSegs;
-            Vector3[] hPositions = new Vector3[hSegs];
-
-            Vector3 zenith = GetObserverZenithUnitVector();
-            Vector3 north = Vector3.Cross(zenith, Vector3.right).normalized;
-            if (north == Vector3.zero) north = Vector3.Cross(zenith, Vector3.forward).normalized;
-            Vector3 east = Vector3.Cross(zenith, north).normalized;
-
-            for (int i = 0; i < hSegs; i++)
-            {
-                float a = (float)i / hSegs * Mathf.PI * 2f;
-                hPositions[i] = (north * Mathf.Cos(a) + east * Mathf.Sin(a)) * (celestialSphereRadius * 0.95f);
-            }
-            hLr.SetPositions(hPositions);
-            hLr.startWidth = 2.0f;
-            hLr.endWidth = 2.0f;
-            hLr.startColor = new Color(0.12f, 0.85f, 0.55f, 0.35f);
-            hLr.endColor = new Color(0.12f, 0.85f, 0.55f, 0.35f);
-
-            Material horizonMat = new Material(lineMat);
-            horizonMat.color = new Color(0.12f, 0.85f, 0.55f, 0.35f);
+            // An opaque local landscape with a soft atmospheric rim anchors the celestial vault.
+            GameObject horizonObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            horizonObj.name = "Observer_Horizon_Ring";
+            horizonObj.transform.SetParent(vault3DRoot.transform, false);
+            horizonObj.transform.localScale = Vector3.one * celestialSphereRadius * 1.5f;
+            var collider = horizonObj.GetComponent<Collider>();
+            if (Application.isPlaying) Destroy(collider); else DestroyImmediate(collider);
+            horizonMaterial = new Material(Shader.Find("Cosmic/ObserverHorizon"));
+            horizonObj.GetComponent<Renderer>().sharedMaterial = horizonMaterial;
+            constellationRoot = constellationsObj.transform;
+            markerRoot = messierObj.transform;
+            horizonRoot = horizonObj.transform;
+            nextHorizonUpdate = 0;
+            ApplyVisibility();
             if (vault3DRoot != null)
             {
                 vault3DRoot.SetActive(isStarryNightActive);
@@ -592,6 +597,28 @@ namespace CosmicZoom
 
             AddMajorStar("STAR-SPICA", "Spica (Alpha Virginis)", CelestialObjectType.MajorStar, "Virgo", 13.42f, -11.16f, 0.98f, 250, "⭐", new Color(0.7f, 0.85f, 1.0f),
                 "Bright spectroscopic binary star in Virgo; spike down from Arcturus to find Spica.");
+            LoadCompleteGalleryCatalog();
+        }
+
+        [Serializable] private class CatalogFile { public CelestialObjectData[] entries; }
+
+        private void LoadCompleteGalleryCatalog()
+        {
+            TextAsset data = Resources.Load<TextAsset>("DeepSkyCatalog");
+            if (data == null) { Debug.LogError("DeepSkyCatalog resource is missing."); return; }
+            var complete = JsonUtility.FromJson<CatalogFile>(data.text);
+            foreach (var obj in complete.entries)
+            {
+                var original = catalog.Find(old => old.id == obj.id);
+                obj.markerColor = original != null ? original.markerColor : new Color(0.45f, 0.85f, 0.90f);
+                if (original != null)
+                {
+                    obj.distanceLy = original.distanceLy;
+                    if (obj.commonName.StartsWith("Messier ")) obj.commonName = original.commonName;
+                }
+            }
+            catalog.RemoveAll(obj => obj.objectType != CelestialObjectType.MajorStar);
+            catalog.InsertRange(0, complete.entries);
         }
 
         private void AddMessier(string id, string name, string alt, CelestialObjectType type, string constell, float ra, float dec, float mag, double distLy, string icon, Color col, string desc)
@@ -843,6 +870,14 @@ namespace CosmicZoom
         {
             if (target == null) return;
             currentTarget = target;
+            EnterObservatory();
+            if (aimCoroutine != null) StopCoroutine(aimCoroutine);
+            aimCoroutine = StartCoroutine(SmoothAimAtTarget(target));
+        }
+
+        public void EnterObservatory()
+        {
+            if (isStarryNightActive && !isReturningToFlight) return;
 
             if (mainCamera == null) mainCamera = Camera.main;
             if (mainCamera != null && !isStarryNightActive)
@@ -853,16 +888,103 @@ namespace CosmicZoom
                 hasSavedFlightCamera = true;
             }
 
+            var engine = FindAnyObjectByType<CosmicZoomEngine>();
+            if (engine != null)
+            {
+                engine.StopTour();
+                engine.lightPulseEmitter?.CancelPulse();
+                if (engine.stage1SolarSystem != null) engine.stage1SolarSystem.SetActive(false);
+                if (engine.stage2MilkyWay != null) engine.stage2MilkyWay.SetActive(false);
+                if (engine.stage3LocalGroup != null) engine.stage3LocalGroup.SetActive(false);
+                if (engine.stage4CosmicWeb != null) engine.stage4CosmicWeb.SetActive(false);
+            }
+            isReturningToFlight = false;
             isStarryNightActive = true;
+            if (mainCamera != null) mainCamera.transform.position = Vector3.zero;
             if (vault3DRoot != null) vault3DRoot.SetActive(true);
 
+            ResetSkyView();
+        }
+
+        public Vector3 HorizonDirection(float azimuth, float altitude)
+        {
+            Vector3 up = GetObserverZenithUnitVector();
+            float lst = (float)GetLocalSiderealTimeHours() * 15 * Mathf.Deg2Rad;
+            Vector3 east = new Vector3(-Mathf.Sin(lst), 0, Mathf.Cos(lst));
+            Vector3 north = Vector3.Cross(east, up).normalized;
+            float az = azimuth * Mathf.Deg2Rad, alt = altitude * Mathf.Deg2Rad;
+            return up * Mathf.Sin(alt) + (north * Mathf.Cos(az) + east * Mathf.Sin(az)) * Mathf.Cos(alt);
+        }
+
+        private void ApplyViewRotation()
+        {
+            if (mainCamera != null)
+                mainCamera.transform.rotation = Quaternion.LookRotation(HorizonDirection(viewAzimuth, viewAltitude), GetObserverZenithUnitVector());
+        }
+
+        public void LookToward(float azimuth, float altitude = 12)
+        {
+            if (!isStarryNightActive || isReturningToFlight) return;
             if (aimCoroutine != null) StopCoroutine(aimCoroutine);
-            aimCoroutine = StartCoroutine(SmoothAimAtTarget(target));
+            aimCoroutine = null;
+            viewAzimuth = Mathf.Repeat(azimuth, 360);
+            viewAltitude = Mathf.Clamp(altitude, -15, 89.5f);
+            ApplyViewRotation();
+        }
+
+        public void ZoomView(float delta)
+        {
+            if (mainCamera != null && isStarryNightActive && !isReturningToFlight)
+                mainCamera.fieldOfView = Mathf.Clamp(mainCamera.fieldOfView + delta, 10, 90);
+        }
+
+        public void ResetSkyView()
+        {
+            if (!isStarryNightActive || isReturningToFlight) return;
+            showLocalHorizonPlane = true;
+            LookToward(180, 12);
+            if (mainCamera != null) mainCamera.fieldOfView = 75;
+            nextHorizonUpdate = 0;
+            ApplyVisibility();
+        }
+
+        public void LeaveObservatoryImmediately()
+        {
+            if (!isStarryNightActive) return;
+            if (aimCoroutine != null) StopCoroutine(aimCoroutine);
+            aimCoroutine = null;
+            isStarryNightActive = false;
+            isReturningToFlight = false;
+            if (vault3DRoot != null) vault3DRoot.SetActive(false);
+            if (mainCamera != null && hasSavedFlightCamera)
+            {
+                mainCamera.transform.position = savedFlightCameraPos;
+                mainCamera.transform.rotation = savedFlightCameraRot;
+                mainCamera.fieldOfView = savedFlightFov;
+            }
+            hasSavedFlightCamera = false;
+        }
+
+        private void ApplyVisibility()
+        {
+            if (constellationRoot != null) constellationRoot.gameObject.SetActive(showConstellationLines);
+            if (markerRoot != null) markerRoot.gameObject.SetActive(showMessierMarkers);
+            if (horizonRoot == null) return;
+            horizonRoot.gameObject.SetActive(showLocalHorizonPlane);
+            if (!showLocalHorizonPlane || Time.unscaledTime < nextHorizonUpdate) return;
+            nextHorizonUpdate = Time.unscaledTime + 1;
+            if (horizonMaterial != null)
+            {
+                horizonMaterial.SetVector("_Zenith", GetObserverZenithUnitVector());
+                horizonMaterial.SetVector("_North", HorizonDirection(0, 0));
+                horizonMaterial.SetVector("_East", HorizonDirection(90, 0));
+            }
         }
 
         public void ExitStarryNight()
         {
-            if (!isStarryNightActive) return;
+            if (!isStarryNightActive || isReturningToFlight) return;
+            isReturningToFlight = true;
 
             if (aimCoroutine != null) StopCoroutine(aimCoroutine);
             aimCoroutine = StartCoroutine(SmoothReturnToFlightDeck());
@@ -899,6 +1021,7 @@ namespace CosmicZoom
             }
 
             isStarryNightActive = false;
+            isReturningToFlight = false;
             hasSavedFlightCamera = false;
             aimCoroutine = null;
 
@@ -919,29 +1042,27 @@ namespace CosmicZoom
             if (mainCamera == null) mainCamera = Camera.main;
             if (mainCamera == null) yield break;
 
-            Vector3 worldTargetDir = target.GetUnitSpherePosition();
-            Quaternion startRot = mainCamera.transform.rotation;
-            Quaternion targetRot = Quaternion.LookRotation(worldTargetDir, Vector3.up);
-
-            float duration = 1.2f;
-            float elapsed = 0f;
-
-            while (elapsed < duration)
+            var targetAltAz = CalculateAltAz(target.raHours, target.decDegrees);
+            float startAzimuth = viewAzimuth, startAltitude = viewAltitude;
+            float startFov = mainCamera.fieldOfView;
+            float elapsed = 0;
+            while (elapsed < 1.2f)
             {
                 elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / duration);
+                float t = Mathf.Clamp01(elapsed / 1.2f);
                 float ease = 0.5f - 0.5f * Mathf.Cos(t * Mathf.PI);
-
-                mainCamera.transform.rotation = Quaternion.Slerp(startRot, targetRot, ease);
+                viewAzimuth = Mathf.Repeat(Mathf.LerpAngle(startAzimuth, targetAltAz.azimuthDeg, ease), 360);
+                viewAltitude = Mathf.Lerp(startAltitude, Mathf.Clamp(targetAltAz.altitudeDeg, -15, 89.5f), ease);
+                mainCamera.fieldOfView = Mathf.Lerp(startFov, 45, ease);
+                ApplyViewRotation();
                 yield return null;
             }
-
-            mainCamera.transform.rotation = targetRot;
             aimCoroutine = null;
         }
 
         public void SetObserverLocation(string name, float lat, float lon, string region)
         {
+            nextHorizonUpdate = 0;
             currentObserver.locationName = name;
             currentObserver.latitude = Mathf.Clamp(lat, -90f, 90f);
             currentObserver.longitude = Mathf.Clamp(lon, -180f, 180f);
@@ -952,6 +1073,7 @@ namespace CosmicZoom
             PlayerPrefs.SetFloat("Cosmic_Obs_Lon", currentObserver.longitude);
             PlayerPrefs.SetString("Cosmic_Obs_Region", currentObserver.regionDesc);
             PlayerPrefs.Save();
+            if (isStarryNightActive) ResetSkyView();
         }
 
         public void LoadObserverLocation()
@@ -985,10 +1107,14 @@ namespace CosmicZoom
 
         public (float altitudeDeg, float azimuthDeg, bool isAboveHorizon) CalculateAltAz(float raHours, float decDeg)
         {
-            double lstHours = GetLocalSiderealTimeHours();
+            return CalculateAltAzAtSiderealTime(raHours, decDeg, currentObserver.latitude, GetLocalSiderealTimeHours());
+        }
+
+        public static (float altitudeDeg, float azimuthDeg, bool isAboveHorizon) CalculateAltAzAtSiderealTime(float raHours, float decDeg, float latitude, double lstHours)
+        {
             double hourAngleHours = lstHours - raHours;
             double haRad = (hourAngleHours * 15.0) * Mathf.Deg2Rad;
-            double latRad = currentObserver.latitude * Mathf.Deg2Rad;
+            double latRad = latitude * Mathf.Deg2Rad;
             double decRad = decDeg * Mathf.Deg2Rad;
 
             double sinAlt = Math.Sin(latRad) * Math.Sin(decRad) + Math.Cos(latRad) * Math.Cos(decRad) * Math.Cos(haRad);
@@ -996,19 +1122,10 @@ namespace CosmicZoom
             double altRad = Math.Asin(sinAlt);
             float altDeg = (float)(altRad * Mathf.Rad2Deg);
 
-            double cosAlt = Math.Cos(altRad);
-            float azDeg = 0f;
-            if (Math.Abs(cosAlt) > 1e-5)
-            {
-                double cosAz = (Math.Sin(decRad) - Math.Sin(latRad) * sinAlt) / (Math.Cos(latRad) * cosAlt);
-                cosAz = Math.Max(-1.0, Math.Min(1.0, cosAz));
-                double azRad = Math.Acos(cosAz);
-                azDeg = (float)(azRad * Mathf.Rad2Deg);
-                if (Math.Sin(haRad) > 0)
-                {
-                    azDeg = 360f - azDeg;
-                }
-            }
+            // atan2 resolves all quadrants without dividing by cos(latitude) at the poles.
+            double east = -Math.Cos(decRad) * Math.Sin(haRad);
+            double north = Math.Sin(decRad) * Math.Cos(latRad) - Math.Cos(decRad) * Math.Sin(latRad) * Math.Cos(haRad);
+            float azDeg = Mathf.Repeat((float)(Math.Atan2(east, north) * Mathf.Rad2Deg), 360);
 
             return (altDeg, azDeg, altDeg > 0f);
         }

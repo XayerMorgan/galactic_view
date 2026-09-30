@@ -33,3 +33,14 @@ dist/
 __pycache__/
 CosmicZoom_DesktopApp.exe
 *.log
+
+# Local launch links, caches, secrets and release products
+*.lnk
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.key
+.cache/
+/visual_tests/release/

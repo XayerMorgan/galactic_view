@@ -1,0 +1,77 @@
+[
+  {
+    "file": "space_asterism.mp3",
+    "normalized": {
+      "input_i": "-20.26",
+      "input_tp": "-5.07",
+      "input_lra": "16.80",
+      "input_thresh": "-31.31",
+      "output_i": "-19.80",
+      "output_tp": "-2.00",
+      "output_lra": "11.70",
+      "output_thresh": "-30.23",
+      "normalization_type": "dynamic",
+      "target_offset": "-0.20"
+    }
+  },
+  {
+    "file": "space_drift_beyond_orion.mp3",
+    "normalized": {
+      "input_i": "-20.86",
+      "input_tp": "-2.55",
+      "input_lra": "15.50",
+      "input_thresh": "-32.12",
+      "output_i": "-20.54",
+      "output_tp": "-2.00",
+      "output_lra": "10.60",
+      "output_thresh": "-30.88",
+      "normalization_type": "dynamic",
+      "target_offset": "0.54"
+    }
+  },
+  {
+    "file": "space_ion_trails.mp3",
+    "normalized": {
+      "input_i": "-20.26",
+      "input_tp": "-7.49",
+      "input_lra": "2.10",
+      "input_thresh": "-30.52",
+      "output_i": "-18.85",
+      "output_tp": "-2.82",
+      "output_lra": "2.30",
+      "output_thresh": "-29.00",
+      "normalization_type": "dynamic",
+      "target_offset": "-1.15"
+    }
+  },
+  {
+    "file": "space_pale_blue_horizon.mp3",
+    "normalized": {
+      "input_i": "-20.26",
+      "input_tp": "-5.01",
+      "input_lra": "23.00",
+      "input_thresh": "-33.53",
+      "output_i": "-18.17",
+      "output_tp": "-2.00",
+      "output_lra": "21.90",
+      "output_thresh": "-29.78",
+      "normalization_type": "dynamic",
+      "target_offset": "-1.83"
+    }
+  },
+  {
+    "file": "space_the_long_return.mp3",
+    "normalized": {
+      "input_i": "-20.26",
+      "input_tp": "-7.97",
+      "input_lra": "2.60",
+      "input_thresh": "-30.75",
+      "output_i": "-20.13",
+      "output_tp": "-7.84",
+      "output_lra": "3.20",
+      "output_thresh": "-30.45",
+      "normalization_type": "dynamic",
+      "target_offset": "0.13"
+    }
+  }
+]

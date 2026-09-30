@@ -1,1157 +1,578 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 
 namespace CosmicZoom
 {
-    /// <summary>
-    /// AAA Holographic Sci-Fi Astro-Avionics Console HUD.
-    /// Features:
-    /// - Sleek Smoked Sapphire Glass Architecture: Translucent dark glass, 1px precision
-    ///   technical borders, and delicate cyan corner brackets (No garish thick orange frames).
-    /// - Polar Cyan & Electric Mint Palette: Inspired by high-end FUI (The Expanse, Star Citizen, Homeworld).
-    /// - Comprehensive Unit System: Metric (KM), Imperial (Miles), and Dual / Both Systems (Hotkey: U).
-    /// - Delicate Optical Viewport Reticle: Boresight crosshairs, targeting brackets, pitch ladder.
-    /// - Dedicated Light Transit Pulse Engine & Speed-of-Light Simulator with smooth glowing progress bar.
-    /// - Dynamic Craft Propulsion Benchmark comparisons formatted in KM/s, MPH, or Dual speeds.
-    /// - Charles Messier Deep-Sky Observatory & 100% Privacy-Preserving Local Ephemeris Calculator.
-    /// - Smooth Automated Telescope Camera Slew when engaging Starry Night or locking targets (Hotkey: S).
-    /// - Sub-Vocal Mission Audio Comm Ribbon (No personal narrator names, authentic aerospace flight-comms).
-    /// - High-DPI Matrix scaling with low-vision accessibility suite.
-    /// </summary>
+    /// <summary>An original survey console: navigation, observation and light-travel instruments.</summary>
     public class CosmicHUD : MonoBehaviour
     {
+        public static CosmicHUD Instance { get; private set; }
+        public enum HUDViewMode { Full, Minimal, Hidden }
+        public HUDViewMode currentHUDMode = HUDViewMode.Full;
+        public bool isLeftPanelCollapsed;
+        public bool isRightPanelCollapsed;
+        public UnitSystem activeUnitSystem = UnitSystem.Kilometers;
+        public float userScale = 1.15f;
+        public bool isHighContrast;
         [SerializeField] private CosmicZoomEngine engine;
         [SerializeField] private CosmicAudioController audioController;
         [SerializeField] private CelestialMessierCatalog messierCatalog;
-        private Camera mainCam;
 
-        // Measurement Unit System: 0 = KM, 1 = Miles, 2 = Dual (Both)
-        public UnitSystem activeUnitSystem = UnitSystem.Kilometers;
+        private readonly CosmicConsoleDrawing art = new CosmicConsoleDrawing();
+        public CosmicGallery Gallery { get; } = new CosmicGallery();
+        public bool BlocksSceneInput => Gallery.IsOpen || showSettings || showLocationPicker;
+        private int overlayEscapeFrame = -1;
+        public bool HandledOverlayEscape => overlayEscapeFrame == Time.frameCount;
+        private string latitudeText = "", longitudeText = "";
+        private readonly List<Rect> skyLabelBounds = new List<Rect>();
+        private Vector2 navigationScroll, instrumentScroll;
+        private int activeRightTab;
+        private bool showLocationPicker;
+        private bool showSettings;
+        private bool aboveHorizonOnly = true;
+        private Rect header, navigation, instrument, footer, settings;
+        private float width, height;
+        private bool SkyActive => messierCatalog != null && messierCatalog.isStarryNightActive;
+        private int Stage => engine != null ? engine.activeStageIndex : 1;
+        private LightPulseEmitter Pulse => engine != null ? engine.lightPulseEmitter : null;
+        private static readonly string[] StageNames = { "Solar system", "Milky Way", "Local group", "Cosmic web" };
+        private static readonly string[] StageSpans = { "60.14 AU / orbital diameter", "100,000 light-years", "10 million light-years", "93 billion light-years" };
+        private static readonly string[] StageNotes = {
+            "Across Neptune's orbit. Planet sizes and orbit spacing are illustrative.",
+            "Our galactic home. Explore the disk, central core and the solar beacon.",
+            "Two-galaxy schematic: Milky Way and Andromeda. Triangulum and dwarf members are not yet included.",
+            "The observable universe. An illustrative web within the particle horizon."
+        };
 
-        // Accessibility settings
-        public float userScale = 1.15f;
-        public bool isHighContrast = false;
-
-        // Right Dock Tab: 0 = Light Transit Pulse (c), 1 = Spacecraft Benchmarks, 2 = Messier & Starry Sky
-        private int activeRightTab = 0;
-        private bool showLocationPicker = false;
-
-        // GUI Styles
-        private GUIStyle panelStyle;
-        private GUIStyle cardStyle;
-        private GUIStyle headerTitleStyle;
-        private GUIStyle headerSubStyle;
-        private GUIStyle statLabelStyle;
-        private GUIStyle statValueStyle;
-        private GUIStyle statValueGoldStyle;
-        private GUIStyle statValueCyanStyle;
-        private GUIStyle statValueMintStyle;
-        private GUIStyle bigValueStyle;
-        private GUIStyle bodyStyle;
-        private GUIStyle compLabelStyle;
-        private GUIStyle compValueStyle;
-        private GUIStyle buttonNormalStyle;
-        private GUIStyle buttonActiveStyle;
-        private GUIStyle tabNormalStyle;
-        private GUIStyle tabActiveStyle;
-        private GUIStyle subtitleStyle;
-        private GUIStyle pulseStatusStyle;
-        private GUIStyle reticleHeadingStyle;
-        private GUIStyle reticleSubStyle;
-        private GUIStyle hudMicroStyle;
-
-        // Sleek Holographic Smoked Glass Textures
-        private Texture2D texGlass;
-        private Texture2D texGlassCard;
-        private Texture2D texGlassActive;
-        private Texture2D texCyan;
-        private Texture2D texCyanDim;
-        private Texture2D texMint;
-        private Texture2D texGold;
-        private Texture2D texSlate;
-        private Texture2D texBorder;
-        private Texture2D texWhite;
-        private Texture2D strutTex;
-        private Texture2D texCockpitCanopy;
-
-        private bool stylesInitialized = false;
-
+        private void Awake() { Instance = this; }
         private void Start()
         {
             if (engine == null) engine = FindAnyObjectByType<CosmicZoomEngine>();
             if (audioController == null) audioController = FindAnyObjectByType<CosmicAudioController>();
-            if (messierCatalog == null) messierCatalog = CelestialMessierCatalog.Instance ?? FindAnyObjectByType<CelestialMessierCatalog>();
-            if (mainCam == null) mainCam = Camera.main;
-
-            if (PlayerPrefs.HasKey("Cosmic_Unit_System"))
-            {
-                activeUnitSystem = (UnitSystem)PlayerPrefs.GetInt("Cosmic_Unit_System", 0);
-            }
-            if (PlayerPrefs.HasKey("Cosmic_A11y_Scale"))
-            {
-                userScale = PlayerPrefs.GetFloat("Cosmic_A11y_Scale", 1.15f);
-            }
-            if (PlayerPrefs.HasKey("Cosmic_A11y_Contrast"))
-            {
-                isHighContrast = PlayerPrefs.GetInt("Cosmic_A11y_Contrast", 0) == 1;
-            }
+            if (messierCatalog == null) messierCatalog = FindAnyObjectByType<CelestialMessierCatalog>();
+            activeUnitSystem = (UnitSystem)Mathf.Clamp(PlayerPrefs.GetInt("Cosmic_Unit_System", 0), 0, 2);
+            userScale = Mathf.Clamp(PlayerPrefs.GetFloat("Cosmic_A11y_Scale", 1.15f), 0.9f, 1.8f);
+            isHighContrast = PlayerPrefs.GetInt("Cosmic_A11y_Contrast", 0) == 1;
         }
-
-        private void Update()
-        {
-            // Keyboard shortcut: Key S toggles Starry Night observation mode
-            if (Input.GetKeyDown(KeyCode.S))
-            {
-                ToggleStarryNight();
-            }
-
-            // Keyboard shortcut: Key U toggles units (KM / Miles / Dual)
-            if (Input.GetKeyDown(KeyCode.U))
-            {
-                CycleUnitSystem();
-            }
-        }
-
-        public void ToggleStarryNight()
-        {
-            if (messierCatalog == null) messierCatalog = CelestialMessierCatalog.Instance ?? FindAnyObjectByType<CelestialMessierCatalog>();
-            if (messierCatalog != null)
-            {
-                if (messierCatalog.isStarryNightActive)
-                {
-                    messierCatalog.ExitStarryNight();
-                }
-                else
-                {
-                    activeRightTab = 2; // Switch directly to Messier tab
-                    if (messierCatalog.currentTarget == null && messierCatalog.Catalog.Count > 0)
-                    {
-                        messierCatalog.currentTarget = messierCatalog.Catalog[0];
-                    }
-                    if (messierCatalog.currentTarget != null)
-                    {
-                        messierCatalog.LockTelescopeOnTarget(messierCatalog.currentTarget);
-                    }
-                }
-
-                if (audioController != null) audioController.PlaySoftChime();
-            }
-        }
-
+        private void OnDestroy() { Gallery.Dispose(); art.Dispose(); if (Instance == this) Instance = null; }
+        // The engine owns keyboard dispatch so each shortcut runs exactly once.
+        public void CycleHUDMode() { currentHUDMode = (HUDViewMode)(((int)currentHUDMode + 1) % 3); showSettings = false; }
         public void CycleUnitSystem()
         {
             activeUnitSystem = (UnitSystem)(((int)activeUnitSystem + 1) % 3);
             PlayerPrefs.SetInt("Cosmic_Unit_System", (int)activeUnitSystem);
-            if (audioController != null) audioController.PlaySoftChime();
         }
-
-        private Texture2D MakeColorTexture(int w, int h, Color col)
+        public void ToggleStarryNight()
         {
-            Color[] pix = new Color[w * h];
-            for (int i = 0; i < pix.Length; ++i) pix[i] = col;
-            Texture2D result = new Texture2D(w, h);
-            result.SetPixels(pix);
-            result.Apply();
-            return result;
-        }
-
-        private void InitStyles()
-        {
-            if (stylesInitialized) return;
-
-            // Sleek Smoked Glass & Holographic FUI Palette
-            texGlass = MakeColorTexture(2, 2, new Color(0.015f, 0.035f, 0.07f, 0.86f));       // Translucent smoked obsidian
-            texGlassCard = MakeColorTexture(2, 2, new Color(0.03f, 0.065f, 0.12f, 0.88f));    // Subtle card plate
-            texGlassActive = MakeColorTexture(2, 2, new Color(0.04f, 0.18f, 0.28f, 0.90f));  // Active cyan glow glass
-            texCyan = MakeColorTexture(2, 2, new Color(0.22f, 0.74f, 0.97f, 1.0f));          // Polar Cyan (#38BDF8)
-            texCyanDim = MakeColorTexture(2, 2, new Color(0.12f, 0.42f, 0.58f, 0.70f));
-            texMint = MakeColorTexture(2, 2, new Color(0.18f, 0.83f, 0.75f, 1.0f));          // Electric Mint (#2DD4BF)
-            texGold = MakeColorTexture(2, 2, new Color(0.98f, 0.75f, 0.14f, 1.0f));          // Stellar Gold (#FBBF24)
-            texSlate = MakeColorTexture(2, 2, new Color(0.20f, 0.28f, 0.40f, 0.85f));
-            texBorder = MakeColorTexture(2, 2, new Color(0.18f, 0.35f, 0.52f, 0.65f));       // 1px tech border
-            texWhite = MakeColorTexture(2, 2, Color.white);
-            strutTex = MakeColorTexture(2, 2, new Color(0.02f, 0.04f, 0.09f, 0.75f));
-
-            texCockpitCanopy = Resources.Load<Texture2D>("cockpit_canopy_overlay");
-
-            headerTitleStyle = new GUIStyle
+            if (messierCatalog == null) return;
+            if (SkyActive) messierCatalog.ExitStarryNight();
+            else
             {
-                fontSize = 14,
-                fontStyle = FontStyle.Bold,
-                normal = { textColor = Color.white }
-            };
-
-            headerSubStyle = new GUIStyle
-            {
-                fontSize = 11,
-                fontStyle = FontStyle.Bold,
-                normal = { textColor = new Color(0.22f, 0.74f, 0.97f) }
-            };
-
-            statLabelStyle = new GUIStyle
-            {
-                fontSize = 11,
-                fontStyle = FontStyle.Bold,
-                normal = { textColor = new Color(0.58f, 0.68f, 0.82f) }
-            };
-
-            statValueStyle = new GUIStyle
-            {
-                fontSize = 13,
-                fontStyle = FontStyle.Bold,
-                normal = { textColor = Color.white }
-            };
-
-            statValueGoldStyle = new GUIStyle
-            {
-                fontSize = 13,
-                fontStyle = FontStyle.Bold,
-                normal = { textColor = new Color(0.98f, 0.75f, 0.14f) }
-            };
-
-            statValueCyanStyle = new GUIStyle
-            {
-                fontSize = 13,
-                fontStyle = FontStyle.Bold,
-                normal = { textColor = new Color(0.22f, 0.74f, 0.97f) }
-            };
-
-            statValueMintStyle = new GUIStyle
-            {
-                fontSize = 13,
-                fontStyle = FontStyle.Bold,
-                normal = { textColor = new Color(0.18f, 0.83f, 0.75f) }
-            };
-
-            bigValueStyle = new GUIStyle
-            {
-                fontSize = 24,
-                fontStyle = FontStyle.Bold,
-                normal = { textColor = new Color(0.22f, 0.74f, 0.97f) }
-            };
-
-            pulseStatusStyle = new GUIStyle
-            {
-                fontSize = 13,
-                fontStyle = FontStyle.Bold,
-                wordWrap = true,
-                normal = { textColor = new Color(0.98f, 0.75f, 0.14f) }
-            };
-
-            bodyStyle = new GUIStyle
-            {
-                fontSize = 12,
-                wordWrap = true,
-                normal = { textColor = new Color(0.85f, 0.90f, 0.96f) }
-            };
-
-            compLabelStyle = new GUIStyle
-            {
-                fontSize = 11,
-                fontStyle = FontStyle.Bold,
-                normal = { textColor = new Color(0.70f, 0.80f, 0.92f) }
-            };
-
-            compValueStyle = new GUIStyle
-            {
-                fontSize = 12,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleRight,
-                normal = { textColor = Color.white }
-            };
-
-            buttonNormalStyle = new GUIStyle
-            {
-                fontSize = 11,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleCenter,
-                wordWrap = true,
-                normal = { textColor = new Color(0.82f, 0.88f, 0.96f) }
-            };
-
-            buttonActiveStyle = new GUIStyle
-            {
-                fontSize = 11,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleCenter,
-                wordWrap = true,
-                normal = { textColor = new Color(0.22f, 0.74f, 0.97f) }
-            };
-
-            tabNormalStyle = new GUIStyle
-            {
-                fontSize = 11,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = new Color(0.60f, 0.72f, 0.85f) }
-            };
-
-            tabActiveStyle = new GUIStyle
-            {
-                fontSize = 11,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = Color.white }
-            };
-
-            subtitleStyle = new GUIStyle
-            {
-                fontSize = 13,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleCenter,
-                wordWrap = true,
-                normal = { textColor = new Color(0.95f, 0.98f, 1.0f) }
-            };
-
-            reticleHeadingStyle = new GUIStyle
-            {
-                fontSize = 11,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = new Color(0.22f, 0.74f, 0.97f, 0.85f) }
-            };
-
-            reticleSubStyle = new GUIStyle
-            {
-                fontSize = 10,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = new Color(0.58f, 0.68f, 0.82f, 0.80f) }
-            };
-
-            hudMicroStyle = new GUIStyle
-            {
-                fontSize = 9,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.LowerRight,
-                normal = { textColor = new Color(0.22f, 0.74f, 0.97f, 0.65f) }
-            };
-
-            stylesInitialized = true;
-        }
-
-        /// <summary>
-        /// Renders a sleek, translucent smoked-glass console panel with 1px precision borders.
-        /// </summary>
-        private void DrawSciFiPanel(Rect r, string tag = "")
-        {
-            // Translucent glass body
-            GUI.DrawTexture(r, texGlass);
-
-            // 1px Technical border
-            GUI.DrawTexture(new Rect(r.x, r.y, r.width, 1), texBorder);
-            GUI.DrawTexture(new Rect(r.x, r.y + r.height - 1, r.width, 1), texBorder);
-            GUI.DrawTexture(new Rect(r.x, r.y, 1, r.height), texBorder);
-            GUI.DrawTexture(new Rect(r.x + r.width - 1, r.y, 1, r.height), texBorder);
-
-            // Subtle 2px Polar Cyan Accent Bar on Top
-            float accentW = Mathf.Min(80f, r.width * 0.35f);
-            GUI.DrawTexture(new Rect(r.x + 8, r.y, accentW, 2), texCyan);
-
-            // Delicate 4px Corner Ticks
-            float tick = 4f;
-            GUI.DrawTexture(new Rect(r.x, r.y, tick, 1), texCyan);
-            GUI.DrawTexture(new Rect(r.x, r.y, 1, tick), texCyan);
-            GUI.DrawTexture(new Rect(r.x + r.width - tick, r.y, tick, 1), texCyan);
-            GUI.DrawTexture(new Rect(r.x + r.width - 1, r.y, 1, tick), texCyan);
-            GUI.DrawTexture(new Rect(r.x, r.y + r.height - 1, tick, 1), texCyan);
-            GUI.DrawTexture(new Rect(r.x, r.y + r.height - tick, 1, tick), texCyan);
-            GUI.DrawTexture(new Rect(r.x + r.width - tick, r.y + r.height - 1, tick, 1), texCyan);
-            GUI.DrawTexture(new Rect(r.x + r.width - 1, r.y + r.height - tick, 1, tick), texCyan);
-
-            if (!string.IsNullOrEmpty(tag))
-            {
-                GUI.Label(new Rect(r.x + r.width - 130, r.y + 3, 120, 16), tag, hudMicroStyle);
+                engine?.StopTour();
+                activeRightTab = 2;
+                isRightPanelCollapsed = false;
+                instrumentScroll = Vector2.zero;
+                messierCatalog.EnsureDatabaseBuilt();
+                if (messierCatalog.currentTarget == null && messierCatalog.Catalog.Count > 0) messierCatalog.currentTarget = messierCatalog.Catalog[0];
+                messierCatalog.EnterObservatory();
+                navigationScroll = Vector2.zero;
             }
         }
-
-        /// <summary>
-        /// Renders a sleek, responsive sci-fi button with 1px border and glowing active indicator.
-        /// </summary>
-        private bool DrawSleekButton(Rect r, string label, bool isActive, Color accentCol, int fontSize = 11)
+        public void SelectInstrument(int index) { activeRightTab = Mathf.Clamp(index, 0, 2); instrumentScroll = Vector2.zero; if (activeRightTab != 2) showLocationPicker = false; }
+        public void OpenGallery(CelestialObjectData target = null) { showSettings = showLocationPicker = false; engine?.StopTour(); Gallery.Open(target); }
+        public bool CloseOverlay()
         {
-            Texture2D bg = isActive ? texGlassActive : texGlassCard;
-            GUI.DrawTexture(r, bg);
-
-            // 1px Border
-            Texture2D border = isActive ? (accentCol == Color.green ? texMint : texCyan) : texBorder;
-            GUI.DrawTexture(new Rect(r.x, r.y, r.width, 1), border);
-            GUI.DrawTexture(new Rect(r.x, r.y + r.height - 1, r.width, 1), border);
-            GUI.DrawTexture(new Rect(r.x, r.y, 1, r.height), border);
-            GUI.DrawTexture(new Rect(r.x + r.width - 1, r.y, 1, r.height), border);
-
-            if (isActive)
-            {
-                // Left glowing indicator pip
-                GUI.DrawTexture(new Rect(r.x, r.y, 3, r.height), accentCol == Color.green ? texMint : texCyan);
-            }
-
-            GUIStyle st = isActive ? buttonActiveStyle : buttonNormalStyle;
-            st.fontSize = fontSize;
-            GUI.Label(r, label, st);
-
-            bool clicked = GUI.Button(r, GUIContent.none, GUIStyle.none);
-            if (clicked && audioController != null) audioController.PlaySoftChime();
-            return clicked;
+            if (Gallery.IsOpen) { Gallery.Close(); return true; }
+            if (showLocationPicker) { showLocationPicker = false; return true; }
+            if (!showSettings) return false;
+            showSettings = false;
+            return true;
         }
 
-        private void DrawCenterFlightHUD(float virtualW, float virtualH)
+        public float InterfaceScale => Mathf.Max(0.4f, Mathf.Min(userScale * Mathf.Clamp(Screen.dpi > 0 ? Screen.dpi / 96f : 1, 1, 1.5f), Screen.width / 1120f, Screen.height / 700f));
+        private void Layout()
         {
-            float cx = virtualW * 0.5f;
-            float cy = virtualH * 0.46f;
-
-            // Center Boresight Crosshair (Subtle & Precision)
-            float crossSize = 14f;
-            GUI.DrawTexture(new Rect(cx - crossSize * 0.5f, cy - 1f, crossSize, 1.5f), texCyanDim);
-            GUI.DrawTexture(new Rect(cx - 1f, cy - crossSize * 0.5f, 1.5f, crossSize), texCyanDim);
-
-            // Tactical Targeting Brackets [   ]
-            float boxR = 36f;
-            float tick = 10f;
-            GUI.DrawTexture(new Rect(cx - boxR, cy - boxR, tick, 1.5f), texCyanDim);
-            GUI.DrawTexture(new Rect(cx - boxR, cy - boxR, 1.5f, tick), texCyanDim);
-            GUI.DrawTexture(new Rect(cx + boxR - tick, cy - boxR, tick, 1.5f), texCyanDim);
-            GUI.DrawTexture(new Rect(cx + boxR - 1.5f, cy - boxR, 1.5f, tick), texCyanDim);
-            GUI.DrawTexture(new Rect(cx - boxR, cy + boxR - 1.5f, tick, 1.5f), texCyanDim);
-            GUI.DrawTexture(new Rect(cx - boxR, cy + boxR - tick, 1.5f, tick), texCyanDim);
-            GUI.DrawTexture(new Rect(cx + boxR - tick, cy + boxR - 1.5f, tick, 1.5f), texCyanDim);
-            GUI.DrawTexture(new Rect(cx + boxR - 1.5f, cy + boxR - tick, 1.5f, tick), texCyanDim);
+            width = Screen.width / InterfaceScale;
+            height = Screen.height / InterfaceScale;
+            header = new Rect(22, 18, width - 44, 78);
+            navigation = new Rect(22, 116, 242, height - 242);
+            instrument = new Rect(width - 384, 116, 362, height - 242);
+            footer = new Rect(22, height - 103, width - 44, 83);
+            settings = new Rect(width - 374, 99, 352, 494);
+        }
+        private bool OverUI(Vector2 p)
+        {
+            if (Gallery.IsOpen) return true;
+            if (currentHUDMode == HUDViewMode.Hidden) return new Rect(width - 216, 18, 194, 34).Contains(p);
+            if (header.Contains(p) || footer.Contains(p) || (showSettings && settings.Contains(p))) return true;
+            if (currentHUDMode != HUDViewMode.Full) return false;
+            Rect left = isLeftPanelCollapsed ? new Rect(navigation.x, navigation.y, 134, 34) : navigation;
+            Rect right = isRightPanelCollapsed ? new Rect(instrument.xMax - 134, instrument.y, 134, 34) : instrument;
+            return left.Contains(p) || right.Contains(p);
+        }
+        public bool IsPointerOverInterface()
+        {
+            Layout();
+            return OverUI(new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y) / InterfaceScale);
         }
 
         private void OnGUI()
         {
-            InitStyles();
-
-            float dpiScale = Screen.dpi > 0 ? (Screen.dpi / 96.0f) : 1.0f;
-            dpiScale = Mathf.Clamp(dpiScale, 1.0f, 2.0f);
-            float finalScale = dpiScale * userScale;
-
-            Matrix4x4 oldMatrix = GUI.matrix;
-            GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(finalScale, finalScale, 1.0f));
-
-            float virtualW = Screen.width / finalScale;
-            float virtualH = Screen.height / finalScale;
-
-            float zoom = engine != null ? engine.currentZoom : 1.0f;
-            double spanKm = TravelTimeCalculator.GetSpanKmFromZoom(zoom);
-            double lightTransitSecs = TravelTimeCalculator.GetLightTransitSeconds(spanKm);
-
-            // Widescreen Clear Viewport (No obstructive canopy pillars)
-
-            // 2. High-Visibility Return to Flight Deck Banner Button (If in Starry Night mode)
-            bool isStarryMode = messierCatalog != null && messierCatalog.isStarryNightActive;
-            if (isStarryMode)
+            // Unity text fields can consume keys before legacy Input sees them.
+            // Handle overlay Escape before drawing the focused field.
+            if (BlocksSceneInput && Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Escape)
             {
-                float returnBtnW = 340f;
-                float returnBtnX = (virtualW - returnBtnW) / 2.0f;
-                if (DrawSleekButton(new Rect(returnBtnX, 74, returnBtnW, 42), "🚀 RETURN TO FLIGHT DECK [S]", true, Color.cyan, 12))
+                CloseOverlay();
+                overlayEscapeFrame = Time.frameCount;
+                GUI.FocusControl(null);
+                Event.current.Use();
+                return;
+            }
+            art.Initialize();
+            art.HighContrast = isHighContrast;
+            Layout();
+            Matrix4x4 old = GUI.matrix;
+            bool oldEnabled = GUI.enabled;
+            GUI.matrix = Matrix4x4.Scale(new Vector3(InterfaceScale, InterfaceScale, 1));
+            try
+            {
+                if (Gallery.IsOpen)
                 {
-                    ToggleStarryNight();
+                    Gallery.Draw(art, new Rect(22, 18, width - 44, height - 38), messierCatalog);
+                    return;
                 }
+                if (currentHUDMode == HUDViewMode.Hidden)
+                {
+                    if (art.Button(new Rect(width - 216, 18, 194, 34), "Restore instruments  [H]")) CycleHUDMode();
+                    return;
+                }
+                DrawWorldLabels();
+                DrawHeader();
+                // Preferences sit above the science dock; its controls must not click
+                // through to tabs or instruments underneath the drawer.
+                GUI.enabled = oldEnabled && !showSettings;
+                if (currentHUDMode == HUDViewMode.Full)
+                {
+                    if (isLeftPanelCollapsed)
+                    {
+                        if (art.Button(new Rect(navigation.x, navigation.y, 134, 34), "Navigation  +")) isLeftPanelCollapsed = false;
+                    }
+                    else DrawNavigation();
+                    if (isRightPanelCollapsed)
+                    {
+                        if (art.Button(new Rect(instrument.xMax - 134, instrument.y, 134, 34), "Instruments  +")) isRightPanelCollapsed = false;
+                    }
+                    else DrawInstrument();
+                }
+                DrawViewportReadout();
+                DrawFooter();
+                GUI.enabled = oldEnabled;
+                if (showSettings) DrawSettings();
             }
+            finally { GUI.matrix = old; GUI.enabled = oldEnabled; }
+        }
 
-            // Center Viewport HUD Reticle
-            DrawCenterFlightHUD(virtualW, virtualH);
-
-            // =========================================================================
-            // 1. TOP AVIONICS HELM CONSOLE (CLEAN, SLEEK, NON-OVERLAPPING)
-            // =========================================================================
-            float headerH = 58f;
-            Rect headerRect = new Rect(14, 10, virtualW - 28, headerH);
-            DrawSciFiPanel(headerRect, "// AVIONICS.01 //");
-
-            // Left Brand & Console Telemetry (Single unified block to prevent collision)
-            string domainName = zoom < 1.75f ? "SOLAR SYSTEM" : (zoom < 2.75f ? "MILKY WAY GALAXY" : (zoom < 3.75f ? "LOCAL GROUP CLUSTER" : "OBSERVABLE COSMIC WEB"));
-            GUI.Label(new Rect(26, 16, 440, 22), "ASTRONAUTICA DEEP-SURVEY PLATFORM", headerTitleStyle);
-            GUI.Label(new Rect(26, 36, 480, 18), $"[ SYS.NAV-01 ]  DOMAIN: {domainName}  •  SPAN: {TravelTimeCalculator.FormatSpan(spanKm, activeUnitSystem)}", headerSubStyle);
-
-            // Right Action Switches
-            float rx = virtualW - 24;
-
-            // Universal Quit Button (Esc / ⏻ QUIT)
-            rx -= 78f;
-            if (DrawSleekButton(new Rect(rx, 18, 72, 36), "⏻ QUIT", false, new Color(1f, 0.4f, 0.4f), 11))
+        private void DrawHeader()
+        {
+            art.Round(header, new Color(0.025f, 0.038f, 0.048f, 0.95f));
+            Vector2 c = new Vector2(58, 56);
+            art.Arc(c, 23, 30, 315, art.Amber, 2);
+            art.Arc(c, 16, 200, 480, art.Teal);
+            art.Line(c + new Vector2(-7, 9), c + new Vector2(0, -11), art.Ink, 2);
+            art.Line(c + new Vector2(0, -11), c + new Vector2(7, 9), art.Ink, 2);
+            art.Text(new Rect(98, 31, 290, 26), "A S T R O N A U T I C A", 19, art.Ink, bold: true);
+            art.Text(new Rect(100, 62, 290, 16), "DEEP SPACE SURVEY  /  COSMIC EXPLORER", 10, art.Muted);
+            if (width > 1320)
             {
-                if (engine != null) engine.QuitApplication();
-                else Application.Quit();
+                art.Text(new Rect(420, 32, width - 1040, 20), SkyActive ? "OBSERVATORY / CELESTIAL VAULT" : $"SECTOR 0{Stage} / {StageNames[Stage - 1].ToUpperInvariant()}", 12, art.Teal);
+                art.Text(new Rect(420, 55, width - 1040, 19), "Explore the scale of the universe", 12, art.Muted);
             }
+            float x = width - 598;
+            if (art.Button(new Rect(x, 36, 132, 36), SkyActive ? "Return to flight [S]" : "Observatory [S]", SkyActive)) ToggleStarryNight();
+            if (art.Button(new Rect(x + 140, 36, 124, 36), currentHUDMode == HUDViewMode.Full ? "View: full [H]" : "View: quiet [H]")) CycleHUDMode();
+            if (art.Button(new Rect(x + 272, 36, 112, 36), "Settings", showSettings)) showSettings = !showSettings;
+            if (art.Button(new Rect(x + 392, 36, 84, 36), "Gallery [G]")) OpenGallery();
+            if (art.Button(new Rect(x + 484, 36, 70, 36), "Exit")) engine?.QuitApplication();
+        }
 
-            // Mission Audio Narrator Toggle
-            rx -= 78f;
-            bool isNarrOn = audioController != null && audioController.IsNarratorAutoPlay;
-            if (DrawSleekButton(new Rect(rx, 18, 72, 36), isNarrOn ? "🎙️ COMM" : "🔇 COMM", isNarrOn, Color.green))
+        private void DrawNavigation()
+        {
+            if (SkyActive) { DrawSkyNavigation(); return; }
+            art.Panel(navigation, "01", "NAVIGATION");
+            if (art.Button(new Rect(navigation.xMax - 38, navigation.y + 12, 26, 26), "-")) isLeftPanelCollapsed = true;
+            Rect view = new Rect(navigation.x + 14, navigation.y + 52, navigation.width - 28, navigation.height - 68);
+            navigationScroll = GUI.BeginScrollView(view, navigationScroll, new Rect(0, 0, view.width - 16, 636), false, false);
+            float w = view.width - 18;
+            art.Text(new Rect(2, 0, w, 17), "CHOOSE A SCALE  /  1-4", 10, art.Muted);
+            for (int i = 0; i < 4; i++)
             {
-                if (audioController != null) audioController.ToggleNarrator();
+                Rect row = new Rect(0, 30 + i * 68, w, 60);
+                bool active = Stage == i + 1 && !SkyActive;
+                if (active) art.Round(row, new Color(0.085f, 0.16f, 0.17f));
+                art.Arc(new Vector2(16, row.y + 23), active ? 8 : 5, 0, 360, active ? art.Teal : art.Edge, active ? 2 : 1);
+                art.Text(new Rect(36, row.y + 8, w - 42, 23), StageNames[i], 15, active ? art.Teal : art.Ink, bold: active);
+                art.Text(new Rect(36, row.y + 33, w - 40, 25), StageSpans[i], 10, art.Muted);
+                if (GUI.Button(row, GUIContent.none, GUIStyle.none)) engine?.JumpToStage(i + 1);
+                if (i < 3) art.Line(new Vector2(16, row.y + 35), new Vector2(16, row.y + 72), art.Edge);
             }
-
-            // Audio Mute Toggle
-            rx -= 78f;
-            bool isMuted = audioController != null && audioController.IsAudioMuted;
-            if (DrawSleekButton(new Rect(rx, 18, 72, 36), isMuted ? "🔇 SND" : "🔊 SND", !isMuted, Color.cyan))
+            art.Line(new Vector2(0, 312), new Vector2(w, 312), art.Edge);
+            art.Text(new Rect(2, 330, w, 18), SkyActive ? "TELESCOPE" : "FOCUS A TARGET", 10, art.Amber);
+            if (SkyActive)
+                art.Text(new Rect(2, 358, w, 100), "Choose a catalog target in the Sky instrument, then aim the telescope. Drag the open sky to look around.", 13, art.Muted);
+            else
             {
-                if (audioController != null) audioController.ToggleAudioMute();
+                string[] names = Stage == 1 ? new[] { "Sun", "Earth", "Jupiter", "Saturn", "Overview" } :
+                    Stage == 2 ? new[] { "Galactic core", "Solar beacon", "Galaxy overview" } : Stage == 3 ? new[] { "Andromeda", "Group overview" } : new[] { "Web filaments", "Particle horizon" };
+                for (int i = 0; i < names.Length; i++)
+                {
+                    Rect r = new Rect((i % 2) * (w / 2 + 2), 358 + (i / 2) * 40, w / 2 - 3, 34);
+                    if (art.Button(r, names[i])) FocusTarget(i);
+                }
+                art.Text(new Rect(2, 532, w, 80), StageNotes[Stage - 1], 12, art.Muted);
             }
+            GUI.EndScrollView();
+        }
+        private void FocusTarget(int i)
+        {
+            if (engine == null) return;
+            engine.StopTour();
+            if (Stage == 1)
+            {
+                Action[] actions = { engine.FocusOnSun, engine.FocusOnEarth, engine.FocusOnJupiter, engine.FocusOnSaturn, engine.FocusOnOverview };
+                actions[i]();
+            }
+            else if (Stage == 2) { if (i == 0) engine.FocusOnSgrA(); else if (i == 1) engine.FocusOnOrionSpur(); else engine.FocusOnMilkyWay(); }
+            else if (Stage == 3) { if (i == 0) engine.FocusOnAndromeda(); else engine.FocusOnLocalGroup(); }
+            else { if (i == 0) engine.FocusOnCosmicFilaments(); else engine.FocusOnCMB(); }
+        }
 
-            // HUD Color Mode
-            rx -= 94f;
-            if (DrawSleekButton(new Rect(rx, 18, 88, 36), isHighContrast ? "🌙 NIGHT" : "✨ COLOR", isHighContrast, Color.cyan))
+        private void DrawInstrument()
+        {
+            art.Panel(instrument, "02", SkyActive ? "SKY CATALOG" : "SCIENCE INSTRUMENTS");
+            if (art.Button(new Rect(instrument.xMax - 38, instrument.y + 12, 26, 26), "-")) isRightPanelCollapsed = true;
+            string[] tabs = { "Light transit", "Craft", "Sky" };
+            if (!SkyActive)
+                for (int i = 0; i < 3; i++)
+                    if (art.Button(new Rect(instrument.x + 16 + i * 110, instrument.y + 50, 104, 34), tabs[i], activeRightTab == i)) SelectInstrument(i);
+            float top = SkyActive ? 56 : 98;
+            Rect view = new Rect(instrument.x + 18, instrument.y + top, instrument.width - 36, instrument.height - top - 18);
+            int tab = SkyActive ? 2 : activeRightTab;
+            float contentHeight = tab == 2 ? ObservatoryContentHeight() : tab == 1 ? 615 : 564;
+            instrumentScroll = GUI.BeginScrollView(view, instrumentScroll, new Rect(0, 0, view.width - 17, contentHeight), false, false);
+            float w = view.width - 20;
+            if (tab == 0) DrawTransit(w);
+            else if (tab == 1) DrawBenchmarks(w);
+            else DrawObservatory(w);
+            GUI.EndScrollView();
+        }
+        private void DrawTransit(float w)
+        {
+            double span = TravelTimeCalculator.GetSpanKmFromZoom(Stage);
+            art.Text(new Rect(0, 0, w, 18), "LIGHT TRAVEL / ACROSS THIS SCALE", 10, art.Muted);
+            art.Text(new Rect(0, 26, w, 38), TravelTimeCalculator.FormatDuration(span / TravelTimeCalculator.C_KM_S), 25, art.Amber);
+            art.Text(new Rect(0, 74, w, 40), TravelTimeCalculator.FormatSpan(span, activeUnitSystem), 12, art.Muted);
+            float progress = Pulse != null ? Pulse.ProgressNormalized : 0;
+            bool running = Pulse != null && Pulse.IsPulseActive;
+            bool paused = Pulse != null && Pulse.IsPaused;
+            Vector2 c = new Vector2(w / 2, 204);
+            art.Arc(c, 75, 135, 405, art.Edge, 2);
+            art.Arc(c, 67, 135, 135 + 270 * progress, art.Teal, 3);
+            for (int i = 0; i <= 30; i++)
+            {
+                float a = (135 + 9 * i) * Mathf.Deg2Rad;
+                Vector2 d = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
+                art.Line(c + d * 81, c + d * (i % 5 == 0 ? 88 : 84), i % 5 == 0 ? art.Muted : art.Edge);
+            }
+            art.Text(new Rect(0, 170, w, 48), $"{progress * 100:0}%", 32, art.Ink, TextAnchor.MiddleCenter);
+            art.Text(new Rect(0, 222, w, 20), running ? (paused ? "PAUSED" : "WAVE IN TRANSIT") : progress >= 1 ? "TRANSIT COMPLETE" : "READY TO EMIT", 10, art.Teal, TextAnchor.MiddleCenter);
+            art.Text(new Rect(0, 284, w, 36), running ? TravelTimeCalculator.FormatRawDistance(Pulse.CurrentDistanceKm, activeUnitSystem) + " traversed" : "c = " + TravelTimeCalculator.FormatRawDistance(TravelTimeCalculator.C_KM_S, activeUnitSystem) + "/s", 12, art.Muted, TextAnchor.MiddleCenter);
+            if (art.Button(new Rect(0, 331, w, 42), running ? "Restart light pulse" : "Emit light pulse  [Space]", primary: true, enabled: !SkyActive)) engine?.FirePulse();
+            if (art.Button(new Rect(0, 381, w, 34), paused ? "Resume wave" : "Pause wave", paused, enabled: running)) Pulse?.TogglePause();
+            art.Text(new Rect(0, 433, w, 18), "PLAYBACK RATE", 10, art.Muted);
+            float[] speeds = { 0.25f, 0.5f, 1 };
+            for (int i = 0; i < 3; i++)
+                if (art.Button(new Rect(i * (w + 6) / 3, 458, (w - 12) / 3, 30), speeds[i].ToString("0.##") + "x", Pulse != null && Mathf.Approximately(Pulse.SpeedMultiplier, speeds[i]))) Pulse?.SetSpeedMultiplier(speeds[i]);
+            art.Text(new Rect(0, 505, w, 56), Stage == 4 ? "Illustrative playback. Distance / c assumes a static universe; cosmic expansion is not modeled." : "Illustrative playback: the full crossing is compressed into 10 seconds at 1x. Travel time above is physical time.", 12, art.Muted);
+        }
+        private void DrawBenchmarks(float w)
+        {
+            double span = TravelTimeCalculator.GetSpanKmFromZoom(Stage);
+            art.Text(new Rect(0, 0, w, 20), "SAME DISTANCE / DIFFERENT SPEEDS", 10, art.Muted);
+            string[] names = { "Photon", "Relativistic probe", "Parker Solar Probe", "Voyager 1", "Commercial jet" };
+            double[] speeds = { TravelTimeCalculator.SPEED_PHOTON, TravelTimeCalculator.SPEED_RELATIVISTIC, TravelTimeCalculator.SPEED_PARKER_SOLAR_PROBE, TravelTimeCalculator.SPEED_VOYAGER_1, TravelTimeCalculator.SPEED_JETLINER };
+            for (int i = 0; i < names.Length; i++)
+            {
+                float y = 36 + i * 102;
+                art.Text(new Rect(0, y, w, 23), names[i], 15, i == 0 ? art.Teal : art.Ink);
+                art.Text(new Rect(0, y + 27, w, 34), TravelTimeCalculator.FormatVelocity(speeds[i], activeUnitSystem), 11, art.Muted);
+                art.Text(new Rect(0, y + 60, w, 23), TravelTimeCalculator.FormatDuration(span / speeds[i]), 16, art.Amber);
+                art.Line(new Vector2(0, y + 92), new Vector2(w, y + 92), art.Edge);
+            }
+            art.Text(new Rect(0, 558, w, 55), "Constant-speed comparisons in the observer's frame. No acceleration or cosmic expansion is modeled.", 12, art.Muted);
+        }
+        private void DrawSkyNavigation()
+        {
+            art.Panel(navigation, "01", "LOOK AROUND");
+            if (art.Button(new Rect(navigation.xMax - 38, navigation.y + 12, 26, 26), "-")) isLeftPanelCollapsed = true;
+            Rect view = new Rect(navigation.x + 14, navigation.y + 52, navigation.width - 28, navigation.height - 68);
+            navigationScroll = GUI.BeginScrollView(view, navigationScroll, new Rect(0, 0, view.width - 16, 632), false, false);
+            float w = view.width - 18;
+            Vector2 c = new Vector2(w / 2, 88);
+            art.Arc(c, 55, 0, 360, art.Edge, 2);
+            for (int i = 0; i < 24; i++)
+            {
+                float angle = i * 15 * Mathf.Deg2Rad;
+                Vector2 d = new Vector2(Mathf.Sin(angle), -Mathf.Cos(angle));
+                art.Line(c + d * 50, c + d * (i % 6 == 0 ? 40 : 46), i % 6 == 0 ? art.Amber : art.Muted);
+            }
+            string[] compass = { "N", "E", "S", "W" };
+            for (int i = 0; i < 4; i++)
+            {
+                float a = i * Mathf.PI / 2;
+                Vector2 p = c + new Vector2(Mathf.Sin(a), -Mathf.Cos(a)) * 70;
+                art.Text(new Rect(p.x - 14, p.y - 10, 28, 20), compass[i], 12, art.Ink, TextAnchor.MiddleCenter);
+            }
+            float heading = messierCatalog.ViewAzimuth * Mathf.Deg2Rad;
+            Vector2 needle = new Vector2(Mathf.Sin(heading), -Mathf.Cos(heading));
+            art.Line(c - needle * 14, c + needle * 36, art.Teal, 2);
+            art.Arc(c, 4, 0, 360, art.Amber, 2);
+            art.Text(new Rect(0, 173, w, 24), $"{messierCatalog.ViewDirection} / {messierCatalog.ViewAzimuth:000}°", 15, art.Teal, TextAnchor.MiddleCenter);
+            string[] names = { "North", "East", "South", "West" };
+            for (int i = 0; i < 4; i++)
+                if (art.Button(new Rect((i % 2) * (w + 6) / 2, 211 + (i / 2) * 40, (w - 6) / 2, 34), names[i])) messierCatalog.LookToward(i * 90);
+            if (art.Button(new Rect(0, 299, w, 38), "Horizon overview  [R]", primary: true)) messierCatalog.ResetSkyView();
+            art.Text(new Rect(0, 355, w, 68), "Drag the sky or use arrow keys to look around. Scroll to zoom. Select a target to aim at it.", 12, art.Ink);
+            art.Text(new Rect(0, 434, w, 18), "SKY LAYERS", 10, art.Amber);
+            if (art.Button(new Rect(0, 461, w, 32), "Ground + horizon", messierCatalog.showLocalHorizonPlane)) messierCatalog.showLocalHorizonPlane = !messierCatalog.showLocalHorizonPlane;
+            if (art.Button(new Rect(0, 501, w, 32), "Constellation lines", messierCatalog.showConstellationLines)) messierCatalog.showConstellationLines = !messierCatalog.showConstellationLines;
+            if (art.Button(new Rect(0, 541, w, 32), "Deep-sky markers", messierCatalog.showMessierMarkers)) messierCatalog.showMessierMarkers = !messierCatalog.showMessierMarkers;
+            if (art.Button(new Rect(0, 581, w, 32), "Star names", messierCatalog.showStarLabels)) messierCatalog.showStarLabels = !messierCatalog.showStarLabels;
+            GUI.EndScrollView();
+        }
+
+        private float ObservatoryContentHeight()
+        {
+            int count = 0;
+            if (messierCatalog != null)
+                foreach (var obj in messierCatalog.Catalog)
+                    if (!aboveHorizonOnly || messierCatalog.CalculateAltAz(obj.raHours, obj.decDegrees).isAboveHorizon) count++;
+            return 387 + count * 58 + (showLocationPicker ? 412 : 0);
+        }
+
+        private void DrawObservatory(float w)
+        {
+            if (messierCatalog == null) return;
+            var loc = messierCatalog.currentObserver;
+            art.Text(new Rect(0, 0, w, 16), "OBSERVER / LOCAL SKY", 10, art.Muted);
+            art.Text(new Rect(0, 23, w, 40), loc.locationName, 16, art.Amber);
+            art.Text(new Rect(0, 60, w, 19), $"UTC {DateTime.UtcNow:yyyy-MM-dd HH:mm}", 11, art.Muted);
+            if (art.Button(new Rect(0, 86, w, 30), showLocationPicker ? "Close locations" : "Change observer location", showLocationPicker))
+            {
+                showLocationPicker = !showLocationPicker;
+                latitudeText = loc.latitude.ToString("0.0000", CultureInfo.InvariantCulture);
+                longitudeText = loc.longitude.ToString("0.0000", CultureInfo.InvariantCulture);
+            }
+            float y = 128;
+            if (showLocationPicker)
+            {
+                for (int i = 0; i < CelestialMessierCatalog.BuiltinLocations.Length; i++)
+                {
+                    var place = CelestialMessierCatalog.BuiltinLocations[i];
+                    Rect r = new Rect((i % 2) * (w + 6) / 2, y + (i / 2) * 48, (w - 6) / 2, 42);
+                    if (art.Button(r, place.locationName, place.locationName == loc.locationName))
+                    {
+                        messierCatalog.SetObserverLocation(place.locationName, place.latitude, place.longitude, place.regionDesc);
+                        showLocationPicker = false;
+                    }
+                }
+                y += 296;
+                art.Text(new Rect(0, y, w, 18), "CUSTOM LOCATION / LATITUDE, LONGITUDE", 10, art.Muted);
+                latitudeText = GUI.TextField(new Rect(0, y + 24, (w - 8) / 2, 28), latitudeText);
+                longitudeText = GUI.TextField(new Rect((w + 8) / 2, y + 24, (w - 8) / 2, 28), longitudeText);
+                bool validLat = float.TryParse(latitudeText, NumberStyles.Float, CultureInfo.InvariantCulture, out float customLat) && customLat >= -90 && customLat <= 90;
+                bool validLon = float.TryParse(longitudeText, NumberStyles.Float, CultureInfo.InvariantCulture, out float customLon) && customLon >= -180 && customLon <= 180;
+                if (art.Button(new Rect(0, y + 62, w, 32), "Use coordinates (north / east positive)", enabled: validLat && validLon))
+                {
+                    messierCatalog.SetObserverLocation("Custom observer", customLat, customLon, "User-entered coordinates");
+                    showLocationPicker = false;
+                }
+                y += 116;
+            }
+            var target = messierCatalog.currentTarget;
+            if (target != null)
+            {
+                var (alt, az, above) = messierCatalog.CalculateAltAz(target.raHours, target.decDegrees);
+                art.Text(new Rect(0, y, w, 26), target.commonName, 18, art.Ink);
+                art.Text(new Rect(0, y + 28, w, 20), $"Altitude {alt:+0.0;-0.0}° / Azimuth {az:000.0}°", 11, art.Muted);
+                if (art.Button(new Rect(0, y + 55, w, 34), above ? "Aim at " + target.id : target.id + " is below the horizon", primary: true, enabled: above)) messierCatalog.LockTelescopeOnTarget(target);
+            }
+            if (art.Button(new Rect(0, y + 98, w, 30), target != null && target.HasImage ? "View telescope image / " + target.id : "Browse image gallery [G]")) OpenGallery(target);
+            y += 142;
+            art.Text(new Rect(0, y, w, 18), "CATALOG / SELECT TO AIM", 10, art.Teal);
+            y += 22;
+            if (art.Button(new Rect(0, y, (w - 6) / 2, 30), "Above horizon", aboveHorizonOnly)) aboveHorizonOnly = true;
+            if (art.Button(new Rect((w + 6) / 2, y, (w - 6) / 2, 30), "All targets", !aboveHorizonOnly)) aboveHorizonOnly = false;
+            y += 34;
+            foreach (var obj in messierCatalog.Catalog)
+            {
+                var (alt, az, above) = messierCatalog.CalculateAltAz(obj.raHours, obj.decDegrees);
+                if (aboveHorizonOnly && !above) continue;
+                string title = (obj.objectType == CelestialObjectType.MajorStar ? obj.commonName : obj.id + " / " + obj.commonName);
+                string status = $"Alt {alt:+0.0;-0.0}°   Az {az:000.0}°" + (above ? "" : "   below");
+                bool selected = target == obj;
+                Rect row = new Rect(0, y, w, 52);
+                if (selected) art.Round(row, new Color(0.085f, 0.16f, 0.17f));
+                art.Text(new Rect(8, y + 4, w - 16, 23), title, 12, above ? art.Ink : art.Muted);
+                art.Text(new Rect(8, y + 29, w - 16, 20), status, 11, above ? art.Teal : art.Muted);
+                if (GUI.Button(row, GUIContent.none, GUIStyle.none))
+                {
+                    messierCatalog.currentTarget = obj;
+                    if (above) messierCatalog.LockTelescopeOnTarget(obj);
+                }
+                y += 58;
+            }
+            art.Text(new Rect(0, y + 8, w, 54), "110 Messier objects + 12 highlights; decorative background stars. Above horizon does not account for daylight or weather.", 11, art.Muted);
+        }
+
+        private void DrawViewportReadout()
+        {
+            float left = currentHUDMode == HUDViewMode.Full && !isLeftPanelCollapsed ? navigation.xMax + 30 : 42;
+            float right = currentHUDMode == HUDViewMode.Full && !isRightPanelCollapsed ? instrument.x - 30 : width - 42;
+            if (right - left < 230) return;
+            art.Text(new Rect(left, 129, right - left, 18), SkyActive ? "CELESTIAL OBSERVATION" : $"EXPLORATION / 0{Stage}", 10, art.Teal);
+            art.Text(new Rect(left, 155, right - left, 34), SkyActive ? $"{messierCatalog.ViewDirection} / {messierCatalog.ViewAltitude:+0;-0}°" : StageNames[Stage - 1], 27, art.Ink);
+            art.Line(new Vector2(left, 204), new Vector2(left + 52, 204), art.Amber, 2);
+            float y = footer.y - 63;
+            art.Text(new Rect(left, y, right - left, 20), SkyActive ? $"Bearing {messierCatalog.ViewAzimuth:000}°  /  Field of view {messierCatalog.ViewFieldOfView:0}°" : engine != null ? engine.currentTargetName : "Survey camera", 13, art.Ink);
+            art.Text(new Rect(left, y + 27, right - left, 20), SkyActive ? "DRAG / LOOK     SCROLL / ZOOM     R / HORIZON" : "DRAG / ORBIT     SCROLL / INSPECT     R / RESET", 10, art.Muted);
+        }
+        private void DrawWorldLabels()
+        {
+            if (!SkyActive || Camera.main == null) return;
+            DrawHorizonLabels();
+            skyLabelBounds.Clear();
+            // Reserve the selected target first; crowded neighbors remain selectable in the catalog.
+            for (int i = -1; i < messierCatalog.Catalog.Count; i++)
+            {
+                var obj = i < 0 ? messierCatalog.currentTarget : messierCatalog.Catalog[i];
+                if (obj == null || (i >= 0 && obj == messierCatalog.currentTarget)) continue;
+                if (messierCatalog.showLocalHorizonPlane && !messierCatalog.CalculateAltAz(obj.raHours, obj.decDegrees).isAboveHorizon) continue;
+                bool star = obj.objectType == CelestialObjectType.MajorStar;
+                if (star ? !messierCatalog.showStarLabels : !messierCatalog.showMessierMarkers) continue;
+                Vector3 screen = Camera.main.WorldToScreenPoint(messierCatalog.GetWorldPositionOfObject(obj));
+                Vector2 p = new Vector2(screen.x, Screen.height - screen.y) / InterfaceScale;
+                if (screen.z <= 0 || p.x < 26 || p.x > width - 150 || p.y < 220 || p.y > footer.y - 95 || OverUI(p) || OverUI(p + Vector2.right * 140)) continue;
+                bool selected = messierCatalog.currentTarget == obj;
+                art.Arc(p, selected ? 11 : 4, 0, 360, selected ? art.Amber : art.Teal);
+                Rect labelBounds = new Rect(p.x - 12, p.y - 12, 180, 43);
+                bool overlaps = false;
+                foreach (Rect used in skyLabelBounds) if (used.Overlaps(labelBounds)) { overlaps = true; break; }
+                if (overlaps) continue;
+                skyLabelBounds.Add(labelBounds);
+                art.Text(new Rect(p.x + 17, p.y - 9, 150, 20), star ? obj.commonName : obj.id, 11, selected ? art.Amber : art.Muted);
+                var horizontal = messierCatalog.CalculateAltAz(obj.raHours, obj.decDegrees);
+                art.Text(new Rect(p.x + 17, p.y + 10, 150, 19), $"Alt {horizontal.altitudeDeg:+0.0;-0.0}°  Az {horizontal.azimuthDeg:000}°", 10, art.Muted);
+                if (!showSettings && GUI.Button(labelBounds, GUIContent.none, GUIStyle.none)) messierCatalog.LockTelescopeOnTarget(obj);
+            }
+        }
+        private void DrawHorizonLabels()
+        {
+            if (!messierCatalog.showLocalHorizonPlane) return;
+            string[] labels = { "NORTH", "NORTHEAST", "EAST", "SOUTHEAST", "SOUTH", "SOUTHWEST", "WEST", "NORTHWEST" };
+            for (int i = 0; i < 24; i++)
+            {
+                Vector3 screen = Camera.main.WorldToScreenPoint(messierCatalog.HorizonDirection(i * 15, 0) * 5800);
+                Vector2 p = new Vector2(screen.x, Screen.height - screen.y) / InterfaceScale;
+                if (screen.z <= 0 || p.x < 90 || p.x > width - 90 || p.y < 230 || p.y > footer.y - 110 || OverUI(p) || OverUI(p + Vector2.right * 80) || OverUI(p - Vector2.right * 80)) continue;
+                art.Line(p + Vector2.up * -7, p + Vector2.up * 7, i % 3 == 0 ? art.Amber : art.Muted, 2);
+                if (i % 3 == 0) art.Text(new Rect(p.x - 80, p.y + 14, 160, 28), labels[i / 3] + $" / {i * 15:000}°", 11, art.Amber, TextAnchor.MiddleCenter);
+            }
+        }
+
+        private void DrawFooter()
+        {
+            if (SkyActive)
+            {
+                art.Round(footer, new Color(0.025f, 0.038f, 0.048f, 0.97f));
+                float x0 = footer.x + 18, y0 = footer.y + 25;
+                art.Text(new Rect(x0, footer.y + 12, 280, 17), "OBSERVATORY / HORIZON VIEW", 10, art.Teal);
+                art.Text(new Rect(x0, footer.y + 39, 350, 25), "Arrow keys to pan · S to return to flight", 12, art.Ink);
+                float x1 = footer.xMax - 558;
+                if (art.Button(new Rect(x1, y0, 100, 36), "Zoom out −")) messierCatalog.ZoomView(10);
+                if (art.Button(new Rect(x1 + 108, y0, 100, 36), "Zoom in +")) messierCatalog.ZoomView(-10);
+                if (art.Button(new Rect(x1 + 222, y0, 156, 36), "Horizon overview [R]", primary: true)) messierCatalog.ResetSkyView();
+                if (art.Button(new Rect(x1 + 388, y0, 152, 36), "Return to flight [S]")) ToggleStarryNight();
+                return;
+            }
+            art.Round(footer, new Color(0.025f, 0.038f, 0.048f, 0.97f));
+            float x = footer.x + 18;
+            art.Text(new Rect(x, footer.y + 12, 310, 16), "SURVEY SCALE / SELECT A SECTOR", 10, art.Muted);
+            string[] labels = { "01  SOL", "02  GALAXY", "03  GROUP", "04  WEB" };
+            for (int i = 0; i < 4; i++)
+                if (art.Button(new Rect(x + i * 91, footer.y + 36, 85, 32), labels[i], Stage == i + 1 && !SkyActive)) engine?.JumpToStage(i + 1);
+            float right = footer.xMax - 18;
+            if (art.Button(new Rect(right - 122, footer.y + 25, 122, 38), "Reset view [R]")) engine?.ResetCamera();
+            bool touring = engine != null && engine.isTourActive;
+            if (art.Button(new Rect(right - 258, footer.y + 25, 128, 38), touring ? "Stop tour [T]" : "Guided tour [T]", touring)) engine?.ToggleTour();
+            if (art.Button(new Rect(right - 414, footer.y + 25, 148, 38), "Light pulse [Space]", primary: true, enabled: !SkyActive)) engine?.FirePulse();
+            if (width > 1510)
+            {
+                float tx = x + 394;
+                art.Text(new Rect(tx, footer.y + 25, right - 446 - tx, 20), touring ? $"GUIDED TOUR / SECTOR {engine.tourCurrentStage}" : "FREE EXPLORATION", 11, art.Teal);
+                art.Text(new Rect(tx, footer.y + 49, right - 446 - tx, 18), "SCHEMATIC SPATIAL SCALES", 10, art.Muted);
+            }
+        }
+        private void DrawSettings()
+        {
+            bool previousContrast = art.HighContrast;
+            art.HighContrast = true;
+            art.Panel(settings, "03", "PREFERENCES");
+            art.HighContrast = previousContrast;
+            float x = settings.x + 16, y = settings.y + 54, w = settings.width - 32;
+            string units = activeUnitSystem == UnitSystem.Kilometers ? "Metric" : activeUnitSystem == UnitSystem.Miles ? "Miles" : "Dual";
+            if (art.Button(new Rect(x, y, w, 32), "Units: " + units + " [U]")) CycleUnitSystem();
+            if (art.Button(new Rect(x, y + 42, 50, 32), "A-")) SetScale(userScale - 0.1f);
+            art.Text(new Rect(x + 58, y + 42, 166, 32), $"Text scale {userScale:0.0}x", 12, art.Ink, TextAnchor.MiddleCenter);
+            if (art.Button(new Rect(x + w - 50, y + 42, 50, 32), "A+")) SetScale(userScale + 0.1f);
+            if (art.Button(new Rect(x, y + 84, w, 32), "High contrast", isHighContrast))
             {
                 isHighContrast = !isHighContrast;
                 PlayerPrefs.SetInt("Cosmic_A11y_Contrast", isHighContrast ? 1 : 0);
             }
-
-            // Font Scaling
-            rx -= 36f;
-            if (DrawSleekButton(new Rect(rx, 18, 32, 36), "A+", false, Color.cyan)) SetScale(userScale + 0.15f);
-            rx -= 36f;
-            if (DrawSleekButton(new Rect(rx, 18, 32, 36), "A−", false, Color.cyan)) SetScale(userScale - 0.15f);
-
-            // Unit Switcher (KM / Miles / Dual)
-            rx -= 128f;
-            string unitBtnText = activeUnitSystem switch
+            bool narration = audioController != null && audioController.IsNarratorAutoPlay;
+            if (art.Button(new Rect(x, y + 126, w, 28), narration ? "Narration: on" : "Narration: off", narration)) audioController?.ToggleNarrator();
+            if (audioController != null)
             {
-                UnitSystem.Miles => "📐 UNITS: MI (U)",
-                UnitSystem.Dual => "📐 DUAL KM+MI (U)",
-                _ => "📐 UNITS: KM (U)"
-            };
-            if (DrawSleekButton(new Rect(rx, 18, 122, 36), unitBtnText, activeUnitSystem == UnitSystem.Dual, Color.yellow))
-            {
-                CycleUnitSystem();
+                art.Text(new Rect(x, y + 168, w, 18), $"SPACE MUSIC / {audioController.TrackCount} INSTRUMENTALS", 10, art.Teal);
+                art.Text(new Rect(x, y + 194, w, 36), audioController.GetCurrentTrackTitle(), 15, art.Ink);
+                if (art.Button(new Rect(x, y + 240, (w - 8) / 2, 30), audioController.IsMusicEnabled ? "Pause music" : "Play music")) audioController.ToggleMusic();
+                if (art.Button(new Rect(x + (w + 8) / 2, y + 240, (w - 8) / 2, 30), "Next track ›")) audioController.NextTrack();
+                if (art.Button(new Rect(x, y + 280, (w - 8) / 2, 30), "Shuffle", audioController.ShuffleMusic)) audioController.ToggleShuffle();
+                if (art.Button(new Rect(x + (w + 8) / 2, y + 280, (w - 8) / 2, 30), audioController.IsAudioMuted ? "Unmute audio" : "Mute all audio", audioController.IsAudioMuted)) audioController.ToggleAudioMute();
+                art.Text(new Rect(x, y + 326, w, 18), $"Music volume / {audioController.musicTargetVolume * 100:0}%", 12, art.Muted);
+                float volume = GUI.HorizontalSlider(new Rect(x, y + 358, w, 20), audioController.musicTargetVolume, 0, 1);
+                if (!Mathf.Approximately(volume, audioController.musicTargetVolume)) audioController.SetMusicVolume(volume);
             }
-
-            // Starry Night & Messier Sky Observation Mode Toggle (Hotkey: S)
-            rx -= 145f;
-            bool isStarry = messierCatalog != null && messierCatalog.isStarryNightActive;
-            string starryLabel = isStarry ? "🔭 SKY: ON (S)" : "🔭 STARRY SKY (S)";
-            if (DrawSleekButton(new Rect(rx, 18, 138, 36), starryLabel, isStarry, Color.cyan))
-            {
-                ToggleStarryNight();
-            }
-
-            // =========================================================================
-            // 2. LEFT COMMAND WING: SECTOR SCALE SELECTOR
-            // =========================================================================
-            float leftW = 280f;
-            float leftY = 76f;
-            Rect leftRect = new Rect(14, leftY, leftW, 435f);
-            DrawSciFiPanel(leftRect, "// SECTOR.NAV //");
-
-            GUI.Label(new Rect(26, leftY + 14, 250, 20), "SECTOR SCALE SELECTOR", headerTitleStyle);
-            GUI.Label(new Rect(26, leftY + 32, 250, 16), "DESTINATION LOCK [KEYS 1 - 4]", statLabelStyle);
-
-            float stageBtnY = leftY + 54f;
-            for (int s = 1; s <= 4; s++)
-            {
-                bool isActive = (engine != null && engine.activeStageIndex == s);
-                Rect sRect = new Rect(24, stageBtnY, leftW - 20, 80f);
-
-                string sTitle = s switch
-                {
-                    1 => "01  SOLAR SYSTEM",
-                    2 => "02  MILKY WAY GALAXY",
-                    3 => "03  LOCAL GROUP",
-                    4 => "04  COSMIC WEB & CMB",
-                    _ => ""
-                };
-
-                string sSpan = s switch
-                {
-                    1 => activeUnitSystem switch
-                    {
-                        UnitSystem.Miles => "Sun to Neptune  •  5.59B mi (8.33 LH)",
-                        UnitSystem.Dual => "8.996B km [5.59B mi]  •  8.33 LH",
-                        _ => "Sun to Neptune  •  8.996B km (8.33 LH)"
-                    },
-                    2 => activeUnitSystem switch
-                    {
-                        UnitSystem.Miles => "Spiral Arms & Sgr A*  •  5.88e17 mi",
-                        UnitSystem.Dual => "9.46e17 km [5.88e17 mi]  •  100k LY",
-                        _ => "Spiral Arms & Sgr A*  •  9.461e17 km"
-                    },
-                    3 => activeUnitSystem switch
-                    {
-                        UnitSystem.Miles => "Andromeda M31 & Satellites  •  10 MLY",
-                        UnitSystem.Dual => "9.46e19 km [5.88e19 mi]  •  10 MLY",
-                        _ => "Andromeda M31 & Satellites  •  10 MLY"
-                    },
-                    4 => activeUnitSystem switch
-                    {
-                        UnitSystem.Miles => "CMB Horizon & Filaments  •  93 GLY",
-                        UnitSystem.Dual => "8.80e23 km [5.47e23 mi]  •  93 GLY",
-                        _ => "CMB Horizon & Filaments  •  93 GLY"
-                    },
-                    _ => ""
-                };
-
-                // Draw Stage Button with clean 2-line layout
-                Texture2D sBg = isActive ? texGlassActive : texGlassCard;
-                GUI.DrawTexture(sRect, sBg);
-
-                Texture2D sBorder = isActive ? texCyan : texBorder;
-                GUI.DrawTexture(new Rect(sRect.x, sRect.y, sRect.width, 1), sBorder);
-                GUI.DrawTexture(new Rect(sRect.x, sRect.y + sRect.height - 1, sRect.width, 1), sBorder);
-                GUI.DrawTexture(new Rect(sRect.x, sRect.y, 1, sRect.height), sBorder);
-                GUI.DrawTexture(new Rect(sRect.x + sRect.width - 1, sRect.y, 1, sRect.height), sBorder);
-
-                if (isActive)
-                {
-                    GUI.DrawTexture(new Rect(sRect.x, sRect.y, 3, sRect.height), texCyan);
-                }
-
-                GUI.Label(new Rect(sRect.x + 12, sRect.y + 12, sRect.width - 24, 20), sTitle, isActive ? statValueCyanStyle : headerTitleStyle);
-                GUI.Label(new Rect(sRect.x + 12, sRect.y + 36, sRect.width - 24, 32), sSpan, statLabelStyle);
-
-                if (GUI.Button(sRect, GUIContent.none, GUIStyle.none))
-                {
-                    if (engine != null) engine.JumpToStage(s);
-                    if (audioController != null) audioController.PlaySoftChime();
-                }
-
-                stageBtnY += 86f;
-            }
-
-            // Diagnostic Telemetry Strip at Bottom of Left Panel
-            GUI.Label(new Rect(26, leftY + 404, leftW - 32, 16), "INERTIAL: NOMINAL • GYRO: LOCKED • DRIFT: 0.000", hudMicroStyle);
-
-            // =========================================================================
-            // 3. RIGHT TACTICAL WING: TELEMETRY & CELESTIAL EYEPIECE
-            // =========================================================================
-            float rightW = 460f;
-            float rightX = virtualW - rightW - 14f;
-            Rect rightRect = new Rect(rightX, leftY, rightW, 460f);
-            DrawSciFiPanel(rightRect, "// TELEMETRY.SYS //");
-
-            // Center Quick-Focus Targets Bar (Close-up inspection of planets, stars & starships)
-            if (!isStarryMode)
-            {
-                DrawQuickFocusBar(virtualW, leftW, rightX);
-            }
-
-            // Sleek Tab Switchers (3 wide tabs)
-            float tabW = (rightW - 32f) / 3.0f;
-            float tabY = leftY + 12f;
-
-            if (DrawSleekButton(new Rect(rightX + 16, tabY, tabW - 4, 32), "⚡ Transit (c)", activeRightTab == 0, Color.cyan))
-            {
-                activeRightTab = 0;
-            }
-            if (DrawSleekButton(new Rect(rightX + 16 + tabW, tabY, tabW - 4, 32), "🚀 Benchmarks", activeRightTab == 1, Color.cyan))
-            {
-                activeRightTab = 1;
-            }
-            if (DrawSleekButton(new Rect(rightX + 16 + tabW * 2, tabY, tabW - 4, 32), "🔭 Messier Sky", activeRightTab == 2, Color.cyan))
-            {
-                activeRightTab = 2;
-                if (messierCatalog != null) messierCatalog.isStarryNightActive = true;
-            }
-
-            var pulseEmitter = engine != null ? engine.lightPulseEmitter : null;
-            bool isPulseActive = pulseEmitter != null && pulseEmitter.IsPulseActive;
-            bool isPulsePaused = pulseEmitter != null && pulseEmitter.IsPaused;
-            float pulseProgress = pulseEmitter != null ? pulseEmitter.ProgressNormalized : 0f;
-
-            if (activeRightTab == 0)
-            {
-                // -------------------------------------------------------------
-                // TAB 0: PHOTON TRANSIT SIMULATOR (SPEED OF LIGHT c)
-                // -------------------------------------------------------------
-                float ry = leftY + 52f;
-
-                // Duration Card
-                GUI.DrawTexture(new Rect(rightX + 16, ry, rightW - 32, 92), texGlassCard);
-                GUI.Label(new Rect(rightX + 28, ry + 10, rightW - 56, 16), "TIME FOR PHOTON (1.0c) TO TRANSIT ACROSS THIS SCALE:", statLabelStyle);
-                GUI.Label(new Rect(rightX + 28, ry + 28, rightW - 56, 36), TravelTimeCalculator.FormatTime(lightTransitSecs), bigValueStyle);
-                GUI.Label(new Rect(rightX + 28, ry + 66, rightW - 56, 18), $"Scale Distance: {TravelTimeCalculator.FormatSpan(spanKm, activeUnitSystem)}", statValueGoldStyle);
-
-                ry += 102f;
-
-                // Active Transit Computer Card
-                GUI.DrawTexture(new Rect(rightX + 16, ry, rightW - 32, 276), texGlassCard);
-
-                string speedLabel = activeUnitSystem switch
-                {
-                    UnitSystem.Miles => "SPEED c = 186,282 mi/s",
-                    UnitSystem.Dual => "SPEED c = 299,792 km/s [186,282 mi/s]",
-                    _ => "SPEED c = 299,792 km/s"
-                };
-                GUI.Label(new Rect(rightX + 28, ry + 12, rightW - 56, 20), $"⚡ RELATIVISTIC PHOTON COMPUTER ({speedLabel})", headerTitleStyle);
-
-                string statusMsg;
-                if (isPulseActive && pulseEmitter != null)
-                {
-                    double currentDist = pulseEmitter.CurrentDistanceKm;
-                    statusMsg = isPulsePaused
-                        ? $"⏸ PAUSED: Traversed {TravelTimeCalculator.FormatSpan(currentDist, activeUnitSystem)} ({Mathf.RoundToInt(pulseProgress * 100)}%)"
-                        : $"▶ TRANSIT IN FLIGHT: {TravelTimeCalculator.FormatSpan(currentDist, activeUnitSystem)} ({Mathf.RoundToInt(pulseProgress * 100)}%)";
-                }
-                else if (pulseEmitter != null && !string.IsNullOrEmpty(pulseEmitter.CompletedSummary))
-                {
-                    statusMsg = "✓ TRANSIT COMPLETE: " + TravelTimeCalculator.FormatSpan(pulseEmitter.TotalDistanceKm, activeUnitSystem);
-                }
-                else
-                {
-                    statusMsg = "READY: Engage 'Discharge Pulse' to launch wave.";
-                }
-                GUI.Label(new Rect(rightX + 28, ry + 36, rightW - 56, 38), statusMsg, pulseStatusStyle);
-
-                // Progress Bar
-                float pBarX = rightX + 28;
-                float pBarY = ry + 80;
-                float pBarW = rightW - 56;
-                float pBarH = 18;
-                GUI.DrawTexture(new Rect(pBarX, pBarY, pBarW, pBarH), texGlass);
-                if (pulseProgress > 0)
-                {
-                    GUI.DrawTexture(new Rect(pBarX, pBarY, pBarW * pulseProgress, pBarH), texCyan);
-                }
-                GUI.DrawTexture(new Rect(pBarX, pBarY, pBarW, 1), texBorder);
-                GUI.DrawTexture(new Rect(pBarX, pBarY + pBarH - 1, pBarW, 1), texBorder);
-                GUI.Label(new Rect(pBarX, pBarY, pBarW, pBarH), $"{Mathf.RoundToInt(pulseProgress * 100)}% Traversed", compValueStyle);
-
-                // Time Factor
-                float spdY = ry + 114;
-                GUI.Label(new Rect(rightX + 28, spdY, 200, 16), "SIMULATION TIME FACTOR:", statLabelStyle);
-                float curSpeed = pulseEmitter != null ? pulseEmitter.SpeedMultiplier : 1.0f;
-
-                float spdW = (rightW - 60) / 3.0f;
-                if (DrawSleekButton(new Rect(rightX + 28, spdY + 20, spdW - 4, 32), "0.25x Slow", Mathf.Approximately(curSpeed, 0.25f), Color.cyan))
-                {
-                    if (pulseEmitter != null) pulseEmitter.SetSpeedMultiplier(0.25f);
-                }
-                if (DrawSleekButton(new Rect(rightX + 28 + spdW, spdY + 20, spdW - 4, 32), "0.50x Steady", Mathf.Approximately(curSpeed, 0.50f), Color.cyan))
-                {
-                    if (pulseEmitter != null) pulseEmitter.SetSpeedMultiplier(0.50f);
-                }
-                if (DrawSleekButton(new Rect(rightX + 28 + spdW * 2, spdY + 20, spdW - 4, 32), "1.00x Normal", Mathf.Approximately(curSpeed, 1.0f), Color.cyan))
-                {
-                    if (pulseEmitter != null) pulseEmitter.SetSpeedMultiplier(1.0f);
-                }
-
-                // Playback Action Buttons
-                float ctrlY = ry + 188;
-                float ctrlW = (rightW - 64) / 2.0f;
-                string pauseText = isPulsePaused ? "▶ Resume Transit" : "⏸ Pause Transit";
-                if (DrawSleekButton(new Rect(rightX + 28, ctrlY, ctrlW, 48), pauseText, isPulseActive, Color.cyan, 12))
-                {
-                    if (pulseEmitter != null) pulseEmitter.TogglePause();
-                }
-                string dischargeText = isPulseActive ? "⚡ Replay Pulse" : "⚡ Discharge Pulse";
-                if (DrawSleekButton(new Rect(rightX + 36 + ctrlW, ctrlY, ctrlW, 48), dischargeText, isPulseActive, Color.green, 12))
-                {
-                    if (engine != null) engine.FirePulse();
-                }
-            }
-            else if (activeRightTab == 1)
-            {
-                // -------------------------------------------------------------
-                // TAB 1: CRAFT PROPULSION BENCHMARKS
-                // -------------------------------------------------------------
-                float ry = leftY + 54f;
-                GUI.Label(new Rect(rightX + 20, ry, rightW - 40, 20), "CRAFT TRAVEL DURATION ACROSS THIS SCALE:", headerTitleStyle);
-                GUI.Label(new Rect(rightX + 20, ry + 22, rightW - 40, 16), "Distance: " + TravelTimeCalculator.FormatSpan(spanKm, activeUnitSystem), statLabelStyle);
-
-                double tRelativistic = spanKm / (0.1 * 299792.458);
-                double tParker = spanKm / 192.0;
-                double tVoyager = spanKm / 17.0;
-                double tJetliner = spanKm / 0.25;
-
-                float compY = ry + 44f;
-                float rowH = 46f;
-                DrawCompRow(rightX + 16, compY, rightW - 32, rowH, TravelTimeCalculator.FormatSpeed(TravelTimeCalculator.SPEED_PHOTON, activeUnitSystem, "photon"), TravelTimeCalculator.FormatTime(lightTransitSecs), new Color(0.22f, 0.74f, 0.97f)); compY += rowH + 8;
-                DrawCompRow(rightX + 16, compY, rightW - 32, rowH, TravelTimeCalculator.FormatSpeed(TravelTimeCalculator.SPEED_RELATIVISTIC, activeUnitSystem, "relativistic"), TravelTimeCalculator.FormatTime(tRelativistic), new Color(0.98f, 0.75f, 0.14f)); compY += rowH + 8;
-                DrawCompRow(rightX + 16, compY, rightW - 32, rowH, TravelTimeCalculator.FormatSpeed(TravelTimeCalculator.SPEED_PARKER_SOLAR_PROBE, activeUnitSystem, "parker"), TravelTimeCalculator.FormatTime(tParker), Color.white); compY += rowH + 8;
-                DrawCompRow(rightX + 16, compY, rightW - 32, rowH, TravelTimeCalculator.FormatSpeed(TravelTimeCalculator.SPEED_VOYAGER_1, activeUnitSystem, "voyager"), TravelTimeCalculator.FormatTime(tVoyager), Color.white); compY += rowH + 8;
-                DrawCompRow(rightX + 16, compY, rightW - 32, rowH, TravelTimeCalculator.FormatSpeed(TravelTimeCalculator.SPEED_JETLINER, activeUnitSystem, "jetliner"), TravelTimeCalculator.FormatTime(tJetliner), new Color(0.70f, 0.80f, 0.92f));
-            }
-            else
-            {
-                // -------------------------------------------------------------
-                // TAB 2: STARRY NIGHT & CHARLES MESSIER DEEP-SKY OBSERVATORY
-                // -------------------------------------------------------------
-                float ry = leftY + 50f;
-
-                if (messierCatalog == null) messierCatalog = CelestialMessierCatalog.Instance ?? FindAnyObjectByType<CelestialMessierCatalog>();
-
-                // Observer Location Banner (100% Offline Privacy Guarantee)
-                GUI.DrawTexture(new Rect(rightX + 16, ry, rightW - 32, 42), texGlassCard);
-                string obsName = messierCatalog != null ? messierCatalog.currentObserver.locationName : "Mauna Kea Observatory";
-                float obsLat = messierCatalog != null ? messierCatalog.currentObserver.latitude : 19.82f;
-                float obsLon = messierCatalog != null ? messierCatalog.currentObserver.longitude : -155.47f;
-                string latSign = obsLat >= 0 ? $"{obsLat:0.0}°N" : $"{-obsLat:0.0}°S";
-                string lonSign = obsLon >= 0 ? $"{obsLon:0.0}°E" : $"{-obsLon:0.0}°W";
-
-                GUI.Label(new Rect(rightX + 26, ry + 4, rightW - 160, 18), $"📍 OBSERVER: {obsName.ToUpper()}", statValueGoldStyle);
-                GUI.Label(new Rect(rightX + 26, ry + 22, rightW - 160, 16), $"🔒 {latSign}, {lonSign} • 100% LOCAL PRIVACY (ZERO NETWORK)", hudMicroStyle);
-
-                if (DrawSleekButton(new Rect(rightX + rightW - 138, ry + 6, 116, 30), showLocationPicker ? "✓ Close" : "📍 Location", showLocationPicker, Color.yellow, 10))
-                {
-                    showLocationPicker = !showLocationPicker;
-                }
-                ry += 46f;
-
-                if (showLocationPicker)
-                {
-                    // Location Preset Drawer
-                    GUI.DrawTexture(new Rect(rightX + 16, ry, rightW - 32, 126), texGlassCard);
-                    GUI.Label(new Rect(rightX + 24, ry + 6, rightW - 48, 16), "SELECT DARK-SKY OBSERVATORY OR CITY PRESET (OFFLINE):", statLabelStyle);
-
-                    float locBtnW = (rightW - 54) / 3.0f;
-                    float locBtnH = 24f;
-                    for (int bi = 0; bi < CelestialMessierCatalog.BuiltinLocations.Length; bi++)
-                    {
-                        var loc = CelestialMessierCatalog.BuiltinLocations[bi];
-                        int lRow = bi / 3;
-                        int lCol = bi % 3;
-                        Rect lRect = new Rect(rightX + 20 + lCol * (locBtnW + 5), ry + 24 + lRow * (locBtnH + 4), locBtnW, locBtnH);
-                        bool isCurLoc = messierCatalog != null && messierCatalog.currentObserver.locationName == loc.locationName;
-                        if (DrawSleekButton(lRect, loc.locationName, isCurLoc, Color.cyan, 10))
-                        {
-                            if (messierCatalog != null)
-                            {
-                                messierCatalog.SetObserverLocation(loc.locationName, loc.latitude, loc.longitude, loc.regionDesc);
-                            }
-                        }
-                    }
-                    ry += 132f;
-                }
-
-                // 4 Clean Filter Toggles (Single line, no text wrapping)
-                float fltW = (rightW - 44f) / 4.0f;
-                bool linesOn = messierCatalog != null && messierCatalog.showConstellationLines;
-                if (DrawSleekButton(new Rect(rightX + 16, ry, fltW, 26), linesOn ? "✨ Lines: ON" : "✨ Lines: OFF", linesOn, Color.cyan, 10))
-                {
-                    if (messierCatalog != null) messierCatalog.showConstellationLines = !messierCatalog.showConstellationLines;
-                }
-
-                bool messierOn = messierCatalog != null && messierCatalog.showMessierMarkers;
-                if (DrawSleekButton(new Rect(rightX + 20 + fltW, ry, fltW, 26), messierOn ? "🌀 Messier: ON" : "🌀 Messier: OFF", messierOn, Color.cyan, 10))
-                {
-                    if (messierCatalog != null) messierCatalog.showMessierMarkers = !messierCatalog.showMessierMarkers;
-                }
-
-                bool starsOn = messierCatalog != null && messierCatalog.showStarLabels;
-                if (DrawSleekButton(new Rect(rightX + 24 + fltW * 2, ry, fltW, 26), starsOn ? "⭐ Stars: ON" : "⭐ Stars: OFF", starsOn, Color.cyan, 10))
-                {
-                    if (messierCatalog != null) messierCatalog.showStarLabels = !messierCatalog.showStarLabels;
-                }
-
-                bool horizOn = messierCatalog != null && messierCatalog.showLocalHorizonPlane;
-                if (DrawSleekButton(new Rect(rightX + 28 + fltW * 3, ry, fltW, 26), horizOn ? "🌍 Horizon: ON" : "🌍 Horizon: OFF", horizOn, Color.green, 10))
-                {
-                    if (messierCatalog != null) messierCatalog.showLocalHorizonPlane = !messierCatalog.showLocalHorizonPlane;
-                }
-
-                ry += 32f;
-
-                // Quick Target Selector (3 Clean Columns, Readable Font)
-                GUI.Label(new Rect(rightX + 20, ry, rightW - 40, 16), "CELESTIAL TARGETS // MESSIER DEEP SKY:", statLabelStyle);
-                ry += 18f;
-
-                string[] quickIds = new string[] { "M31", "M42", "M45", "M13", "M1", "M16", "M27", "M51", "M57", "M87", "M104", "STAR-SIRIUS" };
-                string[] quickLabels = new string[] { "M31 Andromeda", "M42 Orion", "M45 Pleiades", "M13 Hercules", "M1 Crab Nebula", "M16 Pillars", "M27 Dumbbell", "M51 Whirlpool", "M57 Ring", "M87 Virgo A", "M104 Sombrero", "Sirius A" };
-
-                float qW = (rightW - 42f) / 3.0f;
-                float qH = 22f;
-                for (int qi = 0; qi < quickIds.Length; qi++)
-                {
-                    int row = qi / 3;
-                    int col = qi % 3;
-                    Rect qRect = new Rect(rightX + 16 + col * (qW + 5), ry + row * (qH + 3), qW, qH);
-                    bool isCur = messierCatalog != null && messierCatalog.currentTarget != null && messierCatalog.currentTarget.id == quickIds[qi];
-                    if (DrawSleekButton(qRect, quickLabels[qi], isCur, Color.cyan, 10))
-                    {
-                        if (messierCatalog != null) messierCatalog.SelectTargetById(quickIds[qi]);
-                    }
-                }
-                ry += (qH + 3) * 4 + 4f;
-
-                // Deep-Sky Eyepiece Telemetry Card
-                var target = messierCatalog != null ? messierCatalog.currentTarget : null;
-                if (target != null)
-                {
-                    GUI.DrawTexture(new Rect(rightX + 16, ry, rightW - 32, 192), texGlassCard);
-
-                    float eyeX = rightX + 26;
-                    float eyeY = ry + 8;
-
-                    GUI.Label(new Rect(eyeX, eyeY, rightW - 52, 20), $"{target.iconGlyph}  {target.id}: {target.commonName.ToUpper()}", statValueGoldStyle);
-                    GUI.Label(new Rect(eyeX, eyeY + 18, rightW - 52, 16), $"{target.objectType}  •  Constellation: {target.constellation.ToUpper()} ({target.ngcOrAlt})", statLabelStyle);
-
-                    float gridY = eyeY + 38;
-                    GUI.Label(new Rect(eyeX, gridY, rightW - 52, 18), $"COORDINATES: {target.GetFormattedCoordinates()}", statValueStyle);
-
-                    // Alt/Az & Horizon Visibility
-                    var (alt, az, isAbove) = messierCatalog.CalculateAltAz(target.raHours, target.decDegrees);
-                    string compass = GetCompassDirection(az);
-                    string visText = isAbove
-                        ? $"🟢 ALT: {alt:+0.0;-0.0}° (High in {compass}) • AZ: {az:000}° [VISIBLE TONIGHT]"
-                        : $"🔴 ALT: {alt:+0.0;-0.0}° • AZ: {az:000}° [BELOW HORIZON]";
-
-                    GUI.Label(new Rect(eyeX, gridY + 20, rightW - 52, 18), visText, isAbove ? statValueMintStyle : statLabelStyle);
-
-                    double distKm = target.distanceLy * TravelTimeCalculator.LY_KM;
-                    string distStr = TravelTimeCalculator.FormatDistanceSpan(distKm, activeUnitSystem);
-                    GUI.Label(new Rect(eyeX, gridY + 38, rightW - 52, 18), $"Dist: {target.distanceLy:N0} LY • {distStr}  •  Mag: m={target.apparentMag:+0.00;-0.00;0.00}", statValueCyanStyle);
-
-                    GUI.Label(new Rect(eyeX, gridY + 58, rightW - 52, 34), target.description, bodyStyle);
-
-                    if (DrawSleekButton(new Rect(eyeX, gridY + 98, rightW - 52, 38), $"🎯 LOCK TELESCOPE ON [{target.id}] (AIM CAMERA)", true, Color.cyan, 11))
-                    {
-                        if (messierCatalog != null)
-                        {
-                            messierCatalog.LockTelescopeOnTarget(target);
-                        }
-                    }
-                }
-            }
-
-            // =========================================================================
-            // 4. BOTTOM MASTER FLIGHT CONSOLE & MISSION COMM RIBBON
-            // =========================================================================
-            float bottomH = 78f;
-            float bottomY = virtualH - bottomH - 12f;
-
-            // Mission Audio Comm Feed Banner (Subtle floating ribbon)
-            bool isTour = engine != null && engine.isTourActive;
-            string tourTag = isTour ? $"[🚀 GUIDED TOUR — STAGE {engine.tourCurrentStage}/4] " : "";
-            string subText = zoom < 1.75f ? "Stage 1: The Solar System. Spanning ~8.33 light-hours across Neptune's orbit." :
-                (zoom < 2.75f ? "Stage 2: The Milky Way Galaxy. ~100,000 light-years across with Orion Spur and Sagittarius A*." :
-                (zoom < 3.75f ? "Stage 3: The Local Group Cluster. ~10 million light-years encompassing Andromeda and Milky Way." :
-                "Stage 4: Cosmic Web & Particle Horizon. ~93 billion light-years to the Cosmic Microwave Background."));
-
-            Rect commRect = new Rect(virtualW * 0.12f, bottomY - 32f, virtualW * 0.76f, 26f);
-            GUI.DrawTexture(commRect, texGlass);
-            GUI.DrawTexture(new Rect(commRect.x, commRect.y, commRect.width, 1), texBorder);
-            GUI.DrawTexture(new Rect(commRect.x, commRect.y + commRect.height - 1, commRect.width, 1), texBorder);
-            GUI.Label(new Rect(commRect.x + 8, commRect.y + 2, commRect.width - 16, 22), $"🎙️ FLIGHT AUDIO TELEMETRY: {tourTag}{subText}", subtitleStyle);
-
-            // Master Flight Deck Panel
-            Rect cockpitRect = new Rect(14, bottomY, virtualW - 28, bottomH);
-            DrawSciFiPanel(cockpitRect, "// FLIGHT.DECK //");
-
-            // Continuous Scale Relativistic Accelerator Slider
-            GUI.Label(new Rect(26, bottomY + 12, 220, 16), "COSMIC SCALE ACCELERATOR", statLabelStyle);
-            GUI.Label(new Rect(250, bottomY + 12, virtualW * 0.35f, 16), "1.0 [Solar System] ── 2.0 [Milky Way] ── 3.0 [Local Group] ── 4.0 [Cosmic Web]", statLabelStyle);
-            float newZoom = GUI.HorizontalSlider(new Rect(26, bottomY + 36, virtualW * 0.38f, 26), zoom, 1.0f, 4.0f);
-            if (Mathf.Abs(newZoom - zoom) > 0.005f && engine != null)
-            {
-                engine.SetZoomDirect(newZoom);
-            }
-
-            // Flight Action Buttons
-            float fBtnX = virtualW - 680f;
-            float fBtnW = 155f;
-
-            string tourBtnText = isTour ? $"🚀 Tour: S{engine.tourCurrentStage}" : "🚀 Guided Tour [T]";
-            if (DrawSleekButton(new Rect(fBtnX, bottomY + 18, fBtnW, 46), tourBtnText, isTour, Color.cyan, 11))
-            {
-                if (engine != null) engine.ToggleTour();
-            }
-
-            string pulseBtnText = isPulseActive ? (isPulsePaused ? "▶ Resume Wave" : "⏸ Pause Wave") : "⚡ Light Pulse [SPC]";
-            if (DrawSleekButton(new Rect(fBtnX + fBtnW + 8, bottomY + 18, fBtnW + 10, 46), pulseBtnText, isPulseActive, Color.yellow, 11))
-            {
-                if (engine != null)
-                {
-                    if (isPulseActive)
-                    {
-                        if (pulseEmitter != null) pulseEmitter.TogglePause();
-                    }
-                    else
-                    {
-                        engine.FirePulse();
-                    }
-                }
-            }
-
-            string starryBtnBottom = (messierCatalog != null && messierCatalog.isStarryNightActive) ? "🔭 Sky: ON [S]" : "🔭 Starry Sky [S]";
-            if (DrawSleekButton(new Rect(fBtnX + (fBtnW + 8) * 2 + 10, bottomY + 18, fBtnW - 10, 46), starryBtnBottom, (messierCatalog != null && messierCatalog.isStarryNightActive), Color.cyan, 11))
-            {
-                ToggleStarryNight();
-            }
-
-            if (DrawSleekButton(new Rect(fBtnX + (fBtnW + 8) * 3, bottomY + 18, 140, 46), "↺ Reset Gyro [R]", false, Color.cyan, 11))
-            {
-                if (engine != null) engine.ResetCamera();
-            }
-
-            // Tactical screen-space markers for Messier objects & major stars when Starry Night is enabled
-            if (messierCatalog != null && messierCatalog.isStarryNightActive && mainCam != null)
-            {
-                foreach (var obj in messierCatalog.Catalog)
-                {
-                    Vector3 worldPos = messierCatalog.GetWorldPositionOfObject(obj);
-                    Vector3 screenPos = mainCam.WorldToScreenPoint(worldPos);
-
-                    if (screenPos.z > 0 && screenPos.x > 30 && screenPos.x < Screen.width - 30 && screenPos.y > 30 && screenPos.y < Screen.height - 30)
-                    {
-                        float gx = screenPos.x / finalScale;
-                        float gy = (Screen.height - screenPos.y) / finalScale;
-
-                        bool isOverLeftPanel = gx < leftW + 30 && gy > leftY && gy < leftY + 450;
-                        bool isOverRightPanel = gx > rightX - 20 && gy > leftY && gy < leftY + 480;
-                        bool isOverTopBar = gy < 75;
-                        bool isOverBottomBar = gy > bottomY - 35;
-
-                        if (!isOverLeftPanel && !isOverRightPanel && !isOverTopBar && !isOverBottomBar)
-                        {
-                            bool isTarget = (messierCatalog.currentTarget == obj);
-                            GUI.DrawTexture(new Rect(gx - 3, gy - 3, 6, 6), isTarget ? texGold : texCyan);
-                            GUI.Label(new Rect(gx + 6, gy - 8, 140, 18), $"{obj.iconGlyph} {obj.id}", isTarget ? statValueGoldStyle : hudMicroStyle);
-                        }
-                    }
-                }
-            }
-
-            GUI.matrix = oldMatrix;
+            if (art.Button(new Rect(x, y + 390, w, 32), "Help & field guide [F1]")) OpenHelp();
         }
 
-        private void DrawQuickFocusBar(float virtualW, float leftW, float rightX)
+        public static string HelpPath => System.IO.Path.Combine(Application.streamingAssetsPath, "Help/index.html");
+
+        public void OpenHelp()
         {
-            if (engine == null) return;
-
-            float barX = leftW + 28f;
-            float barW = rightX - leftW - 28f;
-            if (barW < 360f) return; // Screen too narrow
-
-            float barY = 74f;
-            float barH = 50f;
-            Rect barRect = new Rect(barX, barY, barW, barH);
-            DrawSciFiPanel(barRect, "// TARGET.LOCK //");
-
-            // Subtitle status: Active target name + zoom hint
-            string statusStr = $"LOCK: {engine.currentTargetName.ToUpper()}  •  RANGE: {engine.targetDistance:0.0}m  (MOUSE SCROLL: ZOOM IN/OUT  •  R-DRAG: ORBIT 360°)";
-            GUI.Label(new Rect(barX + 12, barY + 4, barW - 24, 16), statusStr, reticleHeadingStyle);
-
-            int stage = engine.activeStageIndex;
-            float btnY = barY + 22f;
-            float btnH = 24f;
-
-            if (stage == 1)
+            if (!System.IO.File.Exists(HelpPath))
             {
-                string[] btnLabels = new string[] { "☀️ SUN", "🌍 EARTH", "🪐 JUPITER", "🪐 SATURN", "🚀 FLAGSHIP", "🛸 SCOUT", "🌌 OVERVIEW" };
-                float btnWidth = (barW - 20f) / btnLabels.Length;
-
-                for (int i = 0; i < btnLabels.Length; i++)
-                {
-                    Rect bRect = new Rect(barX + 10f + i * btnWidth, btnY, btnWidth - 4f, btnH);
-                    bool isTarget = (i == 0 && engine.currentTargetName.Contains("Sun")) ||
-                                   (i == 1 && engine.currentTargetName.Contains("Earth")) ||
-                                   (i == 2 && engine.currentTargetName.Contains("Jupiter")) ||
-                                   (i == 3 && engine.currentTargetName.Contains("Saturn")) ||
-                                   (i == 4 && engine.currentTargetName.Contains("Flagship")) ||
-                                   (i == 5 && engine.currentTargetName.Contains("Scout")) ||
-                                   (i == 6 && engine.currentTargetName.Contains("Overview"));
-
-                    if (DrawSleekButton(bRect, btnLabels[i], isTarget, Color.cyan, 10))
-                    {
-                        switch (i)
-                        {
-                            case 0: engine.FocusOnSun(); break;
-                            case 1: engine.FocusOnEarth(); break;
-                            case 2: engine.FocusOnJupiter(); break;
-                            case 3: engine.FocusOnSaturn(); break;
-                            case 4: engine.FocusOnFlagship(); break;
-                            case 5: engine.FocusOnScout(); break;
-                            case 6: engine.FocusOnOverview(); break;
-                        }
-                    }
-                }
+                Debug.LogWarning("The offline field guide is missing. Reinstall the complete Astronautica package.");
+                return;
             }
-            else if (stage == 2)
-            {
-                string[] btnLabels = new string[] { "🌀 SAGITTARIUS A*", "☀️ ORION SPUR (BEACON)", "🌌 MILKY WAY DISK" };
-                float btnWidth = (barW - 20f) / btnLabels.Length;
-
-                for (int i = 0; i < btnLabels.Length; i++)
-                {
-                    Rect bRect = new Rect(barX + 10f + i * btnWidth, btnY, btnWidth - 4f, btnH);
-                    bool isTarget = (i == 0 && engine.currentTargetName.Contains("Sagittarius")) ||
-                                   (i == 1 && engine.currentTargetName.Contains("Orion")) ||
-                                   (i == 2 && engine.currentTargetName.Contains("Milky Way"));
-
-                    if (DrawSleekButton(bRect, btnLabels[i], isTarget, Color.cyan, 10))
-                    {
-                        switch (i)
-                        {
-                            case 0: engine.FocusOnSgrA(); break;
-                            case 1: engine.FocusOnOrionSpur(); break;
-                            case 2: engine.FocusOnMilkyWay(); break;
-                        }
-                    }
-                }
-            }
-            else if (stage == 3)
-            {
-                string[] btnLabels = new string[] { "🌀 ANDROMEDA GALAXY (M31)", "🌌 LOCAL GROUP OVERVIEW" };
-                float btnWidth = (barW - 20f) / btnLabels.Length;
-
-                for (int i = 0; i < btnLabels.Length; i++)
-                {
-                    Rect bRect = new Rect(barX + 10f + i * btnWidth, btnY, btnWidth - 4f, btnH);
-                    bool isTarget = (i == 0 && engine.currentTargetName.Contains("Andromeda")) ||
-                                   (i == 1 && engine.currentTargetName.Contains("Local Group"));
-
-                    if (DrawSleekButton(bRect, btnLabels[i], isTarget, Color.cyan, 10))
-                    {
-                        switch (i)
-                        {
-                            case 0: engine.FocusOnAndromeda(); break;
-                            case 1: engine.FocusOnLocalGroup(); break;
-                        }
-                    }
-                }
-            }
-            else if (stage == 4)
-            {
-                string[] btnLabels = new string[] { "🕸️ COSMIC WEB FILAMENTS", "🌐 CMB HORIZON SPHERE" };
-                float btnWidth = (barW - 20f) / btnLabels.Length;
-
-                for (int i = 0; i < btnLabels.Length; i++)
-                {
-                    Rect bRect = new Rect(barX + 10f + i * btnWidth, btnY, btnWidth - 4f, btnH);
-                    bool isTarget = (i == 0 && engine.currentTargetName.Contains("Filaments")) ||
-                                   (i == 1 && engine.currentTargetName.Contains("CMB"));
-
-                    if (DrawSleekButton(bRect, btnLabels[i], isTarget, Color.cyan, 10))
-                    {
-                        switch (i)
-                        {
-                            case 0: engine.FocusOnCosmicFilaments(); break;
-                            case 1: engine.FocusOnCMB(); break;
-                        }
-                    }
-                }
-            }
+            Application.OpenURL(new System.Uri(HelpPath).AbsoluteUri);
         }
-
-        private void DrawCompRow(float x, float y, float w, float h, string name, string time, Color col)
+        private void SetScale(float value)
         {
-            GUI.DrawTexture(new Rect(x, y, w, h), texGlassCard);
-            GUI.DrawTexture(new Rect(x, y, 3, h), col == Color.white ? texBorder : (col == new Color(0.22f, 0.74f, 0.97f) ? texCyan : texGold));
-            GUI.Label(new Rect(x + 12, y + (h - 20) / 2.0f, w * 0.60f, 20), name, compLabelStyle);
-            compValueStyle.normal.textColor = col;
-            GUI.Label(new Rect(x + w * 0.60f, y + (h - 20) / 2.0f, w * 0.38f, 20), time, compValueStyle);
-        }
-
-        private void SetScale(float newScale)
-        {
-            userScale = Mathf.Clamp(newScale, 0.9f, 1.8f);
+            userScale = Mathf.Clamp(value, 0.9f, 1.8f);
             PlayerPrefs.SetFloat("Cosmic_A11y_Scale", userScale);
-            if (audioController != null) audioController.PlaySoftChime();
-        }
-
-        private string GetCompassDirection(float azDeg)
-        {
-            azDeg = (azDeg % 360f + 360f) % 360f;
-            if (azDeg >= 337.5f || azDeg < 22.5f) return "N";
-            if (azDeg >= 22.5f && azDeg < 67.5f) return "NE";
-            if (azDeg >= 67.5f && azDeg < 112.5f) return "E";
-            if (azDeg >= 112.5f && azDeg < 157.5f) return "SE";
-            if (azDeg >= 157.5f && azDeg < 202.5f) return "S";
-            if (azDeg >= 202.5f && azDeg < 247.5f) return "SW";
-            if (azDeg >= 247.5f && azDeg < 292.5f) return "W";
-            return "NW";
         }
     }
 }

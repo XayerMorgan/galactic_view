@@ -7,7 +7,7 @@ namespace CosmicZoom.Editor
 {
     public static class CosmicVisualsTester
     {
-        [MenuItem("Cosmic Zoom/Capture Visuals Test Screenshots")]
+        [MenuItem("Cosmic Zoom/Capture Scene-Only Reference Screenshots")]
         public static void CaptureTestScreenshots()
         {
             // First re-assemble scene to make sure latest materials, lighting, and FBX are bound
@@ -31,7 +31,7 @@ namespace CosmicZoom.Editor
             CosmicZoomEngine engine = Object.FindAnyObjectByType<CosmicZoomEngine>();
             CelestialMessierCatalog messier = Object.FindAnyObjectByType<CelestialMessierCatalog>();
 
-            string outDir = @"d:\Vibe Code Repo\galactic_view\visual_tests";
+            string outDir = Path.GetFullPath(Path.Combine(Application.dataPath, "../../visual_tests/scene-only"));
             Directory.CreateDirectory(outDir);
 
             int width = 1920;
@@ -51,7 +51,7 @@ namespace CosmicZoom.Editor
             }
             Texture2D canopyOverlay = AssetDatabase.LoadAssetAtPath<Texture2D>(canopyPath);
 
-            // 1. Capture Stage 1 (Solar System & Starships - Establishing Overview)
+            // 1. Capture Stage 1 (Solar System - Establishing Overview)
             if (engine != null)
             {
                 engine.ApplyZoom(1.0f);
@@ -71,16 +71,6 @@ namespace CosmicZoom.Editor
             cam.transform.position = new Vector3(0, 3f, 18f);
             cam.transform.LookAt(Vector3.zero);
             RenderAndSave(cam, rt, tex, null, Path.Combine(outDir, "sun_closeup.png"));
-
-            // 1c. Close-up on Deep-Space Survey Flagship (PBR Metallic Hull, Gold Wings, Cyan Thrusters)
-            GameObject flagshipObj = GameObject.Find("Survey_Flagship");
-            if (flagshipObj != null)
-            {
-                Vector3 shipPos = flagshipObj.transform.position;
-                cam.transform.position = shipPos + new Vector3(4.5f, 2.5f, 5.5f);
-                cam.transform.LookAt(shipPos);
-                RenderAndSave(cam, rt, tex, null, Path.Combine(outDir, "flagship_closeup.png"));
-            }
 
             // 2. Capture Stage 2 (Milky Way Galaxy)
             if (engine != null)
@@ -154,12 +144,12 @@ namespace CosmicZoom.Editor
             Object.DestroyImmediate(rt);
             Object.DestroyImmediate(tex);
 
-            Debug.Log("[VisualsTester] All test screenshots captured with cockpit overlay to: " + outDir);
+            Debug.Log("[VisualsTester] Scene-only references (HUD and runtime behavior not verified): " + outDir);
         }
 
         private static void RenderAndSave(Camera cam, RenderTexture rt, Texture2D tex, Texture2D canopy, string filePath)
         {
-            foreach (var bb in Object.FindObjectsByType<BillboardToCamera>(FindObjectsSortMode.None))
+            foreach (var bb in Object.FindObjectsByType<BillboardToCamera>())
             {
                 bb.transform.rotation = cam.transform.rotation;
             }

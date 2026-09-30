@@ -15,7 +15,7 @@ import bmesh
 import math
 import os
 
-BASE_DIR = os.path.abspath(r"d:\Vibe Code Repo\galactic_view")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEXTURE_DIR = os.path.join(BASE_DIR, "assets", "textures")
 BLEND_OUT = os.path.join(BASE_DIR, "cosmic_zoom_universe.blend")
 

@@ -1,0 +1,25 @@
+ASTRONAUTICA - COSMIC EXPLORER
+
+Run CosmicZoomEngine.exe. Keep all files and folders in this package together.
+No Unity editor or internet connection is needed to explore.
+
+HELP: press F1 in the app, select Settings > Help & field guide, or open:
+CosmicZoomEngine_Data/StreamingAssets/Help/index.html
+
+FIRST FLIGHT
+1-4: cosmic sectors. Drag: look/orbit. Mouse wheel: zoom. R: reset view.
+S: observatory. G: photograph gallery. T: guided tour. H: interface visibility.
+Escape closes overlays, leaves the observatory, or exits the app.
+Set your location in Sky > Change observer location for altitude/azimuth.
+
+LICENSES
+Original code and documentation: MIT (LICENSE).
+Images, data, audio, art textures and runtime: separate terms; see
+THIRD_PARTY_NOTICES.md, Licenses/, and each gallery photograph's credits.
+
+SOURCE, UPDATES AND SUPPORT
+https://github.com/XayerMorgan/galactic_view
+https://github.com/XayerMorgan/galactic_view/releases
+https://github.com/XayerMorgan/galactic_view/issues
+
+Educational approximations; not precision telescope guidance.

@@ -109,6 +109,7 @@ namespace CosmicZoom
             }
 
             double years = seconds / (365.25 * 86400.0);
+            if (years < 10) return $"{years:F2} Years";
             if (years < 1e6)
             {
                 return $"{years:N0} Years";
@@ -189,6 +190,13 @@ namespace CosmicZoom
             return craftType;
         }
 
+        public static string FormatVelocity(double kmPerSecond, UnitSystem units)
+        {
+            string metric = kmPerSecond.ToString("N2") + " km/s";
+            string imperial = (kmPerSecond * KM_TO_MILES).ToString("N2") + " mi/s";
+            return units == UnitSystem.Miles ? imperial : units == UnitSystem.Dual ? metric + " / " + imperial : metric;
+        }
+
         public static string FormatDistanceSpan(double distanceKm, UnitSystem unitSystem = UnitSystem.Kilometers)
         {
             double mi = distanceKm * KM_TO_MILES;
@@ -204,7 +212,7 @@ namespace CosmicZoom
                     _ => $"{lh:F2} Light-Hours ({au:F1} AU • {distanceKm:E2} km)"
                 };
             }
-            if (distanceKm < MLY_KM * 0.1)
+            if (distanceKm <= MLY_KM * 0.100001)
             {
                 double ly = distanceKm / LY_KM;
                 return unitSystem switch

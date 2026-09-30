@@ -46,7 +46,9 @@ namespace CosmicZoom
             line.positionCount = segments;
 
             var shader = Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Color");
-            Material mat = new Material(shader) { color = color };
+            // Vertex colors already supply opacity. Tinting the material again squares
+            // the alpha and makes the orbit paths almost invisible.
+            Material mat = new Material(shader) { color = Color.white };
             line.sharedMaterial = mat;
             line.startColor = color;
             line.endColor = color;

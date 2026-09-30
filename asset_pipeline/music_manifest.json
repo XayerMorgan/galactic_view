@@ -1,0 +1,32 @@
+{
+  "provider": "Magnific / ElevenLabs Music v2",
+  "generated": "2026-09-30",
+  "instrumental": true,
+  "tracks": [
+    {
+      "file": "space_asterism.mp3",
+      "title": "Asterism",
+      "requestedSeconds": 180
+    },
+    {
+      "file": "space_drift_beyond_orion.mp3",
+      "title": "Drift Beyond Orion",
+      "requestedSeconds": 180
+    },
+    {
+      "file": "space_ion_trails.mp3",
+      "title": "Ion Trails",
+      "requestedSeconds": 180
+    },
+    {
+      "file": "space_pale_blue_horizon.mp3",
+      "title": "Pale Blue Horizon",
+      "requestedSeconds": 180
+    },
+    {
+      "file": "space_the_long_return.mp3",
+      "title": "The Long Return",
+      "requestedSeconds": 180
+    }
+  ]
+}

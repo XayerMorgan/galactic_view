@@ -1,330 +1,198 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace CosmicZoom
 {
-    /// <summary>
-    /// Controls voice narrations generated via ElevenLabs and the soothing acoustic space music score.
-    /// Handles intelligent audio ducking, zero-pop volume ramps, and playlist crossfading.
-    /// </summary>
+    /// <summary>Two-deck instrumental playlist, independent narration, and narration ducking.</summary>
     public class CosmicAudioController : MonoBehaviour
     {
-        [Header("Audio Sources")]
-        [SerializeField] private AudioSource narrationSource;
-        [SerializeField] private AudioSource musicSourceA;
-        [SerializeField] private AudioSource musicSourceB;
-        [SerializeField] private AudioSource sfxSource;
-
-        [Header("ElevenLabs Stage Narrations")]
-        public AudioClip narrationStage1;
-        public AudioClip narrationStage2;
-        public AudioClip narrationStage3;
-        public AudioClip narrationStage4;
-
-        [Header("Soothing Acoustic Space Music Suite")]
-        public AudioClip acousticMovement1;
-        public AudioClip acousticMovement2;
-        public AudioClip acousticMovement3;
-        public AudioClip soothingAcoustic;
-
-        [Header("Soft Chime SFX")]
-        public AudioClip gentleChimeSFX;
-        public AudioClip lightPulseVoice;
-
-        public bool IsAudioMuted { get; private set; } = false;
+        [SerializeField] private AudioSource narrationSource, musicSourceA, musicSourceB, sfxSource;
+        public AudioClip narrationStage1, narrationStage2, narrationStage3, narrationStage4;
+        public AudioClip acousticMovement1, acousticMovement2, acousticMovement3, soothingAcoustic;
+        public AudioClip[] additionalMusic = Array.Empty<AudioClip>();
+        public string[] additionalMusicTitles = Array.Empty<string>();
+        public AudioClip gentleChimeSFX, lightPulseVoice;
+        public bool IsAudioMuted { get; private set; }
         public bool IsMusicEnabled { get; private set; } = true;
         public bool IsNarratorAutoPlay { get; set; } = true;
+        public bool ShuffleMusic { get; private set; } = true;
+        public int currentTrackIndex { get; private set; }
+        public int CurrentPlayingStage { get; private set; }
+        public bool IsNarrationPlaying => narrationSource != null && narrationSource.isPlaying;
+        public int TrackCount => playlist.Count;
+        public IReadOnlyList<string> TrackTitles => titles;
+        public bool AllSourcesMuted => musicSourceA.mute && musicSourceB.mute && narrationSource.mute && sfxSource.mute;
+        public float musicTargetVolume = 0.45f;
+        private readonly List<AudioClip> playlist = new List<AudioClip>();
+        private readonly List<string> titles = new List<string>();
+        private readonly List<int> shuffleBag = new List<int>();
+        private readonly System.Random random = new System.Random();
+        private AudioSource active, outgoing;
+        private float transition = 1, level, outgoingGain = 1;
+        private bool crossfading, activeNeedsStart, trackHasStarted;
 
-        private List<AudioClip> playlist = new List<AudioClip>();
-        private List<string> playlistTitles = new List<string>();
-        public int currentTrackIndex { get; private set; } = 0;
-
-        private AudioSource activeMusicSource;
-        private AudioSource inactiveMusicSource;
-        private Coroutine narrationRoutine;
-        private Coroutine musicCrossfadeRoutine;
-
-        public float musicTargetVolume = 0.75f;
-        private bool isDucked = false;
-
+        private AudioSource Configure(AudioSource source, float volume)
+        {
+            if (source == null) source = gameObject.AddComponent<AudioSource>();
+            source.playOnAwake = false;
+            source.loop = false;
+            source.spatialBlend = 0;
+            source.volume = volume;
+            return source;
+        }
         private void Awake()
         {
-            if (musicSourceA == null)
-            {
-                musicSourceA = gameObject.AddComponent<AudioSource>();
-                musicSourceA.playOnAwake = false;
-                musicSourceA.loop = false;
-                musicSourceA.volume = 0f;
-            }
-            if (musicSourceB == null)
-            {
-                musicSourceB = gameObject.AddComponent<AudioSource>();
-                musicSourceB.playOnAwake = false;
-                musicSourceB.loop = false;
-                musicSourceB.volume = 0f;
-            }
-            if (narrationSource == null)
-            {
-                narrationSource = gameObject.AddComponent<AudioSource>();
-                narrationSource.playOnAwake = false;
-                narrationSource.volume = 1.0f;
-            }
-            if (sfxSource == null)
-            {
-                sfxSource = gameObject.AddComponent<AudioSource>();
-                sfxSource.playOnAwake = false;
-                sfxSource.volume = 0.8f;
-            }
-
-            activeMusicSource = musicSourceA;
-            inactiveMusicSource = musicSourceB;
+            narrationSource = Configure(narrationSource, 1);
+            musicSourceA = Configure(musicSourceA, 0);
+            musicSourceB = Configure(musicSourceB, 0);
+            sfxSource = Configure(sfxSource, 0.8f);
+            active = musicSourceA;
+            outgoing = musicSourceB;
+            musicTargetVolume = Mathf.Clamp01(PlayerPrefs.GetFloat("Cosmic_Music_Volume", 0.45f));
+            ShuffleMusic = PlayerPrefs.GetInt("Cosmic_Music_Shuffle", 1) == 1;
         }
-
+        private void Add(AudioClip clip, string title)
+        {
+            if (clip == null) return;
+            playlist.Add(clip);
+            titles.Add(title);
+        }
         private void Start()
         {
-            // Populate Acoustic Playlist
-            if (acousticMovement1 != null) { playlist.Add(acousticMovement1); playlistTitles.Add("Movement I: Orion Fingerstyle Serenade"); }
-            if (acousticMovement2 != null) { playlist.Add(acousticMovement2); playlistTitles.Add("Movement II: Celestial Harp & Warm Resonance"); }
-            if (acousticMovement3 != null) { playlist.Add(acousticMovement3); playlistTitles.Add("Movement III: Deep Cosmic Acoustic Harmonics"); }
-            if (soothingAcoustic != null) { playlist.Add(soothingAcoustic); playlistTitles.Add("Movement IV: Tranquil Starlight Odyssey"); }
-
-            if (playlist.Count > 0 && IsMusicEnabled && !IsAudioMuted)
-            {
-                StartAcousticMusic();
-            }
-
-            // Welcome narration on launch
+            // Lead with the new suite; retain the four original acoustic movements for variety.
+            for (int i = 0; i < additionalMusic.Length; i++)
+                Add(additionalMusic[i], i < additionalMusicTitles.Length ? additionalMusicTitles[i] : additionalMusic[i].name);
+            Add(acousticMovement1, "Orion Fingerstyle Serenade");
+            Add(acousticMovement2, "Celestial Harp & Warm Resonance");
+            Add(acousticMovement3, "Deep Cosmic Acoustic Harmonics");
+            Add(soothingAcoustic, "Tranquil Starlight Odyssey");
+            StartAcousticMusic();
             StartCoroutine(DelayedLaunchNarration());
         }
-
         private IEnumerator DelayedLaunchNarration()
         {
-            yield return new WaitForSeconds(1.0f);
+            yield return new WaitForSeconds(1);
             PlayStageNarration(1);
         }
-
         private void Update()
         {
-            // Monitor active music source for seamless crossfade near track end
-            if (IsMusicEnabled && !IsAudioMuted && activeMusicSource != null && activeMusicSource.isPlaying)
+            float target = IsNarrationPlaying ? Mathf.Min(0.08f, musicTargetVolume) : musicTargetVolume;
+            level = Mathf.MoveTowards(level, target, Time.unscaledDeltaTime * 0.35f);
+            if (!IsMusicEnabled)
             {
-                float remainingTime = activeMusicSource.clip.length - activeMusicSource.time;
-                if (remainingTime <= 2.2f && musicCrossfadeRoutine == null)
-                {
-                    NextTrack();
-                }
+                // Streaming Play requests may finish loading after a same-frame
+                // Pause. Enforce pause when that request reaches the audio thread.
+                if (active.isPlaying) active.Pause();
+                if (outgoing.isPlaying) outgoing.Pause();
+                return;
             }
+            if (crossfading)
+            {
+                transition = Mathf.Min(1, transition + Time.unscaledDeltaTime / 2.2f);
+                active.volume = Mathf.Sin(transition * Mathf.PI / 2) * level;
+                outgoing.volume = Mathf.Cos(transition * Mathf.PI / 2) * level * outgoingGain;
+                if (transition >= 1) { outgoing.Stop(); outgoing.volume = 0; crossfading = false; }
+            }
+            else active.volume = level;
+            if (active.isPlaying) trackHasStarted = true;
+            // A streamed clip is briefly not playing while it opens. Only a
+            // clip that actually began can be considered finished.
+            if (active.clip != null && trackHasStarted && !crossfading && (!active.isPlaying || active.clip.length - active.time <= 2.2f)) NextTrack();
         }
-
-        public string GetCurrentTrackTitle()
-        {
-            if (playlistTitles.Count > currentTrackIndex)
-                return playlistTitles[currentTrackIndex];
-            return "Acoustic Space Suite";
-        }
-
+        public string GetCurrentTrackTitle() => currentTrackIndex < titles.Count ? titles[currentTrackIndex] : "Space instrumental suite";
         public void StartAcousticMusic()
         {
-            if (playlist.Count == 0) return;
-            activeMusicSource.clip = playlist[currentTrackIndex];
-            activeMusicSource.time = 0f;
-            activeMusicSource.volume = 0f;
-            activeMusicSource.Play();
-            StartCoroutine(FadeSource(activeMusicSource, 0f, isDucked ? 0.08f : musicTargetVolume, 1.8f));
+            if (playlist.Count == 0 || !IsMusicEnabled) return;
+            active.clip = playlist[currentTrackIndex];
+            active.time = 0;
+            active.volume = 0;
+            level = 0;
+            active.Play();
+            activeNeedsStart = false;
+            trackHasStarted = false;
         }
-
         public void NextTrack()
         {
             if (playlist.Count == 0) return;
-            int nextIndex = (currentTrackIndex + 1) % playlist.Count;
-            CrossfadeToTrack(nextIndex);
+            int next = (currentTrackIndex + 1) % playlist.Count;
+            if (ShuffleMusic && playlist.Count > 1)
+            {
+                if (shuffleBag.Count == 0)
+                {
+                    for (int i = 0; i < playlist.Count; i++) if (i != currentTrackIndex) shuffleBag.Add(i);
+                    for (int i = shuffleBag.Count - 1; i > 0; i--)
+                    {
+                        int j = random.Next(i + 1);
+                        int value = shuffleBag[i]; shuffleBag[i] = shuffleBag[j]; shuffleBag[j] = value;
+                    }
+                }
+                next = shuffleBag[shuffleBag.Count - 1];
+                shuffleBag.RemoveAt(shuffleBag.Count - 1);
+            }
+            CrossfadeToTrack(next);
         }
-
         public void CrossfadeToTrack(int index)
         {
-            if (musicCrossfadeRoutine != null) StopCoroutine(musicCrossfadeRoutine);
-            musicCrossfadeRoutine = StartCoroutine(CrossfadeMusicRoutine(index));
+            if (index < 0 || index >= playlist.Count) return;
+            // Repeated skips replace the older outgoing deck, never leave a third voice running.
+            outgoing.Stop();
+            outgoingGain = level > 0.001f ? active.volume / level : 0;
+            var previous = active;
+            active = outgoing;
+            outgoing = previous;
+            currentTrackIndex = index;
+            active.clip = playlist[index];
+            active.volume = 0;
+            activeNeedsStart = !IsMusicEnabled;
+            trackHasStarted = false;
+            if (IsMusicEnabled) active.Play();
+            transition = 0;
+            crossfading = true;
+            if (!IsMusicEnabled) outgoing.Pause();
         }
-
-        private IEnumerator CrossfadeMusicRoutine(int nextIndex)
+        public void SetMusicVolume(float value)
         {
-            currentTrackIndex = nextIndex;
-            inactiveMusicSource.clip = playlist[nextIndex];
-            inactiveMusicSource.time = 0f;
-            inactiveMusicSource.volume = 0f;
-            inactiveMusicSource.Play();
-
-            float targetVol = isDucked ? 0.08f : musicTargetVolume;
-            float duration = 2.2f;
-            float elapsed = 0f;
-
-            float fromVol = activeMusicSource.volume;
-
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / duration);
-                float ease = 0.5f - 0.5f * Mathf.Cos(t * Mathf.PI);
-
-                inactiveMusicSource.volume = Mathf.Lerp(0f, targetVol, ease);
-                activeMusicSource.volume = Mathf.Lerp(fromVol, 0f, ease);
-                yield return null;
-            }
-
-            activeMusicSource.Stop();
-            activeMusicSource.volume = 0f;
-
-            // Swap decks
-            AudioSource temp = activeMusicSource;
-            activeMusicSource = inactiveMusicSource;
-            inactiveMusicSource = temp;
-
-            musicCrossfadeRoutine = null;
+            musicTargetVolume = Mathf.Clamp01(value);
+            PlayerPrefs.SetFloat("Cosmic_Music_Volume", musicTargetVolume);
         }
-
-        public bool IsNarrationPlaying => narrationSource != null && narrationSource.isPlaying;
-        public int CurrentPlayingStage { get; private set; } = 0;
-
-        public void PlayStageNarration(int stageIndex)
+        public void ToggleShuffle()
         {
-            if (IsAudioMuted || !IsNarratorAutoPlay) return;
-
-            // Guard: If narration for this exact stage is already playing, do NOT restart or cut it off
-            if (IsNarrationPlaying && CurrentPlayingStage == stageIndex) return;
-
-            AudioClip clip = stageIndex switch
-            {
-                1 => narrationStage1,
-                2 => narrationStage2,
-                3 => narrationStage3,
-                4 => narrationStage4,
-                _ => null
-            };
-
-            if (clip == null) return;
-
-            CurrentPlayingStage = stageIndex;
-            if (narrationRoutine != null) StopCoroutine(narrationRoutine);
-            narrationRoutine = StartCoroutine(NarrationSequence(clip));
+            ShuffleMusic = !ShuffleMusic;
+            shuffleBag.Clear();
+            PlayerPrefs.SetInt("Cosmic_Music_Shuffle", ShuffleMusic ? 1 : 0);
         }
-
-        public void StopNarration()
-        {
-            if (narrationRoutine != null)
-            {
-                StopCoroutine(narrationRoutine);
-                narrationRoutine = null;
-            }
-            if (narrationSource != null)
-            {
-                narrationSource.Stop();
-            }
-            CurrentPlayingStage = 0;
-            isDucked = false;
-            if (activeMusicSource != null && activeMusicSource.isPlaying)
-            {
-                StartCoroutine(FadeSource(activeMusicSource, activeMusicSource.volume, musicTargetVolume, 1.0f));
-            }
-        }
-
-        private IEnumerator NarrationSequence(AudioClip clip)
-        {
-            // Duck acoustic music gracefully
-            isDucked = true;
-            if (activeMusicSource != null && activeMusicSource.isPlaying)
-            {
-                StartCoroutine(FadeSource(activeMusicSource, activeMusicSource.volume, 0.08f, 0.6f));
-            }
-
-            narrationSource.Stop();
-            narrationSource.clip = clip;
-            narrationSource.Play();
-
-            while (narrationSource != null && narrationSource.isPlaying)
-            {
-                yield return null;
-            }
-
-            // Unduck acoustic music back to target volume
-            isDucked = false;
-            if (activeMusicSource != null && activeMusicSource.isPlaying)
-            {
-                StartCoroutine(FadeSource(activeMusicSource, activeMusicSource.volume, musicTargetVolume, 1.2f));
-            }
-
-            narrationRoutine = null;
-        }
-
-        private IEnumerator FadeSource(AudioSource src, float from, float to, float duration)
-        {
-            float elapsed = 0f;
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / duration);
-                float ease = 0.5f - 0.5f * Mathf.Cos(t * Mathf.PI);
-                src.volume = Mathf.Lerp(from, to, ease);
-                yield return null;
-            }
-            src.volume = to;
-        }
-
-        public void PlaySoftChime()
-        {
-            if (IsAudioMuted || sfxSource == null || gentleChimeSFX == null) return;
-            sfxSource.PlayOneShot(gentleChimeSFX, 0.7f);
-        }
-
-        public void PlayLightPulseVoice()
-        {
-            if (IsAudioMuted || sfxSource == null || lightPulseVoice == null) return;
-            sfxSource.PlayOneShot(lightPulseVoice, 0.9f);
-        }
-
-        public void ToggleAudioMute()
-        {
-            IsAudioMuted = !IsAudioMuted;
-            if (IsAudioMuted)
-            {
-                if (activeMusicSource != null) activeMusicSource.Pause();
-                if (narrationSource != null) narrationSource.Pause();
-            }
-            else
-            {
-                if (IsMusicEnabled && activeMusicSource != null) activeMusicSource.UnPause();
-            }
-        }
-
         public void ToggleMusic()
         {
             IsMusicEnabled = !IsMusicEnabled;
             if (IsMusicEnabled)
             {
-                if (activeMusicSource != null && !activeMusicSource.isPlaying)
-                {
-                    StartAcousticMusic();
-                }
-                else if (activeMusicSource != null)
-                {
-                    activeMusicSource.UnPause();
-                }
+                trackHasStarted = false;
+                if (activeNeedsStart) { active.Play(); activeNeedsStart = false; }
+                else active.UnPause();
+                if (crossfading) outgoing.UnPause();
             }
-            else
-            {
-                if (activeMusicSource != null) activeMusicSource.Pause();
-            }
+            else { active.Pause(); outgoing.Pause(); }
         }
-
-        public void ToggleNarrator()
+        public void ToggleAudioMute()
         {
-            IsNarratorAutoPlay = !IsNarratorAutoPlay;
-            if (!IsNarratorAutoPlay && narrationSource != null && narrationSource.isPlaying)
-            {
-                narrationSource.Stop();
-                isDucked = false;
-                if (activeMusicSource != null) activeMusicSource.volume = musicTargetVolume;
-            }
+            IsAudioMuted = !IsAudioMuted;
+            musicSourceA.mute = musicSourceB.mute = narrationSource.mute = sfxSource.mute = IsAudioMuted;
         }
+        public void PlayStageNarration(int stageIndex)
+        {
+            if (IsAudioMuted || !IsNarratorAutoPlay || (IsNarrationPlaying && CurrentPlayingStage == stageIndex)) return;
+            AudioClip clip = stageIndex == 1 ? narrationStage1 : stageIndex == 2 ? narrationStage2 : stageIndex == 3 ? narrationStage3 : stageIndex == 4 ? narrationStage4 : null;
+            if (clip == null) return;
+            CurrentPlayingStage = stageIndex;
+            narrationSource.Stop();
+            narrationSource.clip = clip;
+            narrationSource.Play();
+        }
+        public void StopNarration() { narrationSource.Stop(); CurrentPlayingStage = 0; }
+        public void ToggleNarrator() { IsNarratorAutoPlay = !IsNarratorAutoPlay; if (!IsNarratorAutoPlay) StopNarration(); }
+        public void PlaySoftChime() { if (!IsAudioMuted && gentleChimeSFX != null) sfxSource.PlayOneShot(gentleChimeSFX, 0.7f); }
+        public void PlayLightPulseVoice() { if (!IsAudioMuted && lightPulseVoice != null) sfxSource.PlayOneShot(lightPulseVoice, 0.9f); }
     }
 }

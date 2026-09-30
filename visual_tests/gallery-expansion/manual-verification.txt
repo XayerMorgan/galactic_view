@@ -1,0 +1,17 @@
+Native player verification, 2026-09-30
+
+PASS Gallery opens with G and with the header button.
+PASS Typing Swan finds M17 / Omega Nebula without firing scene shortcuts.
+PASS Typing M 42 finds the Orion Nebula.
+PASS Escape closes the gallery while its search field has keyboard focus; the app remains open.
+PASS Opening a photograph displays the large image, full credit, observer and live altitude/azimuth.
+PASS Locate in the sky enters the observatory from flight and centers M42 after the telescope slew.
+PASS The selected target's View telescope image button returns to its gallery detail.
+PASS Music settings expose the nine-track player, current title, pause, next, shuffle, mute and volume.
+PASS Next changes the displayed music title to a generated instrumental.
+PASS Observer panel displays presets plus custom latitude/longitude entry and north/east sign guidance.
+
+Rendered gallery grid and detail reviewed at 1280x720 and 1920x1080.
+Final native window reviewed at 2560x1080.
+Automated runtime report: ../interface-repair/verification.txt (727 PASS, zero failures).
+Full-track loudness measurements: audio-validation.json.

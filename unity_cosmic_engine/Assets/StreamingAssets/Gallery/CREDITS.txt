@@ -1,0 +1,742 @@
+ASTRONAUTICA TELESCOPE IMAGE CREDITS
+
+Images resized with aspect ratio preserved and converted to JPEG. No generative alterations.
+Some images show a detail or surrounding field, rather than the entire catalog object.
+
+Catalog data: OpenNGC, https://github.com/mattiaverga/OpenNGC
+Adapted subset: CC BY-SA 4.0, https://creativecommons.org/licenses/by-sa/4.0/
+Changes: selection, decimal coordinates, class labels, M102 traditional NGC 5866 identification.
+
+Per-image terms apply independently from the catalog-data license.
+
+M1 / Crab Nebula
+NASA, ESA, J. Hester and A. Loll (Arizona State University)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-1/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M2 / Messier 2
+ESA/Hubble & NASA, G. Piotto et al.
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-2/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M3 / Messier 3
+ESA/Hubble & NASA, G. Piotto et al.
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-3/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M4 / Messier 4
+NASA, ESA, G. Piotto (Universita degli Studi di Padova), S. Anderson (University of Washington), A. Sarajedini (Florida Atlantic University), L. Bedin (INAF - Osservatorio Astronomico di Padova); Image Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-4/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M5 / Messier 5
+NASA, ESA, G. Piotto (Universita degli Studi di Padova); Image Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-5/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M6 / Butterfly Cluster
+KPNO/NOIRLab/NSF/AURA/Lawrence Johnson and Kathy Ortega/Adam Block
+https://noirlab.edu/public/images/noao-m6johnson/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M7 / Ptolemy's Cluster
+NASA, ESA, D. Bennett (University of Maryland), and K. Sahu (STScI); Image Processing: Gladys Kober
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-7/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M8 / Lagoon Nebula
+NASA, ESA, M. Mutchler (Space Telescope Science Institute); Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-8/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M9 / Messier 9
+NASA & ESA
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-9/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M10 / Messier 10
+NASA, ESA, G. Piotto (Universita degli Studi di Padova); Image Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-10/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M11 / Wild Duck Cluster
+ESA/Hubble & NASA, P. Dobbie et al.
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-11/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M12 / Messier 12
+ESA/Hubble & NASA
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-12/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M13 / Hercules Globular Cluster
+ESA/Hubble and NASA
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-13/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M14 / Messier 14
+NASA, ESA, and F. D'Antona (INAF, Osservatorio Astronomico di Roma); Image Processing: Gladys Kober
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-14/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M15 / Messier 15
+NASA, ESA
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-15/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M16 / Eagle Nebula
+NASA, ESA and the Hubble Heritage Team (STScI/AURA)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-16/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M17 / Omega Nebula
+Image credit: NASA, ESA, and A. Kraus (The University of Texas at Austin); Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-17/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M18 / Messier 18
+Hillary Mathis, REU program/NOIRLab/ NSF /AURA
+https://noirlab.edu/public/images/noao-m18/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M19 / Messier 19
+NASA, ESA, and C. Johnson (STScI); Image Processing: Gladys Kober
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-19/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M20 / Trifid Nebula
+Image: NASA, ESA, STScI; Image Processing: Joseph DePasquale (STScI)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-20/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M21 / Messier 21
+REU program/NOIRLab/ NSF /AURA
+https://noirlab.edu/public/images/noao-m21a20/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M22 / Messier 22
+ESA/Hubble & NASA
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-22/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M23 / Messier 23
+N.A.Sharp, REU program/NOIRLab/ NSF /AURA
+https://noirlab.edu/public/images/noao-m23/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M24 / Small Sagittarius Star Cloud
+NASA, ESA, and R. Sahai (Jet Propulsion Laboratory); Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-24/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M25 / Messier 25
+Hillary Mathis, Vanessa Harvey, REU program/NOIRLab/ NSF /AURA
+https://noirlab.edu/public/images/noao-m25/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M26 / Messier 26
+Hillary Mathis, Vanessa Harvey, REU program/NOIRLab/ NSF /AURA
+https://noirlab.edu/public/images/noao-m26/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M27 / Dumbbell Nebula
+NASA/ESA and the Hubble Heritage Team (STScI/AURA)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-27/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M28 / Messier 28
+ESA/Hubble & NASA, J. E. Grindlay et al.
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-28/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M29 / Messier 29
+Hillary Mathis/NOIRLab/ NSF /AURA
+https://noirlab.edu/public/images/noao-m29/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M30 / Messier 30
+NASA, ESA/Hubble
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-30/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M31 / Andromeda Galaxy
+NASA, ESA, Benjamin F. Williams (UWashington), Zhuo Chen (UWashington), L. Clifton Johnson (Northwestern); Image Processing: Joseph DePasquale (STScI)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-31/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M32 / Messier 32
+NASA, ESA, B. Williams (University of Washington); Image Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-32/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M33 / Triangulum Galaxy
+NASA, ESA, and M. Durbin, J. Dalcanton and B. F. Williams (University of Washington)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-33/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M34 / Messier 34
+REU program/NOIRLab/ NSF /AURA
+https://noirlab.edu/public/images/noao-m34/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M35 / Messier 35
+NASA, ESA, and E. Nelan (Space Telescope Science Institute), A. Riess (The Johns Hopkins University), J. Rhodes (Jet Propulsion Laboratory) ; Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-35/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M36 / Messier 36
+NOIRLab/ NSF /AURA
+https://noirlab.edu/public/images/noao-m36/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M37 / Messier 37
+NOIRLab/ NSF /AURA
+https://noirlab.edu/public/images/noao-m37/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M38 / Messier 38
+NOIRLab/ NSF /AURA
+https://noirlab.edu/public/images/noao-m38/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M39 / Messier 39
+WIYN/KPNO/NOIRLab/ NSF /AURA/H. Schweiker
+https://noirlab.edu/public/images/noao-m39/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M40 / Messier 40
+NOIRLab/ NSF /AURA
+https://noirlab.edu/public/images/noao-m40/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M41 / Messier 41
+NOIRLab/ NSF /AURA
+https://noirlab.edu/public/images/noao-m41/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M42 / Great Orion Nebula
+NASA, ESA, M. Robberto (Space Telescope Science Institute/ESA) and the Hubble Space Telescope Orion Treasury Project Team
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-42/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M43 / Mairan's Nebula
+NASA, ESA, M. Robberto (Space Telescope Science Institute/ESA) and the Hubble Space Telescope Orion Treasury Project Team
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-43/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M44 / Beehive
+NASA, ESA, and S. Lilly (Eidgenossiche Technische Hochschule) and DECam/CTIO/NOIRLabProcessing/NSF/AURA; Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-44/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M45 / Pleiades
+NASA and the Hubble Heritage Team (STScI/AURA); Acknowledgment: George Herbig and Theodore Simon (Institute for Astronomy, University of Hawaii)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-45/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M46 / Messier 46
+NASA, ESA, K. Knoll (NASA Goddard), and S. Öttl (Leopold Franzens Universität Innsbruck), et. al.; Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-46/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M47 / Messier 47
+NOIRLab/ NSF /AURA
+https://noirlab.edu/public/images/noao-m47/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M48 / Messier 48
+NASA, ESA, A. Riess (The Johns Hopkins University): Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-48/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M49 / Messier 49
+ESA/Hubble & NASA, J. Blakenslee, P Cote et al.
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-49/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M50 / Messier 50
+NOIRLab/ NSF /AURA
+https://noirlab.edu/public/images/noao-m50/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M51 / Whirlpool Galaxy
+NASA, ESA, S. Beckwith (STScI) and the Hubble Heritage Team (STScI/AURA)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-51/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M52 / Messier 52
+N.A.Sharp, REU program/NOIRLab/ NSF /AURA
+https://noirlab.edu/public/images/noao-m52r/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M53 / Messier 53
+ESA/Hubble & NASA
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-53/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M54 / Messier 54
+ESA/Hubble & NASA
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-54/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M55 / Messier 55
+NASA, ESA, A. Sarajedini (Florida Atlantic University), and M. Libralato (STScI, ESA, JWST); Image Processing: Gladys Kober
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-55/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M56 / Messier 56
+NASA & ESA
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-56/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M57 / Ring Nebula
+NASA, ESA and the Hubble Heritage (STScI/AURA)-ESA/Hubble Collaboration
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-57/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M58 / Messier 58
+NASA, ESA, D. Thilker (The Johns Hopkins University); Image Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-58/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M59 / Messier 59
+ESA/Hubble & NASA, P. Cote
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-59/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M60 / Messier 60
+NASA, ESA and the Hubble Heritage (STScI/AURA)-ESA/Hubble Collaboration
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-60/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M61 / Messier 61
+ESA/Hubble & NASA, ESO, J. Lee and the PHANGS-HST Team
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-61/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M62 / Messier 62
+NASA, ESA, and S. Anderson (University of Washington) and J. Chaname (Pontificia Universidad Católica de Chile)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-62/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M63 / Sunflower Galaxy
+ESA/Hubble & NASA
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-63/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M64 / Black Eye Galaxy
+NASA, CSA, ESA, F. Belfiore (European Southern Observatory – Germany), J. Lee (Space Telescope Science Institute), A. Leroy (The Ohio State University), and D. Thilker (The Johns Hopkins University); Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-64/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M65 / Messier 65
+ESA/Hubble & NASA
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-65/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M66 / Messier 66
+NASA, ESA and the Hubble Heritage (STScI/AURA)-ESA/Hubble Collaboration; Acknowledgment: Davide De Martin and Robert Gendler
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-66/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M67 / Messier 67
+NASA, ESA, and J. Krist (Jet Propulsion Laboratory); Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-67/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M68 / Messier 68
+ESA/Hubble & NASA
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-68/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M69 / Messier 69
+ESA/Hubble & NASA
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-69/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M70 / Messier 70
+ESA/Hubble & NASA
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-70/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M71 / Messier 71
+ESA/Hubble and NASA
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-71/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M72 / Messier 72
+ESA/Hubble & NASA, A. Sarajedini, G. Piotto, M. Libralato
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-72/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M73 / Messier 73
+REU program/NOIRLab/ NSF /AURA
+https://noirlab.edu/public/images/noao-m73/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M74 / Messier 74
+ESA/Hubble & NASA, R. Chandar
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-74/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M75 / Messier 75
+ESA/Hubble & NASA, F. Ferraro et al.
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-75/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M76 / Little Dumbbell Nebula
+NASA, ESA, STScI
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-76/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M77 / Messier 77
+ESA/Hubble & NASA, L. C. Ho, D. Thilker
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-77/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M78 / Messier 78
+NASA, ESA, J. Muzerolle (Space Telescope Science Institute) and S. Megeath (University of Toledo)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-78/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M79 / Messier 79
+NASA, ESA, STScI, F. Ferraro (Universita di Bologna) and S. Djorgovski (California Institute of Technology)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-79/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M80 / Messier 80
+NASA, ESA, and G. Piotto (Universita degli Studi di Padova); Image Processing: Gladys Kober
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-80/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M81 / Bode's Galaxy
+NASA, ESA and the Hubble Heritage Team (STScI/AURA)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-81/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M82 / Cigar Galaxy
+NASA, ESA and the Hubble Heritage Team (STScI/AURA); Acknowledgment: J. Gallagher (University of Wisconsin), M. Mountain (STScI) and P. Puxley (National Science Foundation)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-82/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M83 / Southern Pinwheel Galaxy
+NASA, ESA and the Hubble Heritage Team (STScI/AURA); Acknowledgment: W. Blair (STScI/Johns Hopkins University) and R. O’Connell (University of Virginia)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-83/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M84 / Messier 84
+NASA, ESA, P. Cote (National Research Council of Canada); Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-84/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M85 / Messier 85
+NASA, ESA and R. O’Connell (University of Virginia)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-85/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M86 / Messier 86
+ESA/Hubble & NASA, P. Cote et al.
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-86/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M87 / Virgo Galaxy
+NASA, ESA and the Hubble Heritage Team (STScI/AURA); Acknowledgment: P. Cote (Herzberg Institute of Astrophysics) and E. Baltz (Stanford University)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-87/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M88 / Messier 88
+ESA/Hubble & NASA, D. Thilker
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-88/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M89 / Messier 89
+NASA, ESA, STScI, and M. Franx (Universiteit Leiden) and S. Faber (University of California, Santa Cruz)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-89/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M90 / Messier 90
+ESA/Hubble & NASA, D. Thilker, J. Lee and the PHANGS-HST Team
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-90/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M91 / Messier 91
+NASA, ESA, and J. Lee (California Institute of Technology); Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-91/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M92 / Messier 92
+ESA/Hubble & NASA; Acknowledgment: Gilles Chapdelaine
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-92/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M93 / Messier 93
+NOIRLab/ NSF /AURA
+https://noirlab.edu/public/images/noao-m93/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M94 / Messier 94
+ESA/Hubble & NASA
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-94/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M95 / Messier 95
+NASA, ESA, J. Lee (STScI), and R. Chandar (University of Toledo); Image Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-95/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M96 / Messier 96
+ESA/Hubble & NASA, F. Belfiore, D. Calzetti
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-96/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M97 / Owl Nebula
+NOIRLab/ NSF /AURA
+https://noirlab.edu/public/images/noao-m97/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M98 / Messier 98
+NASA, ESA, V. Rubin (Carnegie Institution of Washington)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-98/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M99 / Coma Pinwheel
+ESA/Hubble & NASA; Acknowledgment: Matej Novak
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-99/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M100 / Messier 100
+NASA, ESA, and Judy Schmidt
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-100/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M101 / Messier 101
+NASA, ESA, K. Kuntz (JHU), F. Bresolin (University of Hawaii), J. Trauger (Jet Propulsion Lab), J. Mould (NOAO), Y.-H. Chu (University of Illinois, Urbana) and STScI; CFHT Image: Canada-France-Hawaii Telescope/J.-C. Cuillandre/Coelum; NOAO Image: G. Jacoby, B. Bohannan, M. Hanna/NOAO/AURA/NSF
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-101/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M102 / Messier 102
+NASA, ESA and the Hubble Heritage Team (STScI/AURA); Acknowledgment: W. Keel (University of Alabama, Tuscaloosa)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-102/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M103 / Messier 103
+Hillary Mathis, N.A.Sharp/NOIRLab/ NSF /AURA
+https://noirlab.edu/public/images/noao-m103/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+M104 / Sombrero Galaxy
+NASA and The Hubble Heritage Team (STScI/AURA)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-104/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M105 / Messier 105
+NASA, ESA, STScI, and C. Sarazin (University of Virginia)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-105/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M106 / Messier 106
+NASA, ESA, the Hubble Heritage Team (STScI/AURA) and R. Gendler (for the Hubble Heritage Team); Acknowledgment: J. GaBany
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-106/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M107 / Messier 107
+ESA/Hubble & NASA
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-107/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M108 / Messier 108
+NASA, ESA, and H. Bond (The Pennsylvania State University); Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-108/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M109 / Messier 109
+NASA, ESA, and J. Walsh (Texas A&M University); Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-109/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+M110 / Messier 110
+NASA, ESA, STScI and D. Geisler (Universidad de Concepción)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-110/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+NGC7000 / North America Nebula
+NASA, ESA, and K. Stapelfeldt (Jet Propulsion Laboratory); Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-caldwell-catalog/caldwell-20/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+NGC7293 / Helix Nebula
+NASA, NOAO, ESA, the Hubble Helix Nebula Team, M. Meixner (STScI), and T.A. Rector (NRAO)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-caldwell-catalog/caldwell-63/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+NGC3372 / Carina Nebula
+NASA, ESA, N. Smith (University of California, Berkeley), and the Hubble Heritage Team (STScI/AURA); CTIO data: N. Smith (University of California, Berkeley) and NOAO/AURA/NSF
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-caldwell-catalog/caldwell-92/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+NGC0104 / 47 Tucanae
+NASA, ESA, and the Hubble Heritage (STScI/AURA)-ESA/Hubble Collaboration Acknowledgment: J. Mack (STScI) and G. Piotto (University of Padova, Italy)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-caldwell-catalog/caldwell-106/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+NGC5139 / Omega Centauri
+ESA/Hubble, NASA, Maximilian Häberle (MPIA)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-caldwell-catalog/caldwell-80/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+NGC5128 / Centaurus A
+NASA, ESA, and the Hubble Heritage (STScI/AURA)-ESA/Hubble Collaboration; Acknowledgment: R. O’Connell (University of Virginia) and the WFC3 Scientific Oversight Committee
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-caldwell-catalog/caldwell-77/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+NGC0869 / Double Cluster: NGC 869
+NASA, ESA, and S. Casertano (Space Telescope Science Institute); Processing: Gladys Kober (NASA/Catholic University of America)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-caldwell-catalog/caldwell-14/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+NGC6960 / Western Veil Nebula
+ESA/Hubble & NASA, R. Sankrit
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-caldwell-catalog/caldwell-34/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+NGC7635 / Bubble Nebula
+NASA, ESA, and the Hubble Heritage Team (STScI/AURA)
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-caldwell-catalog/caldwell-11/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+NGC2237 / Rosette Nebula
+CTIO/NOIRLab/DOE/NSF/AURA Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Zamani (NSF NOIRLab)
+https://noirlab.edu/public/images/noirlab2424a/
+CC BY 4.0
+https://noirlab.edu/public/copyright/
+
+NGC2070 / Tarantula Nebula
+ESA/Hubble & NASA, C. Murray
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-caldwell-catalog/caldwell-103/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/
+
+NGC2392 / NGC 2392
+NASA, Andrew Fruchter, and the ERO Team [Sylvia Baggett (STScI), Richard Hook (ST-ECF), Zoltan Levay (STScI)]
+https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-caldwell-catalog/caldwell-39/
+NASA / Hubble image-use guidelines; retain the full credit
+https://www.nasa.gov/nasa-brand-center/images-and-media/

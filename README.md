@@ -1,112 +1,93 @@
-# Cosmic Zoom Engine 🌌🔭
+# Astronautica / Cosmic Explorer
 
-An interactive 3D WebGL visualization and relativistic transit calculator that transitions across four distinct scales of the known universe, providing precise travel time calculations based on the constant speed of light ($c = 299,792.458\text{ km/s}$).
+A native Windows Unity application for exploring four cosmic scales, comparing constant-speed travel times, and browsing a local celestial catalog. The interface is an original spacecraft survey console, with open views, restrained amber and teal instruments, and curved navigation marks.
 
----
+**[Download the Windows installer or portable ZIP](https://github.com/XayerMorgan/galactic_view/releases/latest)** · **[User guide](docs/USER_GUIDE.md)** · **[Build from source](docs/BUILDING.md)**
 
-## 🌟 Overview & Scale Regimes
+Windows 10 (21H1+) / 11, x64, with DirectX 11-capable graphics. All 122 gallery photographs, the nine-track soundtrack and help are bundled for offline use. The installer works per-user without administrator access and includes Start menu shortcuts and an uninstaller. The initial release is unsigned; SHA256 checksums accompany the downloads.
 
-The engine operates as a continuous logarithmic zoom model, transitioning smoothly from sub-light-hour solar scales to the 93-billion-light-year cosmological horizon.
+Original code and documentation are **MIT licensed**; [third-party notices](THIRD_PARTY_NOTICES.md) cover telescope imagery, catalog data, generated audio, artwork and Unity separately.
 
-### Stage 1: The Solar System Scale (~8.33 Light-Hours)
-* **View**: Precise heliocentric 3D model of the major planetary bodies (Sun to Neptune) viewed obliquely to highlight the ecliptic plane.
-* **Key Markers**: 
-  - Dynamic solar corona with radial light falloff.
-  - Earth highlighted with orbital tracking and targeting reticle.
-  - Neptune as the outer system boundary ($30.07\text{ AU}$ radius, $60.14\text{ AU}$ diameter).
-* **Scale**: Light-Hours ($\text{LH}$).
-* **Relativistic Calculation**:
-  - Distance: $8.996 \times 10^9\text{ km}$ ($60.14\text{ AU}$).
-  - Transit time at $c$: **~8 hours, 20 minutes, 7 seconds** ($30,008\text{ seconds}$).
+![The offline telescope gallery](visual_tests/interface-repair/gallery_1920.png)
 
-### Stage 2: The Milky Way Galaxy Scale (~100,000 Light-Years)
-* **View**: As the camera zooms out, the Solar System model collapses into a pulsating stellar beacon labeled `"Our Position (Sun)"` on the Orion Spur. The barred spiral structure of the Milky Way unfolds with over 100,000 GPU-accelerated stars.
-* **Key Markers**:
-  - Central Galactic Bulge & **Sagittarius A\*** supermassive black hole.
-  - Major density wave spiral arms (Perseus, Scutum-Centaurus, Sagittarius, Orion).
-  - Interstellar gas lanes and pink H II star-forming nebulae.
-* **Scale**: Light-Years ($\text{LY}$).
-* **Relativistic Calculation**:
-  - Distance: $9.461 \times 10^{17}\text{ km}$ ($30.7\text{ kpc}$).
-  - Transit time at $c$: **~100,000 Earth Years**.
+## Run
 
-### Stage 3: The Local Group Scale (~10 Million Light-Years)
-* **View**: The Milky Way contracts into a concentrated spiral disk within the local cluster filament. Highlights mutual gravitational attraction and galactic kinematics.
-* **Key Markers**:
-  - Milky Way Galaxy (Local anchor).
-  - Andromeda Galaxy (M31, $2.54\text{ MLY}$ distance, tilted disk of 1 trillion stars).
-  - Triangulum Galaxy (M33, $2.73\text{ MLY}$ distance).
-  - Dwarf satellite galaxies (Large & Small Magellanic Clouds, Leo, Draco, Sculptor).
-  - Dynamic gravitational interaction vectors (illustrating the MW–M31 collision course at $110\text{ km/s}$).
-* **Scale**: Mega-Light-Years ($\text{MLY}$).
-* **Relativistic Calculation**:
-  - Distance: $9.461 \times 10^{19}\text{ km}$ ($3.07\text{ Mpc}$).
-  - Transit time at $c$: **~10,000,000 Years**.
+Install the release and launch **Astronautica** from the Start menu, or extract the complete portable ZIP and run `CosmicZoomEngine.exe`. Press **F1** or choose **Settings → Help & field guide** for the offline illustrated guide. No Unity editor is required to run a release.
 
-### Stage 4: The Macro Cosmic Web & Boundary (~93 Billion Light-Years)
-* **View**: The Local Group becomes an infinitesimal point within the sponge-like cosmic web. Filaments of dark matter and galaxy clusters connect massive voids. The scene is enveloped by the spherical shell of the Observable Universe Boundary (the cosmological particle horizon).
-* **Key Markers**:
-  - Laniakea & Virgo Supercluster node.
-  - Boötes Supervoid ("The Great Nothing").
-  - Observable Universe Horizon ($r = 46.5\text{ GLY}$, diameter $93\text{ GLY}$) featuring Cosmic Microwave Background (CMB) thermal fluctuation rendering.
-* **Scale**: Giga-Light-Years ($\text{GLY}$) / Billion Light-Years ($\text{BLY}$).
-* **Relativistic Calculation**:
-  - Distance: $8.798 \times 10^{23}\text{ km}$ ($28.5\text{ Gpc}$).
-  - Transit time at $c$: **~93,000,000,000 Years** (exceeds universe age due to metric expansion of spacetime).
+Double-click `START_COSMIC_ZOOM.bat` (or `RUN_APP.bat`). The launcher opens `CosmicZoomEngine_App/CosmicZoomEngine.exe`. The build is local and is not committed to Git.
 
----
+This repository currently contains a **Unity desktop app**, not the browser/WebGL app described in earlier revisions of this README. There is no `index.html` to serve.
 
-## ⚡ Real-Time Relativistic Transit Engine
+## Explore
 
-The HUD computes transit durations dynamically across the current field of view for:
-1. **Photon ($1.0c$)**: $299,792.458\text{ km/s}$
-2. **Relativistic Probe ($0.1c$)**: $29,979\text{ km/s}$
-3. **Parker Solar Probe**: $192\text{ km/s}$ (fastest human vehicle)
-4. **Voyager 1 Interstellar Probe**: $17\text{ km/s}$
-5. **Commercial Jet**: $900\text{ km/h}$
+| Control | Action |
+| --- | --- |
+| 1–4 / navigation sectors | Select solar system, Milky Way, local group, or cosmic web |
+| Left or right drag in the viewport | Orbit a target; look around in the observatory |
+| Mouse wheel in the viewport | Inspect closer/farther; adjust telescope field of view |
+| Arrow keys | Orbit / look around |
+| Target buttons in Navigation | Track a body, galaxy, or overview |
+| R | Reset the current sector, or restore the sky horizon overview |
+| Space | Emit / restart an illustrative light pulse |
+| T | Start / stop the narrated tour |
+| S | Enter / leave the observatory |
+| G / Gallery | Open the offline telescope image gallery |
+| F1 / Settings → Help & field guide | Open the offline user guide in your browser |
+| H | Cycle full, quiet, and cinematic views |
+| U | Cycle metric, miles, and dual units |
+| Escape | Close the gallery/preferences, return from observatory, or exit the app |
 
-### Interactive "Fire Light Pulse"
-Clicking **Fire Light Pulse (c)** emits an expanding spherical photon wavefront traveling at light speed, illustrating the difference between localized human perception of speed and galactic immensity.
+Settings contains text scale, contrast, units, narration, and a nine-track music player with pause, next, shuffle, volume, and global mute. Five new three-minute space instrumentals join the original four acoustic tracks. The new suite is normalized to approximately -20 LUFS with protected peaks; music streams from disk, crossfades between tracks, and ducks beneath narration. Side instruments can collapse. Both docks scroll when their contents exceed the available height. Scrolling or dragging a dock does not move the camera.
 
----
+The Sky tab lets you browse without entering the observatory. **Observatory [S]** opens a wide southern horizon with a layered landscape, atmospheric rim and compass directions. Drag or use arrow keys to look around; the camera stays level with the local horizon. Use cardinal-direction buttons, zoom controls, or **Horizon overview [R]** to reorient. Selecting an above-horizon catalog row aims immediately. The catalog can show above-horizon targets or all targets; below-horizon targets remain available for information. Pick an observer preset for altitude/azimuth at the current UTC time. The ground occludes objects below the horizon. Constellations, horizon, object markers, and star labels can be toggled independently.
 
-## 🎙️ ElevenLabs Narration & Audio System
+## What the visualization represents
 
-Generated using ElevenLabs voice synthesis (George) and procedural sound effects:
-* `narration_stage1.mp3`: Solar system scale narration.
-* `narration_stage2.mp3`: Milky Way galaxy scale narration.
-* `narration_stage3.mp3`: Local Group cluster narration.
-* `narration_stage4.mp3`: Cosmic web & horizon narration.
-* `warp_whoosh.mp3`: Cinematic hyperspace scale shift SFX.
-* `ambient_space.mp3`: Ethereal deep space continuous synthesizer drone.
-* `ui_ping.mp3`: Holographic interface ping.
+**Gallery:** all 110 Messier objects and 12 selected deep-sky highlights, each with a locally bundled telescope photograph, thumbnail, credit, original source and usage link. Search by name, Messier/NGC identifier, constellation or type; filter to Messier, highlights, or objects above the horizon. Open an image for its altitude/azimuth and **Locate in the sky**. Altitude is measured from the horizon, azimuth clockwise from north. Observer presets and custom latitude/longitude are available under **Sky → Change observer location**; north/east coordinates are positive. Positions update for the current UTC time using approximate J2000 coordinates without precession or refraction; they are suitable for orientation, not precision telescope guidance.
 
----
+The highlights are the North America, Helix, Carina, Western Veil, Bubble, Rosette and Tarantula nebulae, NGC 2392, 47 Tucanae, Omega Centauri, Centaurus A and NGC 869 in the Double Cluster. Telescope photographs can show a detail or surrounding field. M102 uses the traditional, historically disputed NGC 5866 identification. The image collection is separate from the schematic 3D Local Group.
 
-## 🚀 How to Run Locally
+- **Solar system:** Sun, Earth, Jupiter, Saturn and Neptune. The span is Neptune's **orbital diameter** (60.14 AU), not the Sun-to-Neptune radius. Body sizes and orbital spacing are schematic.
+- **Milky Way:** a textured galactic disk, core and tracked solar-position beacon; a 100,000-light-year benchmark span.
+- **Local group:** a two-galaxy schematic containing only Milky Way and Andromeda models; a 10-million-light-year benchmark span. This is **not a complete Local Group**: Triangulum (M33) and the dwarf galaxies are not included.
+- **Cosmic web:** an illustrative textured filament disk and transparent particle-horizon boundary; a 93-billion-light-year benchmark span.
+- **Observatory:** a curated celestial catalog, constellation lines, and local horizon. Catalog coordinates are tied to the observer and time; the background star field and landscape are decorative. Daylight, weather and atmospheric refraction are not modeled. This is a coordinate/targeting view, not a photographic telescope image.
 
-You can run the application directly in any modern browser:
+Travel times use distance / speed in the observer's frame, without acceleration, relativistic proper-time correction, or cosmic expansion. The light pulse illustrates progress over ten playback seconds at 1x; its numerical transit time is shown separately. Cosmic-scale results are static-distance comparisons, not predictions of an achievable journey.
 
-### Option A: Direct Open
-Double click `index.html` or open in your browser:
-```
-file:///d:/Vibe Code Repo/galactic_view/index.html
+## Develop and build
+
+Image sources: [NASA's Hubble Messier catalog](https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/) and Caldwell pages, supplemented by [NOIRLab](https://noirlab.edu/public/images/). Per-image credits and terms are retained in the app and `Assets/StreamingAssets/Gallery/CREDITS.txt`. NASA/Hubble usage guidelines and NOIRLab's CC BY 4.0 terms apply per image; these are not blanket claims that every NASA-hosted image is public domain. Coordinates and classifications are an adapted [OpenNGC](https://github.com/mattiaverga/OpenNGC) subset, CC BY-SA 4.0; its license is bundled with the gallery. Generated instrumental provenance and prompts are recorded in `asset_pipeline/`.
+
+Rebuild the gallery with `python asset_pipeline/build_deep_sky_gallery.py` (requests, beautifulsoup4, Pillow). OpenNGC is pinned to a revision; downloaded responses are cached locally. Explicit source overrides identify the supplemental images. `python asset_pipeline/normalize_music.py` reproduces the audio leveling using imageio-ffmpeg and preserves originals in the ignored cache.
+
+- Unity **6000.6.0f1** (see `unity_cosmic_engine/ProjectSettings/ProjectVersion.txt`).
+- `launch_unity.bat` opens the Unity project using the installed editor.
+- `Assets/Scripts/Editor/CosmicSceneBuilder.cs` assembles the scene and materials from the imported FBX assets. It is the source of truth for scene generation; changes made only to the generated scene can be overwritten on rebuild.
+- `Assets/Scripts/CosmicHUD.cs` owns HUD layout and input regions; `CosmicConsoleDrawing.cs` draws instruments.
+- `CosmicZoomEngine.cs` owns flight input and sector selection; `CelestialMessierCatalog.cs` owns telescope movement.
+- `Assets/Resources/CosmicRim.shader` and `CosmicAdditive.shader` are included in player builds for atmospheric rims and transparent luminous artwork.
+
+Build from PowerShell (adjust the Unity executable path if needed):
+
+```powershell
+& 'C:/Program Files/Unity/Hub/Editor/6000.6.0f1/Editor/Unity.exe' `
+  -batchmode -quit -projectPath "$PWD/unity_cosmic_engine" `
+  -executeMethod CosmicZoom.Editor.CosmicSceneBuilder.BuildStandalonePlayer `
+  -logFile "$PWD/unity_cosmic_engine/interface-build.log"
 ```
 
-### Option B: Local Python HTTP Server
-```bash
-python -m http.server 8080
+## Verify the actual player
+
+```powershell
+& './CosmicZoomEngine_App/CosmicZoomEngine.exe' --cosmic-qa `
+  -logFile "$PWD/unity_cosmic_engine/runtime-verification.log"
 ```
-Then visit `http://localhost:8080` in your web browser.
 
----
+The opt-in runner exercises stage visibility, nested target tracking, atmosphere bounds, supported shaders, pulse pause/cancellation, observatory entry/return, sky filters, horizon coordinate agreement, independent altitude/azimuth fixtures, compass orientation, aim accuracy, zoom limits, and reset behavior. It also verifies every Messier ID, all 122 image/thumbnail pairs and credits, gallery search/modal behavior, all nine music tracks, streaming, shuffle, pause/resume and mute during skipping. It captures the full rendered HUD and gallery at 1920×1080, 1280×720 with enlarged text, and 2560×1080. Results and PNGs go to `visual_tests/interface-repair/`; a nonzero exit code means a failed assertion or runtime error. The runner never executes during ordinary app use.
 
-## 🎮 Controls
+The older editor menu **Capture Scene-Only Reference Screenshots** writes camera-only images to `visual_tests/scene-only/`. Those images do not exercise runtime scripts or include the HUD and cannot validate the interface.
 
-* **Left Click + Drag**: Orbit / Rotate 3D perspective
-* **Right Click + Drag**: Pan camera
-* **Mouse Scroll**: Continuous smooth zoom through all 4 scales
-* **Scale Zoom Slider**: Continuous scrub bar from Stage 1 to Stage 4
-* **Stage 1–4 Cards**: Immediate jump to stage with cinematic camera flight
-* **Click Any 3D Celestial Body**: Focus camera and populate holographic Inspector dossier
-* **Tour Button**: Automated cinematic flythrough across the cosmos
+## Art direction still to develop
+
+The repaired console provides the functional foundation. Existing galaxy and planet textures are retained; the two survey ships are removed from the app. Some galaxy artwork has labels baked into its texture, and the web is still a flat illustrative layer. A future art pass can replace these with richer spatial assets and develop the console's original visual language without copying a franchise interface.

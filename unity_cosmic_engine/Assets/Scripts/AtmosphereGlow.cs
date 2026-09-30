@@ -17,9 +17,15 @@ namespace CosmicZoom
 
         private void Start()
         {
-            GameObject glowObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            // Reuse the actual local mesh: imported FBX transforms may contain a 100x
+            // scale. A unit primitive under that transform becomes a screen-filling shell.
+            var sourceMesh = GetComponent<MeshFilter>();
+            if (sourceMesh == null || sourceMesh.sharedMesh == null) return;
+            GameObject glowObj = new GameObject();
             glowObj.name = gameObject.name + "_AtmosphereGlow";
-            glowObj.transform.SetParent(transform);
+            glowObj.transform.SetParent(transform, false);
+            glowObj.AddComponent<MeshFilter>().sharedMesh = sourceMesh.sharedMesh;
+            glowObj.AddComponent<MeshRenderer>();
             glowObj.transform.localPosition = Vector3.zero;
             glowObj.transform.localScale = Vector3.one * glowScale;
             baseScale = glowScale;
@@ -28,7 +34,7 @@ namespace CosmicZoom
             if (col != null) col.enabled = false;
 
             glowRenderer = glowObj.GetComponent<Renderer>();
-            var shader = Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Transparent") ?? Shader.Find("Unlit/Color");
+            var shader = Resources.Load<Shader>("CosmicRim");
             Material mat = new Material(shader) { color = glowColor };
             if (mat.HasProperty("_TintColor")) mat.SetColor("_TintColor", glowColor);
             glowRenderer.material = mat;
