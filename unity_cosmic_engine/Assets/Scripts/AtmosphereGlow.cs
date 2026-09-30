@@ -28,10 +28,9 @@ namespace CosmicZoom
             if (col != null) col.enabled = false;
 
             glowRenderer = glowObj.GetComponent<Renderer>();
-            var shader = Shader.Find("Mobile/Particles/Additive") ?? Shader.Find("Unlit/Transparent") ?? Shader.Find("Standard");
-            Material mat = new Material(shader);
+            var shader = Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Transparent") ?? Shader.Find("Unlit/Color");
+            Material mat = new Material(shader) { color = glowColor };
             if (mat.HasProperty("_TintColor")) mat.SetColor("_TintColor", glowColor);
-            else mat.color = glowColor;
             glowRenderer.material = mat;
         }
 

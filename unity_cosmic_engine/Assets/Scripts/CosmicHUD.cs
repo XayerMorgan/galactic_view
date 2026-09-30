@@ -466,7 +466,6 @@ namespace CosmicZoom
             GUI.Label(new Rect(26, 36, 480, 18), $"[ SYS.NAV-01 ]  DOMAIN: {domainName}  •  SPAN: {TravelTimeCalculator.FormatSpan(spanKm, activeUnitSystem)}", headerSubStyle);
 
             // Right Action Switches
-            float btnW = 125f;
             float rx = virtualW - 24;
 
             // Universal Quit Button (Esc / ⏻ QUIT)

@@ -12,9 +12,10 @@ namespace CosmicZoom
         private void LateUpdate()
         {
             Camera cam = Camera.main;
+            if (cam == null) cam = Object.FindAnyObjectByType<Camera>();
             if (cam != null)
             {
-                transform.LookAt(cam.transform.position, cam.transform.up);
+                transform.rotation = cam.transform.rotation;
             }
         }
     }

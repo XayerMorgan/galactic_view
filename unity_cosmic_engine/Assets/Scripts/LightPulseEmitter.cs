@@ -32,15 +32,11 @@ namespace CosmicZoom
                 if (col != null) col.enabled = false;
 
                 var rend = pulseSphere.GetComponent<Renderer>();
-                var shader = Shader.Find("Mobile/Particles/Additive") ?? Shader.Find("Unlit/Transparent") ?? Shader.Find("Standard");
-                rend.material = new Material(shader);
+                var shader = Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Transparent") ?? Shader.Find("Unlit/Color");
+                rend.material = new Material(shader) { color = new Color(0.22f, 0.75f, 1.0f, 0.4f) };
                 if (rend.material.HasProperty("_TintColor"))
                 {
                     rend.material.SetColor("_TintColor", new Color(0.22f, 0.75f, 1.0f, 0.6f));
-                }
-                else
-                {
-                    rend.material.color = new Color(0.22f, 0.75f, 1.0f, 0.4f);
                 }
             }
             pulseSphere.SetActive(false);

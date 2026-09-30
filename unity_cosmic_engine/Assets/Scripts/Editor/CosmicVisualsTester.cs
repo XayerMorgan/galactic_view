@@ -62,6 +62,7 @@ namespace CosmicZoom.Editor
                 if (messier.vault3DRoot != null) messier.vault3DRoot.SetActive(false);
             }
 
+
             cam.transform.position = new Vector3(0, 45f, 95f);
             cam.transform.LookAt(Vector3.zero);
             RenderAndSave(cam, rt, tex, null, Path.Combine(outDir, "stage1_solar_system.png"));
@@ -158,6 +159,10 @@ namespace CosmicZoom.Editor
 
         private static void RenderAndSave(Camera cam, RenderTexture rt, Texture2D tex, Texture2D canopy, string filePath)
         {
+            foreach (var bb in Object.FindObjectsByType<BillboardToCamera>(FindObjectsSortMode.None))
+            {
+                bb.transform.rotation = cam.transform.rotation;
+            }
             cam.Render();
             RenderTexture.active = rt;
             tex.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);

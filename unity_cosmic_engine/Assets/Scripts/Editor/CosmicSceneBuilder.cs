@@ -38,8 +38,8 @@ namespace CosmicZoom.Editor
             ConfigureTextureImporter("Assets/Resources/cockpit_canopy_overlay.png", true);
 
             // Create PBR, Unlit, and Additive Materials
-            Material matSun = CreateMaterial("Mat_Sun", "Assets/Textures/sun_photosphere.jpg", new Color(1f, 0.96f, 0.88f), 4.0f, isUnlit: true);
-            Material matSunCorona = CreateMaterial("Mat_SunCorona", "Assets/Textures/sun_corona_glow.png", new Color(1f, 0.9f, 0.5f), 4.0f, 0.5f, isAdditive: true);
+            Material matSun = CreateMaterial("Mat_Sun", "Assets/Textures/sun_photosphere.jpg", new Color(1.0f, 0.72f, 0.18f), 2.8f, roughness: 1.0f);
+            Material matSunCorona = CreateMaterial("Mat_SunCorona", "Assets/Textures/sun_corona_glow.png", new Color(1.0f, 0.75f, 0.22f, 0.85f), 1.0f, isTransparent: true);
             Material matEarth = CreateMaterial("Mat_Earth", "Assets/Textures/earth_photosphere.jpg", Color.white, 0f, 0.2f);
             Material matJupiter = CreateMaterial("Mat_Jupiter", "Assets/Textures/jupiter_photosphere.jpg", Color.white, 0f, 0.5f);
             Material matSaturn = CreateMaterial("Mat_Saturn", "Assets/Textures/jupiter_photosphere.jpg", new Color(0.95f, 0.9f, 0.75f), 0.1f, 0.5f);
@@ -107,8 +107,8 @@ namespace CosmicZoom.Editor
             GameObject dirLightObj = new GameObject("Sun_PointLight");
             Light sunLight = dirLightObj.AddComponent<Light>();
             sunLight.type = LightType.Point;
-            sunLight.color = new Color(1.0f, 0.96f, 0.88f);
-            sunLight.intensity = 8.0f;
+            sunLight.color = new Color(1.0f, 0.90f, 0.75f);
+            sunLight.intensity = 1.2f;
             sunLight.range = 50000f;
             sunLight.shadows = LightShadows.None; // Prevent shadow acne artifacts
             dirLightObj.transform.position = Vector3.zero;
@@ -117,7 +117,7 @@ namespace CosmicZoom.Editor
             Light fillLight = fillLightObj.AddComponent<Light>();
             fillLight.type = LightType.Directional;
             fillLight.color = new Color(0.35f, 0.45f, 0.62f);
-            fillLight.intensity = 0.90f;
+            fillLight.intensity = 0.35f;
             fillLightObj.transform.rotation = Quaternion.Euler(35f, 25f, 0f);
 
             // 5. Stage Hierarchies
@@ -294,15 +294,23 @@ namespace CosmicZoom.Editor
             Material mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
 
             Shader shader;
-            if (isAdditive)
+            if (name == "Mat_Sun")
             {
-                shader = Shader.Find("Mobile/Particles/Additive") ?? Shader.Find("Particles/Standard Unlit") ?? Shader.Find("Unlit/Transparent");
+                shader = Shader.Find("Standard");
+            }
+            else if (name == "Mat_SunCorona")
+            {
+                shader = Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Transparent") ?? Shader.Find("Standard");
+            }
+            else if (isAdditive)
+            {
+                shader = Shader.Find("Sprites/Default") ?? Shader.Find("Particles/Standard Unlit") ?? Shader.Find("Unlit/Transparent");
             }
             else if (isTransparent)
             {
-                shader = Shader.Find("Unlit/Transparent") ?? Shader.Find("Mobile/Particles/Alpha Blended") ?? Shader.Find("Standard");
+                shader = Shader.Find("Unlit/Transparent") ?? Shader.Find("Sprites/Default") ?? Shader.Find("Standard");
             }
-            else if (isUnlit || name.Contains("Sun") || name.Contains("CMB") || name.Contains("SgrA"))
+            else if (isUnlit || name.Contains("CMB") || name.Contains("SgrA"))
             {
                 shader = Shader.Find("Unlit/Texture") ?? Shader.Find("Unlit/Color") ?? Shader.Find("Standard");
             }
@@ -324,16 +332,31 @@ namespace CosmicZoom.Editor
             if (mat.HasProperty("_Smoothness")) mat.SetFloat("_Smoothness", 1.0f - roughness);
             if (mat.HasProperty("_Metallic")) mat.SetFloat("_Metallic", metallic);
 
+            Texture2D tex = null;
             if (!string.IsNullOrEmpty(texturePath))
             {
-                Texture2D tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
+                tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
                 if (tex != null)
                 {
                     mat.mainTexture = tex;
+                    if (mat.HasProperty("_MainTex")) mat.SetTexture("_MainTex", tex);
                 }
             }
 
-            if (emission > 0 && mat.shader.name == "Standard")
+            if (name == "Mat_Sun")
+            {
+                mat.EnableKeyword("_EMISSION");
+                mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+                if (tex != null && mat.HasProperty("_EmissionMap"))
+                {
+                    mat.SetTexture("_EmissionMap", tex);
+                }
+                if (mat.HasProperty("_EmissionColor"))
+                {
+                    mat.SetColor("_EmissionColor", new Color(1.0f, 0.58f, 0.12f, 1.0f) * emission);
+                }
+            }
+            else if (emission > 0 && mat.shader.name == "Standard")
             {
                 mat.EnableKeyword("_EMISSION");
                 if (mat.HasProperty("_EmissionColor"))
@@ -353,6 +376,7 @@ namespace CosmicZoom.Editor
             {
                 GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab, parent);
                 instance.transform.localPosition = Vector3.zero;
+                PrefabUtility.UnpackPrefabInstance(instance, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
                 return instance;
             }
             return null;
@@ -430,6 +454,36 @@ namespace CosmicZoom.Editor
                 }
             }
 
+            // Create or update dedicated soft radial Sun Corona Halo billboard quad
+            if (sunTrans != null)
+            {
+                Transform parentStage = root.transform.parent != null ? root.transform.parent : root.transform;
+                Transform existingCorona = parentStage.Find("Sun_Corona_Halo");
+                GameObject coronaQuad;
+                if (existingCorona != null)
+                {
+                    coronaQuad = existingCorona.gameObject;
+                }
+                else
+                {
+                    coronaQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                    coronaQuad.name = "Sun_Corona_Halo";
+                    coronaQuad.transform.SetParent(parentStage, false);
+                    Object.DestroyImmediate(coronaQuad.GetComponent<Collider>());
+                }
+                coronaQuad.transform.position = sunTrans.position;
+                coronaQuad.transform.localScale = Vector3.one * 14.5f;
+                var quadRenderer = coronaQuad.GetComponent<Renderer>();
+                if (quadRenderer != null)
+                {
+                    quadRenderer.sharedMaterial = sunCorona;
+                }
+                if (coronaQuad.GetComponent<BillboardToCamera>() == null)
+                {
+                    coronaQuad.AddComponent<BillboardToCamera>();
+                }
+            }
+
             // Second pass: Assign materials and attach living rotation/revolution kinematics
             foreach (Renderer r in root.GetComponentsInChildren<Renderer>(true))
             {
@@ -451,7 +505,7 @@ namespace CosmicZoom.Editor
                 else if (n.Contains("sun"))
                 {
                     r.sharedMaterial = sun;
-                    var body = go.AddComponent<CelestialBody>();
+                    var body = go.GetComponent<CelestialBody>() ?? go.AddComponent<CelestialBody>();
                     body.rotationSpeed = 2.0f;
                     body.orbitalSpeed = 0f;
                 }
