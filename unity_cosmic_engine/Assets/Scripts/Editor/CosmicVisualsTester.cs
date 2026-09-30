@@ -51,16 +51,20 @@ namespace CosmicZoom.Editor
             }
             Texture2D canopyOverlay = AssetDatabase.LoadAssetAtPath<Texture2D>(canopyPath);
 
-            // 1. Capture Stage 1 (Solar System & Starships)
+            // 1. Capture Stage 1 (Solar System & Starships - Establishing Overview)
             if (engine != null)
             {
                 engine.ApplyZoom(1.0f);
             }
-            if (messier != null) messier.isStarryNightActive = false;
+            if (messier != null)
+            {
+                messier.isStarryNightActive = false;
+                if (messier.vault3DRoot != null) messier.vault3DRoot.SetActive(false);
+            }
 
-            cam.transform.position = new Vector3(0, 25f, 70f);
+            cam.transform.position = new Vector3(0, 45f, 95f);
             cam.transform.LookAt(Vector3.zero);
-            RenderAndSave(cam, rt, tex, canopyOverlay, Path.Combine(outDir, "stage1_solar_system.png"));
+            RenderAndSave(cam, rt, tex, null, Path.Combine(outDir, "stage1_solar_system.png"));
 
             // 1b. Close-up on Sun (Photosphere & Soft Radial Corona Halo)
             cam.transform.position = new Vector3(0, 3f, 18f);
@@ -72,7 +76,7 @@ namespace CosmicZoom.Editor
             if (flagshipObj != null)
             {
                 Vector3 shipPos = flagshipObj.transform.position;
-                cam.transform.position = shipPos + new Vector3(5f, 3.5f, 7.5f);
+                cam.transform.position = shipPos + new Vector3(4.5f, 2.5f, 5.5f);
                 cam.transform.LookAt(shipPos);
                 RenderAndSave(cam, rt, tex, null, Path.Combine(outDir, "flagship_closeup.png"));
             }
@@ -84,7 +88,7 @@ namespace CosmicZoom.Editor
             }
             cam.transform.position = new Vector3(0, 70f, 100f);
             cam.transform.LookAt(Vector3.zero);
-            RenderAndSave(cam, rt, tex, canopyOverlay, Path.Combine(outDir, "stage2_milky_way.png"));
+            RenderAndSave(cam, rt, tex, null, Path.Combine(outDir, "stage2_milky_way.png"));
 
             // 3. Capture Stage 3 (Local Group Cluster)
             if (engine != null)
@@ -93,7 +97,7 @@ namespace CosmicZoom.Editor
             }
             cam.transform.position = new Vector3(0, 35f, 65f);
             cam.transform.LookAt(Vector3.zero);
-            RenderAndSave(cam, rt, tex, canopyOverlay, Path.Combine(outDir, "stage3_local_group.png"));
+            RenderAndSave(cam, rt, tex, null, Path.Combine(outDir, "stage3_local_group.png"));
 
             // 4. Capture Stage 4 (Cosmic Web & CMB Horizon)
             if (engine != null)
@@ -102,7 +106,7 @@ namespace CosmicZoom.Editor
             }
             cam.transform.position = new Vector3(0, 140f, 190f);
             cam.transform.LookAt(Vector3.zero);
-            RenderAndSave(cam, rt, tex, canopyOverlay, Path.Combine(outDir, "stage4_cosmic_web.png"));
+            RenderAndSave(cam, rt, tex, null, Path.Combine(outDir, "stage4_cosmic_web.png"));
 
             // 5. Capture Stage 5 (Starry Night Celestial Vault & Deep-Sky Reticle)
             if (engine != null)
@@ -127,7 +131,7 @@ namespace CosmicZoom.Editor
             {
                 engine.stage1SolarSystem.SetActive(false);
             }
-            RenderAndSave(cam, rt, tex, canopyOverlay, Path.Combine(outDir, "stage5_starry_night_mode.png"));
+            RenderAndSave(cam, rt, tex, null, Path.Combine(outDir, "stage5_starry_night_mode.png"));
             if (engine != null && engine.stage1SolarSystem != null)
             {
                 engine.stage1SolarSystem.SetActive(true);
@@ -137,6 +141,7 @@ namespace CosmicZoom.Editor
             if (messier != null)
             {
                 messier.isStarryNightActive = false;
+                if (messier.vault3DRoot != null) messier.vault3DRoot.SetActive(false);
             }
             if (engine != null)
             {

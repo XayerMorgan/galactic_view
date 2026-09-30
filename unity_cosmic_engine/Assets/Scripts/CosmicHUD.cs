@@ -400,7 +400,7 @@ namespace CosmicZoom
             float cx = virtualW * 0.5f;
             float cy = virtualH * 0.46f;
 
-            // Center Boresight Crosshair
+            // Center Boresight Crosshair (Subtle & Precision)
             float crossSize = 14f;
             GUI.DrawTexture(new Rect(cx - crossSize * 0.5f, cy - 1f, crossSize, 1.5f), texCyanDim);
             GUI.DrawTexture(new Rect(cx - 1f, cy - crossSize * 0.5f, 1.5f, crossSize), texCyanDim);
@@ -416,16 +416,6 @@ namespace CosmicZoom
             GUI.DrawTexture(new Rect(cx - boxR, cy + boxR - tick, 1.5f, tick), texCyanDim);
             GUI.DrawTexture(new Rect(cx + boxR - tick, cy + boxR - 1.5f, tick, 1.5f), texCyanDim);
             GUI.DrawTexture(new Rect(cx + boxR - 1.5f, cy + boxR - tick, 1.5f, tick), texCyanDim);
-
-            // Flight Vector & Lorentz Telemetry (Clean, sleek, zero warp tropes)
-            GUI.Label(new Rect(cx - 240, cy - 65, 480, 18), "◈ SENSOR TRACK: NOMINAL // VECTOR: [0.00, +0.45, +1.00] ◈", reticleHeadingStyle);
-            GUI.Label(new Rect(cx - 240, cy + 50, 480, 18), "RELATIVISTIC LORENTZ FACTOR: γ = 1.0000 // INERTIAL MATRIX: NOMINAL", reticleSubStyle);
-
-            // Cockpit Canopy Corner Struts
-            GUI.DrawTexture(new Rect(0, 0, 140, 6), strutTex);
-            GUI.DrawTexture(new Rect(0, 0, 6, 90), strutTex);
-            GUI.DrawTexture(new Rect(virtualW - 140, 0, 140, 6), strutTex);
-            GUI.DrawTexture(new Rect(virtualW - 6, 0, 6, 90), strutTex);
         }
 
         private void OnGUI()
@@ -446,11 +436,7 @@ namespace CosmicZoom
             double spanKm = TravelTimeCalculator.GetSpanKmFromZoom(zoom);
             double lightTransitSecs = TravelTimeCalculator.GetLightTransitSeconds(spanKm);
 
-            // 1. Diegetic Starfighter Cockpit Canopy Overlay
-            if (texCockpitCanopy != null)
-            {
-                GUI.DrawTexture(new Rect(0, 0, virtualW, virtualH), texCockpitCanopy, ScaleMode.StretchToFill);
-            }
+            // Widescreen Clear Viewport (No obstructive canopy pillars)
 
             // 2. High-Visibility Return to Flight Deck Banner Button (If in Starry Night mode)
             bool isStarryMode = messierCatalog != null && messierCatalog.isStarryNightActive;

@@ -76,8 +76,12 @@ namespace CosmicZoom.Editor
             LightPulseEmitter pulseEmitter = managerObj.AddComponent<LightPulseEmitter>();
             CelestialMessierCatalog messierCatalog = managerObj.AddComponent<CelestialMessierCatalog>();
             messierCatalog.Build3DVault();
+            if (messierCatalog.vault3DRoot != null)
+            {
+                messierCatalog.vault3DRoot.SetActive(false);
+            }
 
-            // 3. Camera Setup WITH AudioListener & CosmicStarfield
+            // 3. Camera Setup WITH AudioListener
             GameObject camObj = new GameObject("Main Camera");
             Camera cam = camObj.AddComponent<Camera>();
             camObj.tag = "MainCamera";
@@ -86,14 +90,15 @@ namespace CosmicZoom.Editor
             cam.fieldOfView = 45f;
             cam.nearClipPlane = 0.5f;
             cam.farClipPlane = 150000f; // Wide cosmic clipping depth
-            camObj.transform.position = new Vector3(0, 60f, 130f);
+            camObj.transform.position = new Vector3(0, 45f, 95f);
             camObj.transform.LookAt(Vector3.zero);
 
             // AUDIO LISTENER: CRITICAL FOR SOUND TO BE AUDIBLE!
             camObj.AddComponent<AudioListener>();
 
-            // 3D PROCEDURAL STARFIELD: 3,500 TWINKLING STARS
-            camObj.AddComponent<CosmicStarfield>();
+            // 3D PROCEDURAL STARFIELD: Dedicated Starfield Object (Tracks Main Camera)
+            GameObject starfieldObj = new GameObject("[Cosmic_Starfield]");
+            starfieldObj.AddComponent<CosmicStarfield>();
 
             // 4. Ambient & Directional Lighting
             RenderSettings.ambientLight = new Color(0.22f, 0.28f, 0.42f, 1.0f);
@@ -135,13 +140,13 @@ namespace CosmicZoom.Editor
             GameObject s3Obj = LoadAndInstantiateModel("Assets/Models/local_group_galaxies.fbx", stage3.transform);
             GameObject s4Obj = LoadAndInstantiateModel("Assets/Models/observable_universe_boundary.fbx", stage4.transform);
 
-            // Project GALAXY: Instantiate Modern Exploration Starships
+            // Project GALAXY: Instantiate Modern Exploration Starships (Sleek proportions in Solar Orbit)
             GameObject flagship = LoadAndInstantiateModel("Assets/GALAXY/Models_3D/USS_Astronautica_Flagship.fbx", stage1.transform);
             if (flagship != null)
             {
                 flagship.name = "Survey_Flagship";
-                flagship.transform.position = new Vector3(14.0f, 4.5f, 18.0f);
-                flagship.transform.localScale = Vector3.one * 0.7f;
+                flagship.transform.position = new Vector3(24.0f, 4.0f, 16.0f);
+                flagship.transform.localScale = Vector3.one * 0.28f;
                 flagship.transform.rotation = Quaternion.Euler(14f, -32f, 8f);
                 var rot = flagship.AddComponent<GalacticRotator>();
                 rot.rotationAxis = Vector3.up;
@@ -152,8 +157,8 @@ namespace CosmicZoom.Editor
             if (scout != null)
             {
                 scout.name = "Sol_Scout_Interceptor";
-                scout.transform.position = new Vector3(20.0f, 7.5f, 14.0f);
-                scout.transform.localScale = Vector3.one * 0.55f;
+                scout.transform.position = new Vector3(29.0f, 6.0f, 21.0f);
+                scout.transform.localScale = Vector3.one * 0.22f;
                 scout.transform.rotation = Quaternion.Euler(10f, -20f, -10f);
             }
 

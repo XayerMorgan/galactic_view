@@ -231,20 +231,20 @@ namespace CosmicZoom
         public void FocusOnFlagship()
         {
             Transform t = FindChildRecursive(stage1SolarSystem, "Survey_Flagship");
-            Vector3 p = t != null ? t.position : new Vector3(14.0f, 4.5f, 18.0f);
-            FocusOnTarget("Deep-Space Flagship", p, defaultDist: 6.5f, minDist: 2.0f, maxDist: 45.0f, t);
+            Vector3 p = t != null ? t.position : new Vector3(24.0f, 4.0f, 16.0f);
+            FocusOnTarget("Deep-Space Flagship", p, defaultDist: 5.5f, minDist: 1.5f, maxDist: 40.0f, t);
         }
 
         public void FocusOnScout()
         {
             Transform t = FindChildRecursive(stage1SolarSystem, "Sol_Scout_Interceptor");
-            Vector3 p = t != null ? t.position : new Vector3(20.0f, 7.5f, 14.0f);
-            FocusOnTarget("Sol Scout Ship", p, defaultDist: 5.0f, minDist: 1.8f, maxDist: 35.0f, t);
+            Vector3 p = t != null ? t.position : new Vector3(29.0f, 6.0f, 21.0f);
+            FocusOnTarget("Sol Scout Ship", p, defaultDist: 4.5f, minDist: 1.2f, maxDist: 35.0f, t);
         }
 
         public void FocusOnOverview()
         {
-            FocusOnTarget("Solar System Overview", Vector3.zero, defaultDist: 110.0f, minDist: 30.0f, maxDist: 250.0f, null);
+            FocusOnTarget("Solar System Overview", Vector3.zero, defaultDist: 95.0f, minDist: 25.0f, maxDist: 250.0f, null);
         }
 
         public void FocusOnSgrA()
@@ -315,7 +315,7 @@ namespace CosmicZoom
             switch (stageNumber)
             {
                 case 1:
-                    FocusOnSun();
+                    FocusOnOverview();
                     break;
                 case 2:
                     FocusOnMilkyWay();

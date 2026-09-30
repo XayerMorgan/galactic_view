@@ -257,12 +257,13 @@ namespace CosmicZoom
             Shader spriteShader = Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Color");
             lineMat = new Material(spriteShader) { color = new Color(0.22f, 0.74f, 0.97f, 0.65f) };
 
-            Shader addShader = Shader.Find("Mobile/Particles/Additive") ?? Shader.Find("Unlit/Transparent") ?? Shader.Find("Standard");
-            starMat = new Material(addShader);
+            // Use Sprites/Default or Unlit/Transparent for universal D3D12 Windows standalone support
+            Shader transShader = Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Transparent") ?? Shader.Find("Unlit/Color");
+            starMat = new Material(transShader);
             starMat.mainTexture = MakeStarTexture(64);
             if (starMat.HasProperty("_TintColor")) starMat.SetColor("_TintColor", Color.white);
 
-            markerMat = new Material(addShader);
+            markerMat = new Material(transShader);
             markerMat.mainTexture = MakeReticleTexture(64);
             if (markerMat.HasProperty("_TintColor")) markerMat.SetColor("_TintColor", new Color(0.22f, 0.85f, 0.97f, 0.9f));
         }
@@ -383,9 +384,12 @@ namespace CosmicZoom
 
             Material horizonMat = new Material(lineMat);
             horizonMat.color = new Color(0.12f, 0.85f, 0.55f, 0.35f);
-            hLr.sharedMaterial = horizonMat;
+            if (vault3DRoot != null)
+            {
+                vault3DRoot.SetActive(isStarryNightActive);
+            }
 
-            Debug.Log($"[CelestialMessierCatalog] 3D Vault built with {constellations.Count} constellations and {catalog.Count} celestial objects.");
+            Debug.Log($"[CelestialMessierCatalog] 3D Vault built with {constellations.Count} constellations and {catalog.Count} celestial objects. Active: {isStarryNightActive}");
         }
 
         private GameObject CreateBillboardQuad(string name, Vector3 pos, float size, Color col, Material baseMat)
@@ -897,6 +901,11 @@ namespace CosmicZoom
             isStarryNightActive = false;
             hasSavedFlightCamera = false;
             aimCoroutine = null;
+
+            if (vault3DRoot != null)
+            {
+                vault3DRoot.SetActive(false);
+            }
 
             var engine = FindAnyObjectByType<CosmicZoomEngine>();
             if (engine != null)
